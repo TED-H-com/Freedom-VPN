@@ -83,12 +83,12 @@ By engineering contract (`D-026`, `D-039`, `D-045`), no production binary compil
 | `internal/nodes/nodestest/config.go` | `dns_resolver_ipv4`, `dns_resolver_ipv6` | `["100.64.0.53"]`, `["2001:db8::53"]` | Production AdGuard Home overlay listener IPs (at least 2 IPv4 addresses recommended per `§12.2`) |
 | `docs/dns/config.example.json` | `upstreams`, `bootstrap_dns` | `["192.0.2.53:53", "[2001:db8::53]:53"]` | Production recursive upstream resolvers (`IP:port` literals only; never left to AdGuard defaults, `D-028`) |
 | `internal/policies/policiestest/config.go` | `dns_upstream_profile` | `"TEST ONLY"` | Production upstream profile identifier matching `dns_profile` policy payloads (e.g., `"prod-recursive-v1"`) |
-| `internal/usage/usagetest/config.go` | `signing_config_file` | Temp dir `usage-vault` | `/var/lib/fvpn/vault` (persistent `0700` directory outside PostgreSQL backup scope) |
+| `internal/usage/usagetest/config.go` | `signing_config_file` | Temp dir `usage-vault` | `/var/lib/fvpn/staging-authority/vault` (persistent `0700` directory outside PostgreSQL backup scope) |
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `host_reserve_bps` in `agent.json` | `1000000` (1 Mbps) | Measured host control-plane reserve per node NIC capacity (e.g., `20000000` for 20 Mbps; mandatory `> 0`, exits `64` if omitted, `D-034`) |
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `test_mode`, `test_exempt_v4` in `agent.json` | `true` | Omit or set `false` (`test_exempt_v4` is rejected by `fvpn-agent` when `test_mode` is `false`) |
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `-grace-seconds N` (`FVPN_E2E_GRACE_SECONDS`, `#182`, `SECOPS-04`) in `members.json` | `0..31622400` (default `0`, writes `grace_reason = "TEST ONLY finite grace override"` when `> 0`) | Lab-only prepare option (requires `E2E_RESET=1` or restarting both `fvpn-control` and `fvpn-worker`); set explicit business-approved `grace_seconds` and `grace_reason` in `/etc/fvpn/members.json` (`calibration.md`) |
 | `node/updater/host.go` | `allow_loopback`, `allowed_artifact_origins` in `updater.json` | `true` / lab RFC1918 exemptions | Keep `allow_loopback: false` outside isolated `TEST ONLY` loopback tests. Preserve the installer-generated exact control origin in `allowed_artifact_origins`, including for private/CGNAT update-result delivery. Use `[]` only when no artifact, manifest or result origin requires a private/CGNAT exception; an origin entry never permits loopback or every private address (`D-046`). |
-| `internal/dnspolicy/cmd/bootstrap/main.go` | AdGuard admin password | `"testonly-<hex>"` | High-entropy random password per resolver, stored in `/etc/fvpn/secrets/adguard.password` (`0600`) and hashed with bcrypt in `AdGuardHome.yaml` |
+| `internal/dnspolicy/cmd/bootstrap/main.go` | AdGuard admin password | `"testonly-<hex>"` | One high-entropy username/password pair shared by every resolver target of an exit, supplied through `dns.resolver_credentials_file` under the [node credential rules](../node/README.md#configuration). The agent copies that same pair to every target; resolvers requiring different pairs cannot all authenticate. Per-target credentials are an unimplemented product gap. |
 | `contracts/vectors/*.json` | Ed25519 seed vectors | `"TEST ONLY - NOT A SECRET"` | Explicit [staging initialization](../pki/initialize.md) via `fvpn-vault-init`; separate offline `fvpn-release keygen` ([release process](../updates/release-process.md)). Production custody and anti-rollback are not implemented by FileProvider. |
 
 ---
@@ -129,7 +129,7 @@ Portal follow-up 16 (#255) supplies `/admin/devices` with authorization-unconfir
 
 ### 3.2 Least-Privilege Database Roles (`docs/db/README.md`)
 
-Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. Create the six role-separated database accounts (`§15.3`, `§17.3`):
+Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. The six accounts below describe the intended role contract (`§15.3`, `§17.3`); the broad staging grants in §3.3 do not implement that least-privilege boundary.
 
 | Role | Used By | Purpose |
 |---|---|---|
@@ -138,7 +138,7 @@ Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. Create the si
 | `fvpn_worker` | `fvpn-worker` | Claims `outbox_events`, reconciles NetBird/Stripe/DNS (including threat-feed refreshes in `dns_feed_contents` and `dns_feed_refresh_state`), updates `usage_rollups`. |
 | `fvpn_retention` | Retention job | Executes `SELECT purge_retained(...)` (`F-03`) to delete expired raw payloads and logs while recording an audit row. |
 | `fvpn_recovery` | `fvpn-usage-admin` | Executes usage ledger freeze, epoch rotation (`usage_recovery_records`, `usage_ledger_epochs`), and adjustments. |
-| `fvpn_backup` | `pg_dump` / `pgBackRest` | Read-only physical/logical backup role. |
+| `fvpn_backup` | `pg_dump` / read-only verification | Logical read-only role (`pg_read_all_data`). Physical pgBackRest uses the local `postgres` OS/cluster account over the Unix socket; see [backup roles](../ops/backups.md#23-least-privilege-database-roles-docshandoverdeploymd-32-docsdbreadmemd). |
 
 Create the database and roles `[production only]`:
 
@@ -193,7 +193,7 @@ current_database="fvpn"
 <last file> applied
 ```
 
-After migrations complete, grant table/sequence permissions to `fvpn_control`, `fvpn_worker`, `fvpn_retention`, `fvpn_recovery`, and `fvpn_backup` (`pg_read_all_data`) `[production only]`:
+After migrations complete, the following **broad staging grant block** keeps staging deployable; it is not a production least-privilege grant set. It grants all-table `SELECT`, `INSERT`, `UPDATE` and `DELETE` to control, worker and recovery, including runtime writes to `usage_checkpoints.ledger_epoch` and `usage_ledger_state.current_epoch`/`mode`. The [database privilege contract](../db/README.md#roles-grants-and-retention) reserves epoch changes for the separately controlled recovery role and forbids broad worker `UPDATE` on `usage_checkpoints`. The checkpoint and ledger-state triggers check data consistency, not the caller's recovery authority. The repository has only partial grant illustrations, not a complete tested contract-conformant set; that set is carried work. Production must not adopt this block as least privilege:
 
 ```sql
 -- [mechanical-check: cluster-role-ddl]
@@ -282,7 +282,7 @@ Keep `oidc_issuer` canonical and identical for control, worker, and NetBird iden
 
 ### 5.1 Central Signing Vault & Node CA Ceremony (`FileProvider`)
 
-The central signing directory (`/var/lib/fvpn/vault`, mode `0700`) stores six central key purposes outside PostgreSQL backups (`§16.2`, `§17.2`):
+The central signing directory (`/var/lib/fvpn/staging-authority/vault`, mode `0700`) stores six central key purposes outside PostgreSQL backups (`§16.2`, `§17.2`):
 - `node-ca` (ECDSA P-256): Signs node mTLS client certificates (`§6.4`).
 - `bootstrap-secret` (AES-256-GCM): Encrypts one-time NetBird setup keys at rest in PostgreSQL (`§6.2`).
 - `desired-state` (Ed25519): Signs node desired-state envelopes (`§14.7`).
@@ -446,7 +446,7 @@ With the §7.2 service configuration, both processes read `/etc/fvpn/control.jso
 
 ```json
 {
-  "provider_directory": "/var/lib/fvpn/vault",
+  "provider_directory": "/var/lib/fvpn/staging-authority/vault",
   "ca_certificate_file": "/etc/fvpn/secrets/agent-ca.pem",
   "ca_key_id": "0196ed00-0000-7000-8000-000000000010",
   "certificate_seconds": 604800,
@@ -510,7 +510,7 @@ With the §7.2 service configuration, both processes read `/etc/fvpn/control.jso
 
 ```json
 {
-  "signing_config_file": "/var/lib/fvpn/vault",
+  "signing_config_file": "/var/lib/fvpn/staging-authority/vault",
   "raw_usage_retention_days": 90,
   "rollup_retention_months": 24,
   "audit_retention_days": 365,
@@ -542,7 +542,7 @@ CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o di
 
 ### 7.2 Starting `fvpn-control` and `fvpn-worker` under systemd
 
-Install systemd units for `fvpn-control.service` and `fvpn-worker.service` running as an unprivileged `fvpn` system user `[production only]`.
+For the FileProvider staging layout from §5.3, install the following units as the unprivileged `fvpn` service account. Complete initialization first: the vault directory and its `lock` file must already exist, and the service account must be able to traverse the parent and read the private files. systemd rejects a missing `ReadWritePaths` entry. Both processes open `vault/lock` read/write even for reads; worker needs only that writable file. Control also persists incarnation revocations through a temporary `.state-*` file and replacement of `state.json`, so it needs the vault directory writable. The generated CA, receipt and trust exports outside `vault/` need no runtime write allowance. This is the [staging authority layout](../pki/initialize.md#initialize-and-inspect); production custody remains unimplemented.
 `config.Load` reads JSON first, then applies `FVPN_<UPPERCASE_JSON_FIELD>`
 overrides (`internal/config/config.go`). Both units can therefore share
 `control.json` while explicitly selecting their own runtime DSN file:
@@ -565,7 +565,7 @@ RestartSec=2s
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/lib/fvpn/vault
+ReadWritePaths=/var/lib/fvpn/staging-authority/vault
 ReadOnlyPaths=/etc/fvpn
 
 [Install]
@@ -591,7 +591,7 @@ RestartSec=2s
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/lib/fvpn/vault
+ReadWritePaths=/var/lib/fvpn/staging-authority/vault/lock
 ReadOnlyPaths=/etc/fvpn
 
 [Install]
@@ -683,6 +683,14 @@ install -d -m 0700 /var/lib/vpn-node/identity /var/lib/vpn-node/state /var/lib/v
 
 Use `fvpn-node-install` for verified release extraction, the `current` symlink, trust files and generated agent/updater configuration; follow [what install changes](../node/install.md#what-install-changes-63) and [Node trust files](../node/install.md#node-trust-files).
 
+After install, add the `dns` object to `/etc/vpn-node/agent.json` using the [node configuration example](../node/README.md#config-example), including `dns.resolvers` and `dns.resolver_credentials_file`. The installer starts services but does not write `dns`; without it, a referenced resolver document fails closed with `not_run` / `DEPENDENCY_UNAVAILABLE`.
+
+Provide the referenced credentials JSON file with one username/password pair for all resolver targets, following the [node credential rules](../node/README.md#configuration): regular file, mode `0600`, uid/gid `0:0`, exactly one hard link, and no symlink. Restart `fvpn-agent.service` after changing the `dns` configuration (`systemctl restart fvpn-agent.service`); `SIGHUP` reloads only the credential file, not `agent.json`.
+
+Read back `dns_policy_evidence` in the admin node detail as described in [operator DNS evidence](operator-guide.md#51-how-threat-feeds-and-resolver-documents-are-published-and-delivered) and the [resolver outcome table](../node/README.md#config-example): for the referenced document, require matching document ID, digest and generation, outcome `applied`, and a passed `dns_policy` check. Missing evidence or successful document delivery alone does not prove apply.
+
+**Installer product gap:** the installer takes no DNS input. A successful re-run, even for the same release, replaces a hand-edited `agent.json` because the fast path requires exact equality with its rendering; the rewritten file drops `dns`. After any such re-run, repeat the configuration, restart and read-back steps above before treating DNS as applied.
+
 The following `agent.json` fields illustrate configuration inputs; use the installer's generated configuration and [control endpoint guidance](../node/install.md#authenticated-updater-reporting-f10-02-136-13103) for the selected origin. The installer also generates `updater.json`; this example alone is not a manual installation procedure.
 
 ```json
@@ -761,7 +769,7 @@ For enrollment, use `fvpn-node-install` and its [token intake procedure](../node
 What happens during `fvpn-agent enroll` (`§6.1`–`§6.3`, `ENR01`–`ENR04`, `D-055`, `docs/nodes/WIRING.md`):
 1. Generates an ECDSA P-256 private key inside `/var/lib/vpn-node/identity` (`0600`, never leaves the node) and submits a PKCS#10 CSR + `fvpn-enrollment-v1` proof to `POST /api/v1/agent/enroll`.
 2. Receives `node_id`, `incarnation_id`, and the signed mTLS client certificate.
-3. Zero-overwrites, syncs, and unlinks `/run/vpn-node/enrollment.token` (`agent.NeutralizeToken`).
+3. Zero-overwrites, syncs, and unlinks the token file passed to the agent (`agent.NeutralizeToken`): either the operator's `--token-file` path, or the installer's mode-`0600` `.enroll-token-*` file under the system temporary directory when it prompts. There is no fixed enrollment-token path.
 4. Enrollment exits after token neutralization. The subsequent `fvpn-agent run` runtime calls `POST /api/v1/agent/bootstrap` over mTLS to fetch the one-time NetBird `setup_key` (subsequent calls return `410 BOOTSTRAP_CONSUMED`). Central (`node.provision.requested`) creates a single-use setup key whose `auto_groups` contain the shared staging group (`fvpn-unpublished-nodes`) and a dedicated empty per-enrollment correlation group (`fvpn-enroll-peer-<hash>`, `D-055`, `docs/nodes/WIRING.md`). During `node.peer.discover`, `fvpn-worker` (`DiscoverNodePeer`) correlates the unique non-ephemeral, userless peer in that correlation group without hostname, address, or timing inference, records `node:<node>:<incarnation>` in `external_bindings`, detaches and deletes the temporary correlation group with read-back, and commits `peer_readback`.
 
 ### 9.4 Node Host Installer (`fvpn-node-install`, `#239`), Installing systemd Units, and Publishing the Exit (`§5.1`, `§6.1`–`§6.5`, `§7.3`, `§13.5`, `§16.3`, `ENR01`–`ENR04`, `AT06`, `AT07`, `D-057`, `docs/node/install.md`)

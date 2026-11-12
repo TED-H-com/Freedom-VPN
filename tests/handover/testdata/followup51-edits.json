@@ -674,5 +674,497 @@
       "docs/db/README.md:354",
       "docs/db/README.md:443"
     ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r1_usage_authority_location",
+    "before": "| `internal/usage/usagetest/config.go` | `signing_config_file` | Temp dir `usage-vault` | `/var/lib/fvpn/vault` (persistent `0700` directory outside PostgreSQL backup scope) |",
+    "after": "| `internal/usage/usagetest/config.go` | `signing_config_file` | Temp dir `usage-vault` | `/var/lib/fvpn/staging-authority/vault` (persistent `0700` directory outside PostgreSQL backup scope) |",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r1_signing_directory",
+    "before": "The central signing directory (`/var/lib/fvpn/vault`, mode `0700`) stores six central key purposes outside PostgreSQL backups (`§16.2`, `§17.2`):",
+    "after": "The central signing directory (`/var/lib/fvpn/staging-authority/vault`, mode `0700`) stores six central key purposes outside PostgreSQL backups (`§16.2`, `§17.2`):",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r1_nodes_provider_directory",
+    "before": "  \"provider_directory\": \"/var/lib/fvpn/vault\",",
+    "after": "  \"provider_directory\": \"/var/lib/fvpn/staging-authority/vault\",",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r1_usage_signing_directory",
+    "before": "  \"signing_config_file\": \"/var/lib/fvpn/vault\",",
+    "after": "  \"signing_config_file\": \"/var/lib/fvpn/staging-authority/vault\",",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "r1_operator_authority",
+    "before": "The `fvpn-usage-admin` CLI operates directly against PostgreSQL and the central signing vault (`/var/lib/fvpn/vault`) and records an append-only `audit_events` row for every mutation.",
+    "after": "The `fvpn-usage-admin` CLI operates directly against PostgreSQL and the central signing vault (`/var/lib/fvpn/staging-authority/vault`) and records an append-only `audit_events` row for every mutation.",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "r1_restore_authority_objective",
+    "before": "| **Signing Vault (`/var/lib/fvpn/vault`) & PKI Revocations** | **`0` (Zero Loss)** | Immediate | Stored outside PostgreSQL snapshots (`§16.2`, `§17.2`). Never overwritten by a database rollback. |",
+    "after": "| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) & PKI Revocations** | **`0` (Zero Loss)** | Immediate | Stored outside PostgreSQL snapshots (`§16.2`, `§17.2`). Never overwritten by a database rollback. |",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "r1_restore_authority_check",
+    "before": "- [ ] **1.2 Verify `/var/lib/fvpn/vault` Integrity (`§16.2`, `§17.2`)**:",
+    "after": "- [ ] **1.2 Verify `/var/lib/fvpn/staging-authority/vault` Integrity (`§16.2`, `§17.2`)**:",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "r1_restore_authority_inspection",
+    "before": "  Preserve the current authority outside the PostgreSQL restore. For a staging FileProvider, run `fvpn-vault inspect -vault /var/lib/fvpn/vault -check-keys` against the actual configured vault path and review the [key-use inspection](../pki/inspect.md#key-use-inspection) results. This checks current active central keys locally; it cannot prove that the whole directory was not rolled back. Preserve newer revocations and rotations using independent evidence and follow [rotation and restore](../pki/rotation.md); production custody and anti-rollback are not implemented by FileProvider.",
+    "after": "  Preserve the current authority outside the PostgreSQL restore. For a staging FileProvider, run `fvpn-vault inspect -vault /var/lib/fvpn/staging-authority/vault -check-keys` against the actual configured vault path and review the [key-use inspection](../pki/inspect.md#key-use-inspection) results. This checks current active central keys locally; it cannot prove that the whole directory was not rolled back. Preserve newer revocations and rotations using independent evidence and follow [rotation and restore](../pki/rotation.md); production custody and anti-rollback are not implemented by FileProvider.",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "r1_backup_authority_objective",
+    "before": "| **Signing Vault (`/var/lib/fvpn/vault`) RPO** | **`0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). |",
+    "after": "| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) RPO** | **`0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). |",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "r1_backup_secret_separation",
+    "before": "   The pgBackRest encryption passphrase (`PGBACKREST_REPO1_CIPHER_PASS`) and object-store credentials (`PGBACKREST_REPO1_S3_KEY`, `PGBACKREST_REPO1_S3_KEY_SECRET`) are stored in `/etc/fvpn/secrets/pgbackrest-repo.env` (owned by `root:postgres`, mode `0600`), **outside PostgreSQL** and **outside the central signing vault (`/var/lib/fvpn/vault`)**. Escrowed recovery copies of `pgbackrest-repo.env` are kept in the operator hardware/offline secret store separate from the S3 bucket.",
+    "after": "   The pgBackRest encryption passphrase (`PGBACKREST_REPO1_CIPHER_PASS`) and object-store credentials (`PGBACKREST_REPO1_S3_KEY`, `PGBACKREST_REPO1_S3_KEY_SECRET`) are stored in `/etc/fvpn/secrets/pgbackrest-repo.env` (owned by `root:postgres`, mode `0600`), **outside PostgreSQL** and **outside the central signing vault (`/var/lib/fvpn/staging-authority/vault`)**. Escrowed recovery copies of `pgbackrest-repo.env` are kept in the operator hardware/offline secret store separate from the S3 bucket.",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "r1_backup_authority_scope",
+    "before": "   The central signing vault (`/var/lib/fvpn/vault`) holds the active and historical keys and revocation state (`state.json`) for `node-ca`, `bootstrap-secret`, `desired-state`, `lease`, `recovery`, and `ledger-epoch`. It is **never** stored in PostgreSQL or backed up inside pgBackRest snapshots. Consequently, restoring PostgreSQL to an earlier timestamp never rolls back a key rotation or un-revokes a compromised signing key (`§16.2`).",
+    "after": "   The central signing vault (`/var/lib/fvpn/staging-authority/vault`) holds the active and historical keys and revocation state (`state.json`) for `node-ca`, `bootstrap-secret`, `desired-state`, `lease`, `recovery`, and `ledger-epoch`. It is **never** stored in PostgreSQL or backed up inside pgBackRest snapshots. Consequently, restoring PostgreSQL to an earlier timestamp never rolls back a key rotation or un-revokes a compromised signing key (`§16.2`).",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "r1_backup_authority_check",
+    "before": "2. Verify that `/var/lib/fvpn/vault/state.json` and all key files in `/var/lib/fvpn/vault` are intact and untouched by the database restore (`§16.2`).",
+    "after": "2. Verify that `/var/lib/fvpn/staging-authority/vault/state.json` and all key files in `/var/lib/fvpn/staging-authority/vault` are intact and untouched by the database restore (`§16.2`).",
+    "evidence": [
+      "docs/pki/initialize.md:84",
+      "docs/pki/initialize.md:111",
+      "internal/signing/file.go:125"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r1_control_vault_writes",
+    "before": "# /etc/systemd/system/fvpn-control.service\n[Unit]\nDescription=Freedom VPN Central Control API\nAfter=network-online.target postgresql.service\nWants=network-online.target\n\n[Service]\nType=simple\nUser=fvpn\nGroup=fvpn\nEnvironment=FVPN_DATABASE_URL_FILE=/etc/fvpn/secrets/database-control.url\nExecStart=/usr/local/bin/fvpn-control -config /etc/fvpn/control.json\nRestart=on-failure\nRestartSec=2s\nNoNewPrivileges=true\nProtectSystem=strict\nProtectHome=true\nReadWritePaths=/var/lib/fvpn/vault\nReadOnlyPaths=/etc/fvpn\n\n[Install]\nWantedBy=multi-user.target",
+    "after": "# /etc/systemd/system/fvpn-control.service\n[Unit]\nDescription=Freedom VPN Central Control API\nAfter=network-online.target postgresql.service\nWants=network-online.target\n\n[Service]\nType=simple\nUser=fvpn\nGroup=fvpn\nEnvironment=FVPN_DATABASE_URL_FILE=/etc/fvpn/secrets/database-control.url\nExecStart=/usr/local/bin/fvpn-control -config /etc/fvpn/control.json\nRestart=on-failure\nRestartSec=2s\nNoNewPrivileges=true\nProtectSystem=strict\nProtectHome=true\nReadWritePaths=/var/lib/fvpn/staging-authority/vault\nReadOnlyPaths=/etc/fvpn\n\n[Install]\nWantedBy=multi-user.target",
+    "evidence": [
+      "internal/signing/file.go:125",
+      "internal/signing/file.go:250",
+      "internal/signing/file.go:277",
+      "internal/signing/file.go:654",
+      "internal/enrollment/revoke.go:89",
+      "internal/nodes/httpwire/handlers.go:272",
+      "internal/nodes/httpwire/runtime.go:66",
+      "apps/worker/jobs_usage.go:66",
+      "packaging/installer/isolation.go:28"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r1_worker_vault_writes",
+    "before": "# /etc/systemd/system/fvpn-worker.service\n[Unit]\nDescription=Freedom VPN Background Worker\nAfter=network-online.target fvpn-control.service\nWants=network-online.target\n\n[Service]\nType=simple\nUser=fvpn\nGroup=fvpn\nEnvironment=FVPN_METRICS_ADDRESS=127.0.0.1:9092\nEnvironment=FVPN_DATABASE_URL_FILE=/etc/fvpn/secrets/database-worker.url\nExecStart=/usr/local/bin/fvpn-worker -config /etc/fvpn/control.json\nRestart=on-failure\nRestartSec=2s\nNoNewPrivileges=true\nProtectSystem=strict\nProtectHome=true\nReadWritePaths=/var/lib/fvpn/vault\nReadOnlyPaths=/etc/fvpn\n\n[Install]\nWantedBy=multi-user.target",
+    "after": "# /etc/systemd/system/fvpn-worker.service\n[Unit]\nDescription=Freedom VPN Background Worker\nAfter=network-online.target fvpn-control.service\nWants=network-online.target\n\n[Service]\nType=simple\nUser=fvpn\nGroup=fvpn\nEnvironment=FVPN_METRICS_ADDRESS=127.0.0.1:9092\nEnvironment=FVPN_DATABASE_URL_FILE=/etc/fvpn/secrets/database-worker.url\nExecStart=/usr/local/bin/fvpn-worker -config /etc/fvpn/control.json\nRestart=on-failure\nRestartSec=2s\nNoNewPrivileges=true\nProtectSystem=strict\nProtectHome=true\nReadWritePaths=/var/lib/fvpn/staging-authority/vault/lock\nReadOnlyPaths=/etc/fvpn\n\n[Install]\nWantedBy=multi-user.target",
+    "evidence": [
+      "internal/signing/file.go:125",
+      "internal/signing/file.go:250",
+      "internal/signing/file.go:277",
+      "internal/signing/file.go:654",
+      "internal/enrollment/revoke.go:89",
+      "internal/nodes/httpwire/handlers.go:272",
+      "internal/nodes/httpwire/runtime.go:66",
+      "apps/worker/jobs_usage.go:66",
+      "packaging/installer/isolation.go:28"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r1_service_write_boundary",
+    "before": "Install systemd units for `fvpn-control.service` and `fvpn-worker.service` running as an unprivileged `fvpn` system user `[production only]`.",
+    "after": "For the FileProvider staging layout from §5.3, install the following units as the unprivileged `fvpn` service account. Complete initialization first: the vault directory and its `lock` file must already exist, and the service account must be able to traverse the parent and read the private files. systemd rejects a missing `ReadWritePaths` entry. Both processes open `vault/lock` read/write even for reads; worker needs only that writable file. Control also persists incarnation revocations through a temporary `.state-*` file and replacement of `state.json`, so it needs the vault directory writable. The generated CA, receipt and trust exports outside `vault/` need no runtime write allowance. This is the [staging authority layout](../pki/initialize.md#initialize-and-inspect); production custody remains unimplemented.",
+    "evidence": [
+      "internal/signing/file.go:53",
+      "internal/signing/file.go:125",
+      "internal/signing/file.go:250",
+      "internal/signing/file.go:277",
+      "internal/signing/file.go:654",
+      "internal/enrollment/revoke.go:89",
+      "packaging/installer/isolation.go:28",
+      "docs/pki/initialize.md:3",
+      "docs/pki/initialize.md:111"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r2_intended_role_contract",
+    "before": "Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. Create the six role-separated database accounts (`§15.3`, `§17.3`):",
+    "after": "Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. The six accounts below describe the intended role contract (`§15.3`, `§17.3`); the broad staging grants in §3.3 do not implement that least-privilege boundary.",
+    "evidence": [
+      "docs/db/README.md:389",
+      "docs/db/README.md:399",
+      "docs/db/README.md:414"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r2_broad_staging_grants",
+    "before": "After migrations complete, grant table/sequence permissions to `fvpn_control`, `fvpn_worker`, `fvpn_retention`, `fvpn_recovery`, and `fvpn_backup` (`pg_read_all_data`) `[production only]`:",
+    "after": "After migrations complete, the following **broad staging grant block** keeps staging deployable; it is not a production least-privilege grant set. It grants all-table `SELECT`, `INSERT`, `UPDATE` and `DELETE` to control, worker and recovery, including runtime writes to `usage_checkpoints.ledger_epoch` and `usage_ledger_state.current_epoch`/`mode`. The [database privilege contract](../db/README.md#roles-grants-and-retention) reserves epoch changes for the separately controlled recovery role and forbids broad worker `UPDATE` on `usage_checkpoints`. The checkpoint and ledger-state triggers check data consistency, not the caller's recovery authority. The repository has only partial grant illustrations, not a complete tested contract-conformant set; that set is carried work. Production must not adopt this block as least privilege:",
+    "evidence": [
+      "docs/db/README.md:396",
+      "docs/db/README.md:399",
+      "docs/db/README.md:409",
+      "docs/db/README.md:414",
+      "db/migrations/00004_guards.sql:188",
+      "db/migrations/00130_usage_ledger.sql:44",
+      "db/migrations/00130_usage_ledger.sql:60"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "r3_reconciliation_scope",
+    "before": "  `fvpn-worker` continuously runs `node.reconcile` (every `nodes.json:reconcile_seconds`) and `members.reconcile` (every `members.json:device_sync_seconds`). It calls `netbird.Client.ReadObservedState` and converges:\n  - Any NetBird peer that was authorized in NetBird during the RPO window but is absent from restored `member_devices` or `node_incarnations` is disabled/deleted in NetBird (fail-closed).\n  - Under **`D-076` (`#227`, `SECOPS-18`, `db/migrations/00188_device_authorization_fences.sql`, [`docs/members/README.md`](../members/README.md#restored-authorization-does-not-re-grant-d-076))**, for the reverse direction—a device that was `authorized` at `T0` (`member_devices.status = 'authorized'` and `device_authorization_observations.observed_authorized = true`) and withdrawn in NetBird during `T0..T1` with no newer `member.device_revoke` operation or `device.revoke` audit in the restored database—`SyncDevice` fences the device in `device_authorization_fences` (columns `device_id`, `fenced_at`, `observed_group_ids`, joined to `member_devices` for `member_id`, `peer_id`, and `status`), keeps the peer withdrawn (`allow=false`), shows `pending` on `GET /api/v1/member/devices`, records the reason in one `device.authorization.external_withdrawal` audit event on `member_device:<device_id>` (`reason = \"external_withdrawal_unconfirmed\"`) and the worker log line `device authorization unconfirmed during ledger restore` (`device_id`, `member_id`, `peer_id`, `ledger_mode`) while `usage_ledger_state.mode` is `frozen` or `reconciling`, and increments `fvpn_device_restore_fence_decisions_total`. Never delete `device_authorization_fences` in the restore transaction; see step 6.3 after `complete-recovery`.\n  - Any published exit node whose NetBird route or policy drifted is re-converged.\n",
+    "after": "  The worker has separate node, member and discovery jobs; they do not implement a global orphan-peer or published-route/policy drift cleanup:\n  - `node.reconcile` runs on `nodes.json:reconcile_seconds`. It reconciles generation holds, updates fleet job state/attention, and expires bootstrap secrets in the database. Fleet reconciliation does not read or delete NetBird peers.\n  - `members.reconcile` runs on `members.json:device_sync_seconds`, recomputes member entitlements and calls `SyncMember` over the member's existing `member_devices` rows. `SyncDevice` applies the intended authorization and verifies it with peer read-back. Under [D-076](../members/README.md#restored-authorization-does-not-re-grant-d-076), an otherwise eligible authorized device with a previously authorized observation and an unexplained current withdrawal is fenced after confirming that withdrawal. Existing fences keep `allow=false`; fenced devices appear pending until explicit re-authorization. A new fence appends `device.authorization.external_withdrawal` with reason `external_withdrawal`. The warning `device authorization unconfirmed during ledger restore` and `fvpn_device_restore_fence_decisions_total` apply when ledger mode is `frozen` or `reconciling`; fencing itself is not restricted to those modes. Keep the fence through restore and follow step 6.3 after `complete-recovery`.\n  - The separate `devices.discover` sweep skips userless and ephemeral peers. An unknown peer with an eligible verified member identity can enter `ObserveAndAuthorize`; absence from the restored device table does not imply deletion.\n  - **Carried procedure gap:** inventory and revocation of peers authorized after the restore point, including peers absent from restored records. No complete procedure for that inventory/revocation is supplied here; these sweeps must not be treated as proof that every such peer, route or policy has been withdrawn.\n",
+    "evidence": [
+      "apps/worker/jobs_nodes.go:270",
+      "internal/nodes/generation_hold_store.go:100",
+      "internal/fleetupdate/progress.go:310",
+      "internal/enrollment/bootstrap.go:166",
+      "apps/worker/jobs_members.go:152",
+      "apps/worker/jobs_members.go:183",
+      "apps/worker/jobs_members.go:195",
+      "internal/devices/worker.go:73",
+      "internal/devices/worker.go:94",
+      "internal/devices/worker.go:124",
+      "internal/devices/worker.go:260",
+      "internal/devices/fence.go:91",
+      "internal/devices/fence.go:153",
+      "internal/devices/fence.go:176",
+      "internal/devices/netbird_adapter.go:236",
+      "internal/devices/netbird_adapter.go:258",
+      "docs/members/README.md:286"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r4_install_dns_configuration",
+    "before": "Use `fvpn-node-install` for verified release extraction, the `current` symlink, trust files and generated agent/updater configuration; follow [what install changes](../node/install.md#what-install-changes-63) and [Node trust files](../node/install.md#node-trust-files).",
+    "after": "Use `fvpn-node-install` for verified release extraction, the `current` symlink, trust files and generated agent/updater configuration; follow [what install changes](../node/install.md#what-install-changes-63) and [Node trust files](../node/install.md#node-trust-files).\n\nAfter install, add the `dns` object to `/etc/vpn-node/agent.json` using the [node configuration example](../node/README.md#config-example), including `dns.resolvers` and `dns.resolver_credentials_file`. The installer starts services but does not write `dns`; without it, a referenced resolver document fails closed with `not_run` / `DEPENDENCY_UNAVAILABLE`.\n\nProvide the referenced credentials JSON file with one username/password pair for all resolver targets, following the [node credential rules](../node/README.md#configuration): regular file, mode `0600`, uid/gid `0:0`, exactly one hard link, and no symlink. Restart `fvpn-agent.service` after changing the `dns` configuration (`systemctl restart fvpn-agent.service`); `SIGHUP` reloads only the credential file, not `agent.json`.\n\nRead back `dns_policy_evidence` in the admin node detail as described in [operator DNS evidence](operator-guide.md#51-how-threat-feeds-and-resolver-documents-are-published-and-delivered) and the [resolver outcome table](../node/README.md#config-example): for the referenced document, require matching document ID, digest and generation, outcome `applied`, and a passed `dns_policy` check. Missing evidence or successful document delivery alone does not prove apply.\n\n**Installer product gap:** the installer takes no DNS input. A successful re-run, even for the same release, replaces a hand-edited `agent.json` because the fast path requires exact equality with its rendering; the rewritten file drops `dns`. After any such re-run, repeat the configuration, restart and read-back steps above before treating DNS as applied.",
+    "evidence": [
+      "packaging/installer/config.go:217",
+      "packaging/installer/install.go:114",
+      "packaging/installer/install.go:205",
+      "packaging/installer/install.go:259",
+      "packaging/installer/install.go:334",
+      "packaging/installer/constants.go:11",
+      "node/agent/dnsconfig.go:42",
+      "node/agent/dnsconfig.go:203",
+      "docs/node/README.md:313",
+      "docs/node/README.md:351",
+      "docs/node/README.md:355",
+      "docs/handover/operator-guide.md:548",
+      "docs/handover/operator-guide.md:864"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r5_r8_service_log_storage",
+    "before": "| **Service Log Retention (`service_log_days`)** | DB `retention_config.service_log_days` (`00000000-0000-0000-0000-000000000002`) + journald/logrotate | `proposed` | DB `retention_config.service_log_days` defaults to **`7` days** (`CHECK >= 7`, `00003_ledger_and_work.sql`), enforced by `purge_retained('service_logs', ...)`. | `§15.4`, `§16.4` (`建議預設`) | `core team` |",
+    "after": "| **Service Log Retention (`service_log_days`)** | DB `retention_config.service_log_days` (`00000000-0000-0000-0000-000000000002`) | `proposed` | Stored default **`7` days**, with database `CHECK > 0`. No runtime Go or SQL path reads this column to retain or purge service logs. `purge_retained` accepts only `usage_event_payloads`, `audit_events` and `usage_rollups`; `service_logs` is rejected with `22023`. A journald/logrotate retention procedure is absent and carried forward. | `§15.4`, `§16.4` (`建議預設`) | `core team` |",
+    "evidence": [
+      "db/migrations/00003_ledger_and_work.sql:168",
+      "db/migrations/00006_purge_retained_audit_format.sql:14",
+      "docs/db/README.md:421"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r6_grace_bounds",
+    "before": "Integer `≥ 0` seconds (`0` disables grace; e.g., `259200` = 3 days; devstack prepare option accepts `0..31622400` and requires `E2E_RESET=1` or restarting both `fvpn-control` and `fvpn-worker`).",
+    "after": "Integer `0..31622400` seconds; `0` disables grace. A positive value requires nonblank `grace_reason`. Values outside these bounds invalidate `members.json` through [entitlement validation](../../internal/entitlement/engine.go).",
+    "evidence": [
+      "internal/entitlement/engine.go:58",
+      "internal/config/members.go:46",
+      "internal/config/members.go:53"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r6_trial_bounds",
+    "before": "Integer `≥ 0` seconds (`0` disables trials).",
+    "after": "Integer `0..grant_max_seconds` seconds; `0` disables trials. A value above the configured grant maximum invalidates `members.json` through [entitlement validation](../../internal/entitlement/engine.go).",
+    "evidence": [
+      "internal/entitlement/engine.go:58",
+      "internal/config/members.go:46",
+      "internal/config/members.go:53"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r6_grant_bounds",
+    "before": "Integer `> 0` seconds (test fixture: `86400`; e.g., `2592000` = 30 days max per admin grant, `F-05`).",
+    "after": "Integer `1..31622400` seconds (test fixture: `86400`). Values outside these bounds invalidate `members.json` through [entitlement validation](../../internal/entitlement/engine.go).",
+    "evidence": [
+      "internal/entitlement/engine.go:58",
+      "internal/config/members.go:46",
+      "internal/config/members.go:53"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r7_fup_override_restart",
+    "before": "and switch `\"fup_mode\": \"enforce\"`. Under `#222`,",
+    "after": "and switch `\"fup_mode\": \"enforce\"` in `/etc/fvpn/policies.json`. Restart both services with `systemctl restart fvpn-control.service fvpn-worker.service`: they copy this override into their engines at construction, so editing the file does not change a running engine. The override takes precedence over the active revision's mode, although a future `effective_at` still forces shadow mode. **Carried verification gap:** there is no documented read-back procedure confirming the effective mode in both running services after this restart; do not infer it from file contents or policy activation alone. The existing [member/application status checks](../policies/README.md#4-shadow-vs-enforce-rollout-procedure-112-fup02) remain useful but do not establish both loaded overrides. Under `#222`,",
+    "evidence": [
+      "apps/control/wire_policies.go:48",
+      "apps/control/wire_policies.go:85",
+      "apps/worker/jobs_policies.go:98",
+      "apps/worker/jobs_policies.go:111",
+      "internal/fup/engine.go:486",
+      "docs/policies/WIRING.md:53",
+      "docs/policies/README.md:185"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r8_raw_retention_sources",
+    "before": "`config.UsageConfig` bounds: `30..3650` days (example `90`). DB `retention_config.raw_usage_days` defaults to **`35` days** (`CHECK >= 30`, `00003_ledger_and_work.sql`); DB trigger `F-03` (`purge_retained`) enforces `cutoff <= clock_timestamp() - make_interval(days => raw_usage_days)` and refuses to purge months with `gap = TRUE`.",
+    "after": "`usage.json` validates `raw_usage_retention_days` as `30..3650` days (example `90`). DB `retention_config.raw_usage_days` defaults to **`35` days** and checks only `> 0`. Nothing copies the JSON setting into the database. Scheduled payload purge derives its cutoff from the JSON value, while `purge_retained` rejects a cutoff newer than the DB minimum age: `30` against default `35` therefore fails every scheduled purge with `cutoff violates retention policy`. Eligible payloads also need complete clean projection coverage. Coordinating these independent settings is carried procedure work; see the [retention contract](../db/README.md#roles-grants-and-retention).",
+    "evidence": [
+      "db/migrations/00003_ledger_and_work.sql:166",
+      "db/migrations/00006_purge_retained_audit_format.sql:12",
+      "db/migrations/00006_purge_retained_audit_format.sql:20",
+      "internal/config/usage.go:93",
+      "apps/worker/jobs_usage.go:141",
+      "internal/usage/projection.go:601",
+      "docs/db/README.md:466"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r8_rollup_retention_sources",
+    "before": "`config.UsageConfig` bounds: `12..120` months (example `24`). DB `retention_config.rollup_months` defaults to **`13` months** (`CHECK >= 12`, `00003_ledger_and_work.sql`).",
+    "after": "`usage.json` validates `rollup_retention_months` as `12..120` months (example `24`). DB `retention_config.rollup_months` defaults to **`13` months** and checks only `> 0`; no runtime code copies the JSON value there. `purge_retained` supports `usage_rollups` using the DB minimum age, but no runtime Go, shell or unit calls it for this target. Operator scheduling is a carried gap; the [retention contract](../db/README.md#roles-grants-and-retention) gives the function boundary, not a scheduler.",
+    "evidence": [
+      "db/migrations/00003_ledger_and_work.sql:166",
+      "db/migrations/00006_purge_retained_audit_format.sql:12",
+      "db/migrations/00006_purge_retained_audit_format.sql:20",
+      "internal/config/usage.go:93",
+      "apps/worker/jobs_usage.go:141",
+      "internal/usage/projection.go:601",
+      "docs/db/README.md:466"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r8_audit_retention_sources",
+    "before": "`config.UsageConfig` bounds: `180..3650` days (example `365`). DB `retention_config.audit_days` defaults to **`180` days** (`CHECK >= 90`, `00003_ledger_and_work.sql`), enforced by `purge_retained('audit_events', ...)`.",
+    "after": "`usage.json` validates `audit_retention_days` as `180..3650` days (example `365`). DB `retention_config.audit_days` defaults to **`180` days** and checks only `> 0`; no runtime code copies the JSON value there. `purge_retained` supports `audit_events` using the DB minimum age, but no runtime Go, shell or unit calls it for this target. Operator scheduling is a carried gap; see the [retention contract](../db/README.md#roles-grants-and-retention).",
+    "evidence": [
+      "db/migrations/00003_ledger_and_work.sql:166",
+      "db/migrations/00006_purge_retained_audit_format.sql:12",
+      "db/migrations/00006_purge_retained_audit_format.sql:20",
+      "internal/config/usage.go:93",
+      "apps/worker/jobs_usage.go:141",
+      "internal/usage/projection.go:601",
+      "docs/db/README.md:466"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "r9_shadow_rate_caps",
+    "before": "while compiling full unthrottled rates into node desired state",
+    "after": "while omitting only the fair-use tier cap from node desired state (the plan rate and node per-member rate cap still apply)",
+    "evidence": [
+      "internal/desiredstate/compiler.go:480",
+      "internal/desiredstate/compiler.go:497"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r10_token_file_path",
+    "before": "3. Zero-overwrites, syncs, and unlinks `/run/vpn-node/enrollment.token` (`agent.NeutralizeToken`).",
+    "after": "3. Zero-overwrites, syncs, and unlinks the token file passed to the agent (`agent.NeutralizeToken`): either the operator's `--token-file` path, or the installer's mode-`0600` `.enroll-token-*` file under the system temporary directory when it prompts. There is no fixed enrollment-token path.",
+    "evidence": [
+      "packaging/installer/install.go:44",
+      "packaging/installer/token.go:108",
+      "node/agent/cmd/fvpn-agent/main.go:78"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "r11_backup_account_boundary",
+    "before": "| `fvpn_backup` | `pg_dump` / `pgBackRest` | Read-only physical/logical backup role. |",
+    "after": "| `fvpn_backup` | `pg_dump` / read-only verification | Logical read-only role (`pg_read_all_data`). Physical pgBackRest uses the local `postgres` OS/cluster account over the Unix socket; see [backup roles](../ops/backups.md#23-least-privilege-database-roles-docshandoverdeploymd-32-docsdbreadmemd). |",
+    "evidence": [
+      "docs/ops/backups.md:48",
+      "deploy/backup/pgbackrest.conf.example:60",
+      "docs/handover/deploy.md:204"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "r11_logical_backup_role",
+    "before": "- `fvpn_backup`: Read/replication role for backup verification and logical exports (`GRANT pg_read_all_data TO fvpn_backup`); holds no mutation privileges on application tables.",
+    "after": "- `fvpn_backup`: Logical read-only role for backup verification and `pg_dump` exports (`GRANT pg_read_all_data TO fvpn_backup`); holds no mutation privileges on application tables and is not the physical backup account.",
+    "evidence": [
+      "docs/handover/deploy.md:156",
+      "docs/handover/deploy.md:204",
+      "deploy/backup/pgbackrest.conf.example:60"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "x1_node_archive_window",
+    "before": "| **Node Local ACKed Usage Archive Retention** | `node/internal/usagestore` (`DefaultACKedRetention`) | `proposed` | Spec recommended default: **`30` days** (`§10.5`). Unacknowledged events are retained until ACKed or local disk budget (`256 MiB`) triggers fail-closed forwarding block. | `§10.5`, `§17.2` (`建議預設`: `30` days) | `core team` |",
+    "after": "| **Node Local ACKed Usage Archive Retention** | `node/internal/usagestore` (`DefaultArchiveRetain`; no node configuration override) | `proposed` | ACKed payloads stay at least **`72 hours` after local ACK**; the default is `72 * time.Hour`, not 30 days. The unacknowledged outbox stops new member forwarding at oldest-event age `72 hours` or `256000000` payload bytes (decimal 256 MB), whichever comes first; it keeps and resends unacknowledged events. The archive has a separate **`1000000000` byte** engineering budget, not a spec-prescribed number; reaching it also blocks forwarding rather than deleting protected payloads. Effective restore RPO `0` requires the restore point to lie within the available node archive window. A shorter window requires revised parameters, recovery documents and risk notes; see [usage storage](../node/usage-store.md#caps). | `§10.8`, `§17.2` (`建議預設`: 72-hour outbox; archive at least 72 hours) | `core team` |",
+    "evidence": [
+      "node/internal/usagestore/types.go:154",
+      "node/internal/usagestore/store.go:36",
+      "node/internal/usagestore/store.go:114",
+      "node/internal/usagestore/ack.go:360",
+      "docs/node/usage-store.md:37",
+      "docs/node/usage-store.md:45",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:585",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:594"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "x1_restore_archive_rpo",
+    "before": "| **Usage Ledger (`usage_events`, `usage_checkpoints`, `usage_rollups`)** | **Effective RPO `0`** (within node 30-day archive)<br>`≤ 15 minutes` (if node archive also lost) | `≤ 4 hours` (service target; unmeasured here) (ingest resumes; reconciliation runs asynchronously) | Nodes retain ACKed events for `30 days` (`§10.5`). Rotating `ledger_epoch` forces nodes to verify a signed checkpoint and replay post-snapshot events without double-counting (`AT30`). |",
+    "after": "| **Usage Ledger (`usage_events`, `usage_checkpoints`, `usage_rollups`)** | **Effective RPO `0` only within the available node archive window**; outside it, replay can be unavailable | `≤ 4 hours` (service target; unmeasured here) (ingest resumes; reconciliation runs asynchronously) | Nodes retain ACKed payloads at least `72 hours` after local ACK (`DefaultArchiveRetain`); no node configuration sets a longer window. The unacknowledged outbox blocks new member forwarding at `72 hours` oldest-event age or decimal `256 MB` payload, keeps those events and resends; the archive has a separate `1000000000`-byte engineering budget. A verified new `ledger_epoch` permits replay of retained post-snapshot events without double-counting. Shortening the window requires updated parameters, recovery documents and risk notes ([usage storage](../node/usage-store.md#ack), `§10.8`). |",
+    "evidence": [
+      "node/internal/usagestore/types.go:154",
+      "node/internal/usagestore/store.go:36",
+      "node/internal/usagestore/store.go:114",
+      "node/internal/usagestore/ack.go:360",
+      "docs/node/usage-store.md:37",
+      "docs/node/usage-store.md:45",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:585",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:594"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "x1_backup_archive_rpo",
+    "before": "| **Usage Ledger Effective RPO** | **`0` bytes lost / `0` double-counted** (within node retention window) | Exit nodes retain acknowledged usage events in a dedicated SQLite archive (`>= 72 hours` spec minimum, `30 days` default) and replay after `ledger_epoch` rotation (`§10.5`, `§16.4`, `§17.3`, `AT30`). |",
+    "after": "| **Usage Ledger Effective RPO** | **`0` bytes lost / `0` double-counted only when the restore point is inside the available node archive window** | Exit nodes keep ACKed payloads at least `72 hours` after local ACK (`DefaultArchiveRetain = 72 * time.Hour`; no node configuration override). Unacknowledged payloads are retained and resent, with new member forwarding blocked at oldest-event age `72 hours` or decimal `256 MB`, whichever comes first. The replay archive has its own `1000000000`-byte engineering budget, not a spec number. Outside the retained window, replay can be unavailable; shortening it requires updated parameters, recovery documents and risk notes ([usage storage](../node/usage-store.md#ack), `§10.8`, `§17.3`, `AT30`). |",
+    "evidence": [
+      "node/internal/usagestore/types.go:154",
+      "node/internal/usagestore/store.go:36",
+      "node/internal/usagestore/store.go:114",
+      "node/internal/usagestore/ack.go:360",
+      "docs/node/usage-store.md:37",
+      "docs/node/usage-store.md:45",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:585",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:594"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "x2_updater_attempt_bounds",
+    "before": "| **Node Update Health Attestation & Rollback Timings (`HealthAttestWait`, `HealthChallengeTTL`, `CheckAttempts`, `RollbackAttempts`)** | `node/updater` (`docs/updates/node-health-attestation.md`, `docs/updates/node-updater.md`) | `proposed` | `HealthAttestWait = 30s` (`HealthAttestPoll = 250ms`), `HealthChallengeTTL = 45s` (`health-challenge.json` / `health-attest.json` in `journal_dir`), `CheckAttempts = 8` (`CheckInterval = 2s`), `RollbackAttempts = 3` (`RollbackInterval = 1s`). | `§13.9`, `D-053` (`建議預設`) | `core team` |",
+    "after": "| **Node Update Health Attestation & Transaction Attempt Bounds (`HealthAttestWait`, `HealthChallengeTTL`, `maxCheckAttempts`, `maxRollbackAttempts`)** | `node/updater` ([health attestation](../updates/node-health-attestation.md), [updater](../updates/node-updater.md)) | Code constants; timing needs measurement | `HealthAttestWait = 30s`, `HealthAttestPoll = 250ms` and `HealthChallengeTTL = 45s` are code constants that a configuration file cannot change. Unexported `maxCheckAttempts = 8` and `maxRollbackAttempts = 3` bound persistent per-transaction entries into the check and rollback steps. There is no check or rollback interval. A failed health result begins rollback immediately; these counters are not periodic retry schedules. | `§13.9`, `D-053` | `core team` |",
+    "evidence": [
+      "node/updater/health.go:17",
+      "node/updater/apply.go:222",
+      "node/updater/apply.go:248",
+      "node/updater/apply.go:266",
+      "node/updater/attest.go:16"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "x3_shared_resolver_credentials",
+    "before": "High-entropy random password per resolver, stored in `/etc/fvpn/secrets/adguard.password` (`0600`) and hashed with bcrypt in `AdGuardHome.yaml`",
+    "after": "One high-entropy username/password pair shared by every resolver target of an exit, supplied through `dns.resolver_credentials_file` under the [node credential rules](../node/README.md#configuration). The agent copies that same pair to every target; resolvers requiring different pairs cannot all authenticate. Per-target credentials are an unimplemented product gap.",
+    "evidence": [
+      "node/agent/dnsconfig.go:208",
+      "node/agent/dnsconfig.go:214",
+      "docs/node/README.md:314"
+    ]
+  },
+  {
+    "path": "docs/DELIVERY.en.md",
+    "name": "delivery_review_corrections_en",
+    "before": "[Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration and restore-drill statements at `66de6a24`: staging vault initialization and inspection, installer-based node setup, API/configuration names and bounds, release contents, and separate migration/recovery credentials. It links existing procedures and carries missing procedures forward without claiming new deployment or acceptance evidence.",
+    "after": "[Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration, restore-drill and backup statements at `66de6a24`: staging vault initialization, inspection and service write access; broad staging grant limits; installer DNS configuration, shared resolver credentials and restart/read-back; API/configuration names and bounds; release contents and updater attempt limits; separate migration/recovery credentials and logical/physical backup accounts; actual retention/replay windows and purge gaps; FUP restart and remaining rate caps; and restore reconciliation limits. It also repairs stale guide links. Missing production procedures and product support remain carried work; no new deployment or acceptance evidence is claimed.",
+    "evidence": [
+      "docs/handover/follow-up-51.md:23"
+    ]
+  },
+  {
+    "path": "docs/DELIVERY.md",
+    "name": "delivery_review_corrections_zh",
+    "before": "[Follow-up 51](handover/follow-up-51.md) 修正 `66de6a24` 的部署、參數校準與還原演練說明：測試部署的金鑰庫初始化與檢查、使用安裝程式設定節點、API／設定名稱與界限、發行內容，以及分離的遷移／復原憑證。它連結既有程序，並將缺少的程序列為後續工作；不宣稱新增部署或驗收證據。",
+    "after": "[Follow-up 51](handover/follow-up-51.md) 修正 `66de6a24` 的部署、參數校準、還原演練與備份說明：測試部署金鑰庫的初始化、檢查與服務寫入權限；寬鬆測試授權的限制；安裝後 DNS 設定、共用解析器憑證及重啟／讀回；API／設定名稱與界限；發行內容與更新程式嘗試次數上限；分離的遷移／復原憑證及邏輯／實體備份帳號；實際保留／重播窗口與清理缺口；FUP 重啟與仍適用的速率上限；以及還原後對帳的限制。另修正過時的指南連結。缺少的正式環境程序與產品支援仍列為後續工作；不宣稱新增部署或驗收證據。",
+    "evidence": [
+      "docs/handover/follow-up-51.md:23"
+    ]
   }
 ]

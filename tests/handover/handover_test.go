@@ -19264,7 +19264,7 @@ func followup51PriorPath(path string) string {
 // Follow-up 50 keeps its original assertions against exact pre-cut inputs.
 func followup51InputPath(path string) string {
 	switch path {
-	case "README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md", "docs/handover/calibration.md":
+	case "README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md", "docs/handover/calibration.md", "docs/ops/backups.md":
 		return followup51PriorPath(path)
 	default:
 		return path
@@ -19288,10 +19288,10 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-51.md", "0da339651a51a0c89353cfe2f463260b42f91fa3fcf20365d0f28e6ec6721365", 9062},
+		{"docs/handover/follow-up-51.md", "34dffbf8dd0afe6e09c8d7a8796afbeee97dad57ee295e0b29902fce8b5cd7bc", 13009},
 		{"tests/handover/testdata/followup51-main.json", "cef31af65dfb8ec3c2606633069445439eadb44a3fd6941475afda82a9c5e6bf", 1376},
-		{"tests/handover/testdata/followup51-snapshots.json", "96ba3d630a14b9d8d462662de1dfe6574691dd8335481b1d6fd83fa65f023efb", 4062},
-		{"tests/handover/testdata/followup51-edits.json", "c55a5cfe23802d5fd0674747b000046e55e713f01cf086a2b58c863d8d08267a", 50482},
+		{"tests/handover/testdata/followup51-snapshots.json", "31ccb5df8935715e92f7f7db713f84e31dbbc0c0f5447bfd0e585b7e67f6fb19", 4368},
+		{"tests/handover/testdata/followup51-edits.json", "ec62a8f0a434f6276782c5d4a4280b2e453c1fbb9eeef189b4c3c6cc8a57d1fd", 94199},
 		{"tests/handover/testdata/followup51-prior-assertions.json", "1603b1a94788a1df20b05d4d47947bc510ff809cc202b412ea8d840e7e1ecd49", 1235},
 		{"tests/handover/testdata/followup51-historical.json", "b86c063a967e05106313dc6f542807da5afcc25283b8d406cd469c8b14d02c9b", 6157},
 	} {
@@ -19339,7 +19339,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		}
 		t.Logf("Recorded %d merged pull requests", len(rows))
 	})
-	paths := []string{"README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md", "docs/handover/calibration.md"}
+	paths := []string{"README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md", "docs/handover/calibration.md", "docs/ops/backups.md"}
 	var snapshots []struct {
 		Source, Snapshot, SHA256 string
 		SourceCommit             string `json:"source_commit"`
@@ -19367,7 +19367,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup51-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 64 {
+		if len(edits) != 102 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
@@ -19391,7 +19391,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 				want = strings.Replace(want, e.Before, e.After, 1)
 			}
 			wantCuts := 1
-			if path == "docs/handover/calibration.md" {
+			if path == "docs/handover/calibration.md" || path == "docs/ops/backups.md" {
 				wantCuts = 0
 			}
 			if cutEdits != wantCuts || readOwnedDoc(t, root, path) != want {
@@ -19404,12 +19404,25 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		t.Logf("Verified %d exact permitted edits across %d documents", used, len(paths))
 	})
 	t.Run("current_instructions_and_preserved_headings", func(t *testing.T) {
-		for _, e := range edits {
+		for i, e := range edits {
 			live := readOwnedDoc(t, root, e.Path)
-			if !strings.Contains(live, e.After) {
+			// Later named edits may refine an earlier replacement. Check the
+			// resulting instruction, keeping the full ordered-byte check above.
+			current := e.After
+			for _, later := range edits[i+1:] {
+				if later.Path != e.Path {
+					continue
+				}
+				if strings.Contains(current, later.Before) {
+					current = strings.ReplaceAll(current, later.Before, later.After)
+				} else if strings.Contains(later.Before, current) {
+					current = later.After
+				}
+			}
+			if !strings.Contains(live, current) {
 				t.Errorf("current instruction missing: %s/%s", e.Path, e.Name)
 			}
-			if !strings.Contains(e.After, e.Before) && strings.Contains(live, e.Before) {
+			if !strings.Contains(current, e.Before) && strings.Contains(live, e.Before) {
 				t.Errorf("old instruction remains: %s/%s", e.Path, e.Name)
 			}
 		}
@@ -19489,7 +19502,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		}
 		checkLinks(t, sources)
 	})
-	t.Run("all_thirteen_live_sources_links", func(t *testing.T) {
+	t.Run("all_fourteen_live_sources_links", func(t *testing.T) {
 		var sources []struct{ doc, text string }
 		for _, path := range paths {
 			sources = append(sources, struct{ doc, text string }{path, readOwnedDoc(t, root, path)})

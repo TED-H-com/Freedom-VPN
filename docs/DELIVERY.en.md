@@ -40,7 +40,7 @@ mean every platform and failure scenario has passed acceptance.
 
 ## Handover guide revisions
 
-[Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration and restore-drill statements at `66de6a24`: staging vault initialization and inspection, installer-based node setup, API/configuration names and bounds, release contents, and separate migration/recovery credentials. It links existing procedures and carries missing procedures forward without claiming new deployment or acceptance evidence.
+[Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration, restore-drill and backup statements at `66de6a24`: staging vault initialization, inspection and service write access; broad staging grant limits; installer DNS configuration, shared resolver credentials and restart/read-back; API/configuration names and bounds; release contents and updater attempt limits; separate migration/recovery credentials and logical/physical backup accounts; actual retention/replay windows and purge gaps; FUP restart and remaining rate caps; and restore reconciliation limits. It also repairs stale guide links. Missing production procedures and product support remain carried work; no new deployment or acceptance evidence is claimed.
 
 [Follow-up 50](handover/follow-up-50.md) retains the earlier revisions to operator key inspection (§1.2), central rotation/revocation (§8.1), release trust updates (§8.2), and member shadow mode (§5.3, both languages).
 

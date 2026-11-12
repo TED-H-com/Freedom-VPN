@@ -896,7 +896,7 @@ ORDER BY r.last_attempt_at DESC NULLS LAST;
 
 ## 6. Freezing, Recovering, and Adjusting the Usage Ledger (`§10.8`, `§10.9`, `§17.3`)
 
-The `fvpn-usage-admin` CLI operates directly against PostgreSQL and the central signing vault (`/var/lib/fvpn/vault`) and records an append-only `audit_events` row for every mutation.
+The `fvpn-usage-admin` CLI operates directly against PostgreSQL and the central signing vault (`/var/lib/fvpn/staging-authority/vault`) and records an append-only `audit_events` row for every mutation.
 
 ### 6.1 Freezing and Recovering the Usage Ledger (`freeze`, `begin-recovery`, `complete-recovery`)
 

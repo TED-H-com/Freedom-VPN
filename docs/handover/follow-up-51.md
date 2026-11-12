@@ -58,9 +58,30 @@ describes the existing prerequisites.
 Eight stale link fragments are corrected: the two historical restore
 measurements, identity continuity, control rate limiters, the fleet offline
 lease ceiling, the operator changes section, and the findings register
-links from operations and reviews. All relative links in the 13 live cut
+links from operations and reviews. All relative links in the 14 live cut
 sources are checked against their paths and heading anchors; frozen copies
 and dated documents retain their bytes.
+
+The deployment review adds the following corrections, including the current
+[backup guide](../ops/backups.md) as the fourteenth source. These describe the
+implementation at the cutoff; they do not add a deployment or restore result.
+
+| Finding | Correction and boundary |
+|---|---|
+| R1 | Live authority paths follow the staging ceremony. Control can write the vault directory for revocation-state replacement; worker can open its existing lock file read/write. Initialization precedes service startup. |
+| R2 | The executable grants are labeled broad staging grants: runtime roles receive recovery-only writes beyond the intended privilege contract. A complete tested production grant set remains absent. |
+| R3 | Node reconciliation handles generation holds, fleet job state and bootstrap expiry; member sync walks existing devices, while discovery may admit eligible unknown member peers. There is no automatic global orphan-peer deletion guarantee. The D-076 fence explanation follows its actual conditions and audit reason. |
+| R4 | Installer output has no DNS configuration. Add the documented DNS object and credential file after install, restart the agent and inspect node-reported resolver evidence. A successful installer re-run rewrites the file and drops the added DNS object. |
+| R5 | The service-log retention column is stored without a log-retention implementation; `service_logs` is not an accepted purge target. |
+| R6 | Grace and grant durations are bounded by 366 days; positive grace needs a reason, and trial duration cannot exceed the configured grant maximum. |
+| R7 | Changing the FUP mode override requires restarting control and worker. A read-back procedure confirming both loaded effective modes is still missing. |
+| R8 | Database retention columns check positivity; the stricter JSON bounds do not populate those columns. A 30-day payload cutoff conflicts with the 35-day database default. Rollup and audit purge scheduling remains absent. |
+| R9 | Shadow mode removes only the fair-use tier cap; plan and node per-member caps remain. |
+| R10 | Token neutralization acts on the supplied file or prompted temporary file, with no fixed path. |
+| R11 | The read-only logical backup role is distinct from the local `postgres` account used by physical pgBackRest backups. |
+| X1 | ACKed payloads stay at least 72 hours after local ACK, not a 30-day default. The unacknowledged limits are 72 hours or 256 decimal MB; the archive has its own 1,000,000,000-byte engineering budget. Zero effective usage RPO depends on the retained replay window. |
+| X2 | Updater check/rollback constants bound transaction-step entries, not periodic retry intervals. Failed health begins rollback immediately; attestation timing constants cannot be changed by configuration. |
+| X3 | One credential pair serves every resolver target of an exit. Per-target credentials remain unimplemented. |
 
 The [Chinese](../DELIVERY.md#交接指南修訂) and
 [English](../DELIVERY.en.md#handover-guide-revisions) delivery guides retain
@@ -68,9 +89,9 @@ follow-up 50's revisions and record this cut's changes. All existing headings
 in the three revised documents remain unchanged. The
 [pre-cut provenance](../../tests/handover/testdata/followup51-snapshots.json) and
 [edit manifest](../../tests/handover/testdata/followup51-edits.json) preserve
-13 exact copies from the cutoff and permit exactly 64 replacements: 12 cut-line
-edits, 42 runbook/calibration/restore corrections and existing-procedure pointers,
-eight link-fragment fixes, and two delivery-guide revision sections. Every other
+14 exact copies from the cutoff and permit exactly 102 replacements: 12 cut-line
+edits, 78 guide corrections and existing-procedure pointers,
+eight link-fragment fixes, and four delivery-guide revision edits. Every other
 byte must match. Older claims retain their assertions; follow-up 50 reads these
 pre-cut copies.
 
@@ -110,6 +131,15 @@ The remaining missing steps and logical restore validation are carried forward:
 - Deployment §8.1: creation of the SBOM, notices and source evidence files before publication.
 - Deployment §9.1: real interface/address/route provisioning; the installer creates dummy links without addresses or routes.
 - Restore drill §2.1: validated logical-dump, target-schema and dependency-order selection for the retained example; the database restore contract gives prerequisites, but this logical path remains unverified.
+- Deployment §§3.2–3.3: a complete tested grant set conforming to the database privilege contract; the broad staging block is not production least privilege.
+- Restore drill §5.2: inventory and revocation of peers authorized after the restore point, including peers absent from restored records.
+- Deployment §9.1: installer DNS inputs and preservation of DNS configuration across re-runs; the current installer takes no such input and rewrites the file.
+- Calibration §1.6: journald or logrotate retention setup; the stored service-log period has no implementation.
+- Calibration §2.2: read-back confirming the effective FUP mode in both restarted services.
+- Calibration §1.6: coordination of `usage.json` retention values with the independent database policy; no automatic synchronization exists.
+- Calibration §1.6: scheduling authorized audit-event retention purges.
+- Calibration §1.6: scheduling authorized usage-rollup retention purges.
+- Deployment §§2/9.1: per-target resolver credentials; one pair currently serves all resolver targets of an exit.
 
 These are documentation and implementation gaps, not new acceptance results.
 The [delivery guide's verification limits](../DELIVERY.en.md#verification-scope-and-known-limits)

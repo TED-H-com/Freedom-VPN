@@ -11,9 +11,9 @@ This runbook specifies the production and lab backup architecture, continuous WA
 | **Database Engine** | PostgreSQL 17 (`postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f`) | Drop-in image built from [`deploy/backup/postgres/Dockerfile`](../../deploy/backup/postgres/Dockerfile) (`§3.1`, `§15.4`). |
 | **Backup Engine** | **pgBackRest `2.60.0`** (`2.60.0-1.pgdg13+1`) | Physical full + differential base backups and continuous WAL archiving (`§17.2`). Logical `pg_dump` is an auxiliary export only, never the primary recovery path. |
 | **Central Database RPO Target** | **`<= 15 minutes`** (`900s`) | Requires healthy archiving and measured repository WAL age; configured with `archive_mode = on` and `archive_timeout = 300s` (`§16.5`, `§17.2`). |
-| **Usage Ledger Effective RPO** | **`0` bytes lost / `0` double-counted** (within node retention window) | Exit nodes retain acknowledged usage events in a dedicated SQLite archive (`>= 72 hours` spec minimum, `30 days` default) and replay after `ledger_epoch` rotation (`§10.5`, `§16.4`, `§17.3`, `AT30`). |
+| **Usage Ledger Effective RPO** | **`0` bytes lost / `0` double-counted only when the restore point is inside the available node archive window** | Exit nodes keep ACKed payloads at least `72 hours` after local ACK (`DefaultArchiveRetain = 72 * time.Hour`; no node configuration override). Unacknowledged payloads are retained and resent, with new member forwarding blocked at oldest-event age `72 hours` or decimal `256 MB`, whichever comes first. The replay archive has its own `1000000000`-byte engineering budget, not a spec number. Outside the retained window, replay can be unavailable; shortening it requires updated parameters, recovery documents and risk notes ([usage storage](../node/usage-store.md#ack), `§10.8`, `§17.3`, `AT30`). |
 | **Central Service RTO Target** | **`<= 4 hours`** (`§16.5`/`§17.2`; unmeasured by this local drill) | Covers physical DB/WAL restore, migration check, checklist inspection, ledger freeze/epoch rotation, replay, and provider/NetBird reconciliation. |
-| **Signing Vault (`/var/lib/fvpn/vault`) RPO** | **`0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). |
+| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) RPO** | **`0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). |
 
 ---
 
@@ -45,7 +45,7 @@ Production installs Profile A from `deploy/backup/pgbackrest.conf.example` as `/
 
 ### 2.3 Least-Privilege Database Roles (`docs/handover/deploy.md §3.2`, `docs/db/README.md`)
 
-- `fvpn_backup`: Read/replication role for backup verification and logical exports (`GRANT pg_read_all_data TO fvpn_backup`); holds no mutation privileges on application tables. Physical pgBackRest backups run as the local `postgres` OS/cluster account over the Unix domain socket (`/var/run/postgresql`).
+- `fvpn_backup`: Logical read-only role for backup verification and `pg_dump` exports (`GRANT pg_read_all_data TO fvpn_backup`); holds no mutation privileges on application tables and is not the physical backup account. Physical pgBackRest backups run as the local `postgres` OS/cluster account over the Unix domain socket (`/var/run/postgresql`).
 - `fvpn_migrator`: Schema owner used exclusively by `fvpn-migrate up` and `fvpn-migrate status`.
 - `fvpn_recovery`: Controlled recovery role used by `fvpn-usage-admin` (`internal/usage/cmd/fvpn-usage-admin`) to freeze usage ingestion, rotate `ledger_epoch` (`usage_recovery_records`, `usage_ledger_epochs`, `usage_checkpoints`), and complete recovery (`§17.3`).
 
@@ -93,9 +93,9 @@ The host needs Python 3, pgBackRest 2.60.0, PostgreSQL client tools, Docker, the
 1. **Repository Encryption at Rest**:
    All pgBackRest base backups and WAL archives are encrypted client-side using `repo1-cipher-type=aes-256-cbc` before leaving the database host.
 2. **Repository Key Separation**:
-   The pgBackRest encryption passphrase (`PGBACKREST_REPO1_CIPHER_PASS`) and object-store credentials (`PGBACKREST_REPO1_S3_KEY`, `PGBACKREST_REPO1_S3_KEY_SECRET`) are stored in `/etc/fvpn/secrets/pgbackrest-repo.env` (owned by `root:postgres`, mode `0600`), **outside PostgreSQL** and **outside the central signing vault (`/var/lib/fvpn/vault`)**. Escrowed recovery copies of `pgbackrest-repo.env` are kept in the operator hardware/offline secret store separate from the S3 bucket.
+   The pgBackRest encryption passphrase (`PGBACKREST_REPO1_CIPHER_PASS`) and object-store credentials (`PGBACKREST_REPO1_S3_KEY`, `PGBACKREST_REPO1_S3_KEY_SECRET`) are stored in `/etc/fvpn/secrets/pgbackrest-repo.env` (owned by `root:postgres`, mode `0600`), **outside PostgreSQL** and **outside the central signing vault (`/var/lib/fvpn/staging-authority/vault`)**. Escrowed recovery copies of `pgbackrest-repo.env` are kept in the operator hardware/offline secret store separate from the S3 bucket.
 3. **Central Signing Vault Never Inside Database Backups (`§16.2`, `§17.2`)**:
-   The central signing vault (`/var/lib/fvpn/vault`) holds the active and historical keys and revocation state (`state.json`) for `node-ca`, `bootstrap-secret`, `desired-state`, `lease`, `recovery`, and `ledger-epoch`. It is **never** stored in PostgreSQL or backed up inside pgBackRest snapshots. Consequently, restoring PostgreSQL to an earlier timestamp never rolls back a key rotation or un-revokes a compromised signing key (`§16.2`).
+   The central signing vault (`/var/lib/fvpn/staging-authority/vault`) holds the active and historical keys and revocation state (`state.json`) for `node-ca`, `bootstrap-secret`, `desired-state`, `lease`, `recovery`, and `ledger-epoch`. It is **never** stored in PostgreSQL or backed up inside pgBackRest snapshots. Consequently, restoring PostgreSQL to an earlier timestamp never rolls back a key rotation or un-revokes a compromised signing key (`§16.2`).
 
 ---
 
@@ -202,7 +202,7 @@ Execute the following steps **strictly in order** after restoring PostgreSQL to 
    systemctl stop fvpn-control.service fvpn-worker.service
    ```
    *(Exit nodes continue forwarding traffic for authorized members within their valid serving leases and buffer usage events in local SQLite, `§16.3`, `§17.1`.)*
-2. Verify that `/var/lib/fvpn/vault/state.json` and all key files in `/var/lib/fvpn/vault` are intact and untouched by the database restore (`§16.2`).
+2. Verify that `/var/lib/fvpn/staging-authority/vault/state.json` and all key files in `/var/lib/fvpn/staging-authority/vault` are intact and untouched by the database restore (`§16.2`).
 
 ### Step 2: Execute Physical PITR Restore (`restore-pitr.sh`)
 
