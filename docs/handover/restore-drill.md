@@ -216,8 +216,6 @@ Execute every step in order during a real disaster recovery event or scheduled q
 
 ### Phase 1: Isolate Central Services and Preserve Out-of-Band State
 
-Carried gap: production custody and independent anti-rollback remain unimplemented by FileProvider. Preserve independent authority evidence; the staging inspection below cannot prove whole-directory non-rollback.
-
 - [ ] **1.1 Stop `fvpn-control` and `fvpn-worker`** so no new mutations, outbox jobs, or usage ACKs occur against the damaged database `[production only]`:
   ```bash
   systemctl stop fvpn-control.service fvpn-worker.service
@@ -225,15 +223,17 @@ Carried gap: production custody and independent anti-rollback remain unimplement
   *(Note: Exit nodes continue forwarding traffic for existing members while their serving leases and member service deadlines remain valid (`86,400s` default max offline lease, `§16.3`), and buffer new usage events in local SQLite (`§10.5`, `§10.8`).)*
 
 - [ ] **1.2 Verify `/var/lib/fvpn/staging-authority/vault` Integrity (`§16.2`, `§17.2`)**:
+  Carried gap: production custody and independent anti-rollback remain unimplemented by FileProvider. Preserve independent authority evidence; the staging inspection below cannot prove whole-directory non-rollback.
+
   Preserve the current authority outside the PostgreSQL restore. For a staging FileProvider, run `fvpn-vault inspect -vault /var/lib/fvpn/staging-authority/vault -check-keys` against the actual configured vault path and review the [key-use inspection](../pki/inspect.md#key-use-inspection) results. This checks current active central keys locally; it cannot prove that the whole directory was not rolled back. Preserve newer revocations and rotations using independent evidence and follow [rotation and restore](../pki/rotation.md); production custody and anti-rollback are not implemented by FileProvider.
 
 ### Phase 2: Restore PostgreSQL 17 and Freeze Usage Ingestion
 
-Carried gap: native PITR below requires the PostgreSQL/restore repository environment described in [backup §6.2](../ops/backups.md#62-restoring-into-a-clean-host-data-directory-production-host-replacement); a production delivery procedure for that environment is absent.
-
 D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T0, then run freeze-ingest and verify success **before services start on the restored database**. Starting the worker before freezing leaves the original race open; see §2.6.
 
 - [ ] **2.1 Restore PostgreSQL 17 to the Target Point in Time (`restored_to`)**:
+  Carried gap: native PITR below requires the PostgreSQL/restore repository environment described in [backup §6.2](../ops/backups.md#62-restoring-into-a-clean-host-data-directory-production-host-replacement); a production delivery procedure for that environment is absent.
+
   - **Physical PITR (`pgBackRest`, recommended)** `[production only]`:
     ```bash
     # Run as the backup OS account with the documented repository environment.
@@ -294,6 +294,8 @@ D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T
   3. `signed_record` carries a valid `ed25519` signature from the central `ledger-epoch` key.
 
 - [ ] **3.2 Start `fvpn-control` alone; keep `fvpn-worker` stopped** `[production only]`:
+    Carried gap: restricted recovery startup is not implemented. Control alone still serves agent requests and may issue leases from restored authorization while newer intent is being re-applied; stopping the worker is not a global forwarding fence, and D-076 requires an earlier authorized observation plus a current withdrawal. The repository has no startup mode that completes usage replay, entitlement computation and policy synchronization before enabling the automatic worker as spec §17.4 step 5 requires. The order here reduces exposure but does not establish that fail-closed recovery boundary.
+
   ```bash
   systemctl start fvpn-control.service
   curl -fsS https://vpn.example.com:8443/readyz
@@ -342,6 +344,8 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
   ```
   For each returned ID, an authenticated administrator can retrieve details with `GET /api/v1/admin/operations/{operation_id}` (`operationId: getAdminOperation`). The contract has no operations-list endpoint. A `202` response to a mutation records acceptance; verify the operation's terminal result and observed state before declaring recovery complete.
 - [ ] **5.3 Verify AdGuard Home DNS Policy Convergence (`dns.publish`)**:
+  Carried gap: production AdGuard bootstrap and listener wiring remain prerequisites for the resolver convergence checked here; [deployment §4.3](deploy.md#43-adguard-home-resolvers-v010759-12-docsdnsbackendmd-docsdnsprivacymd) carries the missing procedure.
+
   Inspect published heads and their immutable resolver documents; confirm applied state separately by resolver read-back:
   ```sql
   SELECT h.definition_id, h.profile_revision_id, h.policy_generation,
