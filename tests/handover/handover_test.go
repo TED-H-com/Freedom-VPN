@@ -19052,6 +19052,89 @@ func TestHandover_Followup50Claims(t *testing.T) {
 		}
 		t.Logf("Resolved %d relative links and %d fragments", linksResolved, fragmentsResolved)
 	})
+	t.Run("anchor_helper_rules", func(t *testing.T) {
+		for _, tc := range []struct {
+			name, markdown string
+			want           []string
+		}{
+			{
+				name:     "four_backticks_contain_three",
+				markdown: "````text\n```\n## Metadata inspection\n````\n",
+				want:     []string{},
+			},
+			{
+				name:     "tilde_fence_contains_backtick_fence",
+				markdown: "~~~\n```\n## Hidden\n```\n~~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "closing_info_string_does_not_close",
+				markdown: "```\n```text\n## Hidden\n```\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "unclosed_fence",
+				markdown: "## Visible\n~~~\n## Hidden\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "duplicate_skips_existing_suffix",
+				markdown: "## Repeat\n## Repeat-1\n## Repeat\n",
+				want:     []string{"repeat", "repeat-1", "repeat-2"},
+			},
+			{
+				name:     "three_identical_headings",
+				markdown: "## Repeat\n## Repeat\n## Repeat\n",
+				want:     []string{"repeat", "repeat-1", "repeat-2"},
+			},
+			{
+				name:     "generated_suffix_is_reserved",
+				markdown: "## Repeat\n## Repeat\n## Repeat-1\n",
+				want:     []string{"repeat", "repeat-1", "repeat-1-1"},
+			},
+			{
+				name:     "duplicate_skips_multiple_taken_suffixes",
+				markdown: "## Repeat\n## Repeat-1\n## Repeat-2\n## Repeat\n## Repeat\n",
+				want:     []string{"repeat", "repeat-1", "repeat-2", "repeat-3", "repeat-4"},
+			},
+			{
+				name:     "indented_longer_closer_with_whitespace",
+				markdown: "   ````text\r\n## Hidden\r\n  ````` \t\r\n## Visible\r\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "four_spaces_or_tab_do_not_open",
+				markdown: "    ```\n\n## First\n\t~~~\n\n## Second\n",
+				want:     []string{"first", "second"},
+			},
+			{
+				name:     "four_spaces_or_tab_do_not_close",
+				markdown: "~~~\n    ~~~\n## Hidden\n\t~~~\n## Also hidden\n~~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "backtick_info_cannot_contain_backtick",
+				markdown: "```text`\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "tilde_info_can_contain_fence_characters",
+				markdown: "~~~text~~~`\n## Hidden\n~~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				var got []string
+				for anchor := range followup50MarkdownAnchors(tc.markdown) {
+					got = append(got, anchor)
+				}
+				slices.Sort(got)
+				if !slices.Equal(got, tc.want) {
+					t.Fatalf("anchors = %q, want %q", got, tc.want)
+				}
+			})
+		}
+	})
 	t.Run("followup49_assertions_preserved", func(t *testing.T) {
 		var p struct {
 			Source, Function, SHA256 string
@@ -19082,24 +19165,19 @@ func followup50MarkdownAnchors(md string) map[string]bool {
 	anchors := make(map[string]bool)
 	seen := make(map[string]int)
 	headingRE := regexp.MustCompile(`^\s{0,3}#{1,6}[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$`)
-	fenceRE := regexp.MustCompile("^[ \t]{0,3}(```+|~~~+)")
+	fenceRE := regexp.MustCompile("^ {0,3}(`{3,}|~{3,})(.*)$")
 	htmlAnchorRE := regexp.MustCompile(`(?i)<[a-z][a-z0-9]*\b[^>]*\b(?:id|name)\s*=\s*(?:"([^"]+)"|'([^']+)')`)
 	var fence string
 	for _, line := range strings.Split(strings.ReplaceAll(md, "\r\n", "\n"), "\n") {
-		if m := fenceRE.FindStringSubmatch(line); m != nil {
-			marker := m[1][:3]
-			if fence == "" {
-				if !strings.Contains(line[len(m[0]):], marker) {
-					fence = marker
-				}
-				continue
-			}
-			if strings.HasPrefix(strings.TrimSpace(line), fence) {
+		m := fenceRE.FindStringSubmatch(line)
+		if fence != "" {
+			if m != nil && m[1][0] == fence[0] && len(m[1]) >= len(fence) && strings.Trim(m[2], " \t") == "" {
 				fence = ""
 			}
 			continue
 		}
-		if fence != "" {
+		if m != nil && (m[1][0] != '`' || !strings.Contains(m[2], "`")) {
+			fence = m[1]
 			continue
 		}
 		for _, m := range htmlAnchorRE.FindAllStringSubmatch(line, -1) {
@@ -19107,7 +19185,7 @@ func followup50MarkdownAnchors(md string) map[string]bool {
 				anchors[id] = true
 			}
 		}
-		m := headingRE.FindStringSubmatch(line)
+		m = headingRE.FindStringSubmatch(line)
 		if m == nil {
 			continue
 		}
@@ -19116,10 +19194,10 @@ func followup50MarkdownAnchors(md string) map[string]bool {
 			continue
 		}
 		anchor := base
-		if n := seen[base]; n > 0 {
-			anchor = fmt.Sprintf("%s-%d", base, n)
+		for anchors[anchor] {
+			seen[base]++
+			anchor = fmt.Sprintf("%s-%d", base, seen[base])
 		}
-		seen[base]++
 		anchors[anchor] = true
 	}
 	return anchors
