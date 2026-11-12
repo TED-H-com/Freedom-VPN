@@ -27,7 +27,7 @@ def main():
     PRIVATE.mkdir(parents=True,exist_ok=True)
     (ROOT/'.agent/tmp').mkdir(parents=True,exist_ok=True)
     with tempfile.TemporaryDirectory(prefix='secops-f5.',dir=ROOT/'.agent/tmp') as scratch:
-        env=dict(os.environ,GOTOOLCHAIN='local',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,E2E_RESET='1',FVPN_E2E_PREFIX=PREFIX,FVPN_E2E_PORT_BASE=PORT_BASE,FVPN_E2E_STATE=str(ROOT/'.agent/e2e-state-w4-secops'))
+        env=dict(os.environ,GOTOOLCHAIN='auto',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,E2E_RESET='1',FVPN_E2E_PREFIX=PREFIX,FVPN_E2E_PORT_BASE=PORT_BASE,FVPN_E2E_STATE=str(ROOT/'.agent/e2e-state-w4-secops'))
         if args.components_only:
             return 0 if all(r['status']=='passed' for r in components(env)) else 1
         before=inventory(env)

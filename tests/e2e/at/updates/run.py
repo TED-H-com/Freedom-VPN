@@ -19,7 +19,7 @@ def main():
     (ROOT / '.agent/tmp').mkdir(parents=True, exist_ok=True)
     scratch = tempfile.mkdtemp(prefix='at-updates-', dir=ROOT / '.agent/tmp')
     env = dict(os.environ, TMPDIR=scratch, GOTMPDIR=scratch,
-               GOTOOLCHAIN='local', CGO_ENABLED='0')
+               GOTOOLCHAIN='auto', CGO_ENABLED='0')
     live = sys.argv[1] == 'live'
     code = 1
     try:

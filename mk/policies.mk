@@ -1,6 +1,6 @@
 # mk/policies.mk: Versioned policies store and fair-use policy (FUP) engine
 
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 policies-with-disk-tmp = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/policies.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp";

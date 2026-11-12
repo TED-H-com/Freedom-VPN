@@ -11,7 +11,7 @@
 #                     or of the GitHub-hosted workflow
 
 INSTALLER_GO  ?= go
-INSTALLER_ENV := CGO_ENABLED=0 GOTOOLCHAIN=local
+INSTALLER_ENV := CGO_ENABLED=0 GOTOOLCHAIN=auto
 INSTALLER_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 INSTALLER_PREFIX ?= fvpn-w5-node-installer-
 

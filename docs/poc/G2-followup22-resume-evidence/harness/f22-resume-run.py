@@ -3,7 +3,7 @@ ROOT=pathlib.Path.cwd()
 BASE=ROOT/'.agent/f22-resume-runtime'
 BASE.mkdir(exist_ok=True)
 PREFIX='fvpn-w1-netlab-f22'
-ENV=dict(os.environ,CGO_ENABLED='0',GOTOOLCHAIN='local',GOMAXPROCS='4',GOFLAGS='-p=4',FVPN_LAB_PREFIX=PREFIX)
+ENV=dict(os.environ,CGO_ENABLED='0',GOTOOLCHAIN='auto',GOMAXPROCS='4',GOFLAGS='-p=4',FVPN_LAB_PREFIX=PREFIX)
 TMP=ROOT/'.agent/tmp/f22-resume'
 TMP.mkdir(exist_ok=True)
 ENV.update(TMPDIR=str(TMP),GOTMPDIR=str(TMP))

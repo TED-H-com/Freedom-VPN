@@ -17,7 +17,7 @@ FVPN_AT_EVIDENCE_DIR ?= docs/e2e/at/isolation
 AT_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 AT_PACKAGES := ./tests/e2e/at/isolation/... ./tests/netlab/at/...
 
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 LINT_TARGETS += at-isolation-lint

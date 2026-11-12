@@ -10,7 +10,7 @@
 #   updater-verify  lint, test and build
 
 UPDATER_GO   ?= go
-UPDATER_ENV  := CGO_ENABLED=0 GOTOOLCHAIN=local
+UPDATER_ENV  := CGO_ENABLED=0 GOTOOLCHAIN=auto
 UPDATER_PKGS := ./node/updater/... ./node/nodelock/... ./node/internal/nodelock/... ./node/internal/updatejournal/... ./node/internal/healthattest/... ./packaging/release/...
 UPDATER_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 

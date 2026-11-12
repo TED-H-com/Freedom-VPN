@@ -508,7 +508,7 @@ def run_leg(label, window, window_number, deadline):
             link.symlink_to(Path(__file__).resolve())
     tree = TREES / arm
     env = dict(os.environ, F47_ORIGINAL_PATH=os.environ['PATH'], F47_LEG=str(evidence),
-               CGO_ENABLED='0', GOTOOLCHAIN='local', TMPDIR=str(tree / '.agent/tmp'), GOTMPDIR=str(tree / '.agent/tmp'),
+               CGO_ENABLED='0', GOTOOLCHAIN='auto', TMPDIR=str(tree / '.agent/tmp'), GOTMPDIR=str(tree / '.agent/tmp'),
                PYTHONDONTWRITEBYTECODE='1', GOMAXPROCS='4',
                GOFLAGS='-p=4 -buildvcs=false -overlay=' + str(OUT / 'overlays' / arm / 'overlay.json'), FVPN_AGENT_EVIDENCE_DIR=str(evidence),
                F47_TIMING_ROOT=str(ROOT))

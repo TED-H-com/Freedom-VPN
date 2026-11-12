@@ -2,7 +2,7 @@
 """Keep admission messages separate from command stdout and stderr."""
 import hashlib, json, os, pathlib, subprocess, sys, time
 name = pathlib.Path(sys.argv[0]).name
-env = dict(os.environ, CGO_ENABLED='0', GOTOOLCHAIN='local', GOFLAGS='', FVPN_TEST_DB_SWEEP='0', PYTHONDONTWRITEBYTECODE='1')
+env = dict(os.environ, CGO_ENABLED='0', GOTOOLCHAIN='auto', GOFLAGS='', FVPN_TEST_DB_SWEEP='0', PYTHONDONTWRITEBYTECODE='1')
 env.pop('LD_LIBRARY_PATH', None)
 real = {'make': env['F53_REAL_MAKE'], 'docker': env['F53_REAL_DOCKER'], 'node-go': env['F53_REAL_GO']}[name]
 args = sys.argv[1:]

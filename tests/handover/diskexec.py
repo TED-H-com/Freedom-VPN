@@ -11,6 +11,6 @@ scratch_root = root / '.agent/tmp'
 scratch_root.mkdir(parents=True, exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='handover.', dir=scratch_root) as scratch:
     result = subprocess.run(sys.argv[1:], cwd=root, check=False, env=dict(
-        os.environ, TMPDIR=scratch, GOTMPDIR=scratch, GOTOOLCHAIN='local',
+        os.environ, TMPDIR=scratch, GOTMPDIR=scratch, GOTOOLCHAIN='auto',
         CGO_ENABLED='0', PYTHONDONTWRITEBYTECODE='1'))
 raise SystemExit(result.returncode)

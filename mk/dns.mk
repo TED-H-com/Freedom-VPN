@@ -1,6 +1,6 @@
 # mk/dns.mk: DNS policy engine, publisher, node applier, and dev resolvers
 
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 FVPN_DNS_PREFIX ?= fvpn-dev-adguard
@@ -65,4 +65,4 @@ dns-down:
 	rm -rf $(DNS_COMPOSE_DIR)/.state
 
 dns-test-integration:
-	FVPN_DNS_PREFIX=$(FVPN_DNS_PREFIX) CGO_ENABLED=0 GOTOOLCHAIN=local go test -v -count=1 -tags=adguard_integration ./internal/dnspolicy/...
+	FVPN_DNS_PREFIX=$(FVPN_DNS_PREFIX) CGO_ENABLED=0 GOTOOLCHAIN=auto go test -v -count=1 -tags=adguard_integration ./internal/dnspolicy/...

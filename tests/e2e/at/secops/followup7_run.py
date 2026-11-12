@@ -15,7 +15,7 @@ def main():
             'expected':'fleet API short lease and finite grace; real proxy principals; 60-peer counted traffic and node telemetry',
             'prepare':{'grace_seconds':90,'reset':True,'prefix':PREFIX,'port_base':PORT_BASE}}
     with tempfile.TemporaryDirectory(prefix='secops-f7.',dir=ROOT/'.agent/tmp') as scratch:
-        env=dict(os.environ,GOTOOLCHAIN='local',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,E2E_RESET='1',FVPN_E2E_GRACE_SECONDS='90',FVPN_E2E_PREFIX=PREFIX,FVPN_E2E_PORT_BASE=PORT_BASE,FVPN_E2E_STATE=str(ROOT/'.agent/e2e-state-w4-secops'))
+        env=dict(os.environ,GOTOOLCHAIN='auto',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,E2E_RESET='1',FVPN_E2E_GRACE_SECONDS='90',FVPN_E2E_PREFIX=PREFIX,FVPN_E2E_PORT_BASE=PORT_BASE,FVPN_E2E_STATE=str(ROOT/'.agent/e2e-state-w4-secops'))
         before=inventory(env);record['inventory_before']=before
         if any(v['count'] or v['exit_code'] for v in before.values()):
             raise SystemExit('own namespace occupied; refusing to attach or tear down')

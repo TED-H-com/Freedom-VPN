@@ -1,4 +1,4 @@
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 # Assigned live acceptance; incomplete ATs are non-green.

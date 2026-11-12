@@ -241,7 +241,7 @@ def main():
         if compatibility['status'] != 'passed':
             raise SystemExit('PITR dependency/assertion changed; inspect compatibility record before deciding on a new drill')
     with tempfile.TemporaryDirectory(prefix='secops.', dir=ROOT / '.agent/tmp') as scratch:
-        env = dict(os.environ, GOTOOLCHAIN='local', CGO_ENABLED='0', TMPDIR=scratch, GOTMPDIR=scratch,
+        env = dict(os.environ, GOTOOLCHAIN='auto', CGO_ENABLED='0', TMPDIR=scratch, GOTMPDIR=scratch,
                    E2E_RESET='1', FVPN_E2E_PREFIX=PREFIX, FVPN_E2E_PORT_BASE=PORT_BASE, FVPN_E2E_STATE=str(ROOT / '.agent/e2e-state-w4-secops'))
         stack = {'status': 'blocked', 'reason': 'Full-stack probes not run in components-only mode.'}
         if not args.components_only:

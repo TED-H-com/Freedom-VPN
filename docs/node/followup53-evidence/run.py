@@ -14,7 +14,7 @@ out = root / '.agent/f53-fix1'
 out.mkdir(parents=True, exist_ok=True)
 if (out/(name+'.json')).exists() or (out/(name+'.log')).exists():
     raise SystemExit('refusing to replace a recorded attempt')
-env = dict(os.environ, CGO_ENABLED='0', GOTOOLCHAIN='local', GOFLAGS='', PYTHONDONTWRITEBYTECODE='1')
+env = dict(os.environ, CGO_ENABLED='0', GOTOOLCHAIN='auto', GOFLAGS='', PYTHONDONTWRITEBYTECODE='1')
 env.pop('LD_LIBRARY_PATH', None)
 if name.startswith('gate-'):
     import shutil

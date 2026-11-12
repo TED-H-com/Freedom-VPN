@@ -29,7 +29,7 @@ def call(args, env):
 
 (ROOT / '.agent/tmp').mkdir(parents=True, exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp') as temp:
-    env = dict(os.environ, TMPDIR=temp, GOTMPDIR=temp, GOTOOLCHAIN='local', CGO_ENABLED='0', PYTHONDONTWRITEBYTECODE='1')
+    env = dict(os.environ, TMPDIR=temp, GOTMPDIR=temp, GOTOOLCHAIN='auto', CGO_ENABLED='0', PYTHONDONTWRITEBYTECODE='1')
     if sys.argv[1:] != ['assembled']:
         raise SystemExit(call(sys.argv[1:], env))
     import uuid

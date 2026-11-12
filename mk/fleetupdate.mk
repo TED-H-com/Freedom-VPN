@@ -1,4 +1,4 @@
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 fleetupdate-with-disk-tmp = set -eu; mkdir -p .agent/tmp; export TMPDIR="$$(pwd)/.agent/tmp" GOTMPDIR="$$(pwd)/.agent/tmp";

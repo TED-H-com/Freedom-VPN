@@ -24,7 +24,7 @@ CONTRACTS_NODE            ?= node
 CONTRACTS_GO_PKGS         := ./pkg/decstr/... ./pkg/canonjson/... ./pkg/envelope/... ./pkg/apierr/... ./pkg/api/... ./contracts/...
 CONTRACTS_LEAF_PKGS       := ./pkg/decstr ./pkg/canonjson ./pkg/envelope ./pkg/apierr
 CONTRACTS_MIN_COVERAGE    ?= 85
-CONTRACTS_ENV             := bash contracts/codegen/with-disk-tmp.sh env CGO_ENABLED=0 GOTOOLCHAIN=local
+CONTRACTS_ENV             := bash contracts/codegen/with-disk-tmp.sh env CGO_ENABLED=0 GOTOOLCHAIN=auto
 
 BUILD_TARGETS  += contracts-build
 TEST_TARGETS   += contracts-test

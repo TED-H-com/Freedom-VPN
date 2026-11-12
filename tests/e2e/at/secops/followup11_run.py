@@ -36,7 +36,7 @@ def main(phase=None):
     label = 'followup'+followup+'-'+phase
     with tempfile.TemporaryDirectory(prefix=label+'.',dir=ROOT/'.agent/tmp') as scratch:
         env=dict(os.environ,
-                 GOTOOLCHAIN='local',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,
+                 GOTOOLCHAIN='auto',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,
                  E2E_RESET='1',FVPN_E2E_PREFIX=PREFIX,FVPN_E2E_PORT_BASE=PORT_BASE,FVPN_E2E_GRACE_SECONDS='90',
                  GOFLAGS='-p=2',GOMAXPROCS='2',FVPN_E2E_STATE=str(ROOT/'.agent/e2e-state-w4-secops'),
                  FVPN_SECOPS_FOLLOWUP10='1',FVPN_SECOPS_FOLLOWUP11=phase)

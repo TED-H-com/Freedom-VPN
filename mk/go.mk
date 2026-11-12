@@ -1,4 +1,4 @@
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 # The shared host may mount /tmp as tmpfs. Each command gets private disk scratch.

@@ -21,7 +21,7 @@ FVPN_E2E_STATE ?= $(E2E_ROOT)/.agent/e2e-state-$(FVPN_E2E_PREFIX)
 export FVPN_E2E_PREFIX
 export FVPN_E2E_PORT_BASE
 export FVPN_E2E_STATE
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 LINT_TARGETS += e2e-lint

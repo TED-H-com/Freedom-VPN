@@ -1,5 +1,5 @@
 # Standalone targets, disk scratch only; same staticcheck pin as mk/go.mk.
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 billing-packages := ./internal/members/... ./internal/entitlement/... ./internal/billing/... ./internal/devices/... ./apps/control/... ./apps/worker/... ./internal/config/...
 billing-with-disk-tmp = set -eu; mkdir -p .agent/tmp; task_tmp=$$(mktemp -d "$$(pwd)/.agent/tmp/billing.XXXXXX"); trap 'rm -rf "$$task_tmp"' EXIT; export TMPDIR="$$task_tmp" GOTMPDIR="$$task_tmp";

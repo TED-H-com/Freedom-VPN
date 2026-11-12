@@ -371,7 +371,7 @@ def run_leg(label, window, window_number, deadline):
             link.symlink_to(Path(__file__).resolve())
     tree = TREES / arm
     env = dict(os.environ, F39_ORIGINAL_PATH=os.environ['PATH'], F39_LEG=str(evidence),
-               CGO_ENABLED='0', GOTOOLCHAIN='local', TMPDIR=str(tree / '.agent/tmp'), GOTMPDIR=str(tree / '.agent/tmp'),
+               CGO_ENABLED='0', GOTOOLCHAIN='auto', TMPDIR=str(tree / '.agent/tmp'), GOTMPDIR=str(tree / '.agent/tmp'),
                GOMAXPROCS='4', GOFLAGS='-p=4 -buildvcs=false', FVPN_AGENT_EVIDENCE_DIR=str(evidence),
                F39_TIMING_ROOT=str(ROOT))
     env['GOCACHE'] = subprocess.check_output(['go', 'env', 'GOCACHE'], text=True).strip()

@@ -10,7 +10,7 @@ ROOT=pathlib.Path.cwd()
 OUT=ROOT/'docs/poc/G2-followup24-evidence/comparison'
 TMP=ROOT/'.agent/tmp/f24-comparison'
 PREFIX='fvpn-w1-netlab-f24'
-ENV=dict(os.environ, CGO_ENABLED='0', GOTOOLCHAIN='local', TMPDIR=str(TMP), GOTMPDIR=str(TMP))
+ENV=dict(os.environ, CGO_ENABLED='0', GOTOOLCHAIN='auto', TMPDIR=str(TMP), GOTMPDIR=str(TMP))
 BASE='335047a2b650db1d64bb4e0c59fc042fad74da51'
 COUNT=60
 START=None

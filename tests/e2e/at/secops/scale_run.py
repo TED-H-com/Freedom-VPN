@@ -12,7 +12,7 @@ def main():
     started = utc()
     record = {'started_at': started, 'scope': '20 native users × 3 peers; no serving node or capacity claim', 'node_incarnation': None}
     with tempfile.TemporaryDirectory(prefix='secops-scale.', dir=ROOT / '.agent/tmp') as scratch:
-        env = dict(os.environ, GOTOOLCHAIN='local', CGO_ENABLED='0', TMPDIR=scratch, GOTMPDIR=scratch,
+        env = dict(os.environ, GOTOOLCHAIN='auto', CGO_ENABLED='0', TMPDIR=scratch, GOTMPDIR=scratch,
                    E2E_RESET='1', FVPN_E2E_PREFIX=PREFIX, FVPN_E2E_PORT_BASE=PORT_BASE,
                    FVPN_E2E_STATE=str(ROOT / '.agent/e2e-state-w4-secops'))
         before = inventory(env)

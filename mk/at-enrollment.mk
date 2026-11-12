@@ -1,5 +1,5 @@
 # AT06/AT07 acceptance. Live Docker work is manual-only and records non-green ATs.
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 LINT_TARGETS += at-enrollment-lint

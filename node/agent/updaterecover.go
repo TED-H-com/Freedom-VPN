@@ -65,7 +65,10 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 	}
 	childCtx, cancel := context.WithCancel(parent)
 	job := &recoveryJob{cancel: cancel, done: make(chan struct{})}
-	e.recoverJob = job
+	if e.recoverJob != nil {
+			e.recoverJob.cancel()
+		}
+		e.recoverJob = job
 	e.recoverRetryAt = e.clock.Mono() + recoverRetryInterval
 	command, config := e.cfg.UpdaterRecover, e.cfg.UpdaterConfig
 	go func() {

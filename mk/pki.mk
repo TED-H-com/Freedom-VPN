@@ -1,4 +1,4 @@
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 
 pki-packages := ./internal/pki/... ./internal/enrollment/... ./internal/signing/... ./internal/nodes/... ./internal/config/... ./apps/control/... ./apps/worker/...

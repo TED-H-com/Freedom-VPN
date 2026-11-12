@@ -1,6 +1,6 @@
 # Supporting component checks never imply §19 full-stack acceptance.
 AT_SECOPS_RUN := python3 -B tests/e2e/at/secops/diskexec.py
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 export PYTHONDONTWRITEBYTECODE := 1
 

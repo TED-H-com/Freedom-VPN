@@ -14,19 +14,19 @@ db-down:
 	docker compose -f deploy/dev/postgres/compose.yaml down
 
 db-migrate:
-	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run ./internal/db/cmd/fvpn-migrate up
+	@$(db-with-disk-tmp) GOTOOLCHAIN=auto CGO_ENABLED=0 go run ./internal/db/cmd/fvpn-migrate up
 
 # Once per test process, drop idle fvpn_t* databases older than one hour.
 # Does not set FVPN_TEST_DB_SWEEP_LEGACY.
 db-test:
-	@$(db-with-disk-tmp) FVPN_TEST_DB_SWEEP=1 GOTOOLCHAIN=local CGO_ENABLED=0 go test -tags integration ./internal/db/... ./db/...
+	@$(db-with-disk-tmp) FVPN_TEST_DB_SWEEP=1 GOTOOLCHAIN=auto CGO_ENABLED=0 go test -tags integration ./internal/db/... ./db/...
 
 db-test-sweep:
-	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run ./internal/db/cmd/fvpn-db-sweep
+	@$(db-with-disk-tmp) GOTOOLCHAIN=auto CGO_ENABLED=0 go run ./internal/db/cmd/fvpn-db-sweep
 
 # Match the whole-module go-lint gate, including its pinned staticcheck.
 db-lint:
 	@test -z "$$(gofmt -l $$(git ls-files --cached --others --exclude-standard 'internal/db/*.go' 'internal/db/**/*.go' 'db/**/*.go'))" || { echo 'gofmt required'; exit 1; }
-	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go test -count=1 ./internal/db -run '^Test15_5_MigrationDownLint'
-	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go vet ./internal/db/... ./db/...
-	@$(db-with-disk-tmp) GOTOOLCHAIN=local CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./internal/db/... ./db/...
+	@$(db-with-disk-tmp) GOTOOLCHAIN=auto CGO_ENABLED=0 go test -count=1 ./internal/db -run '^Test15_5_MigrationDownLint'
+	@$(db-with-disk-tmp) GOTOOLCHAIN=auto CGO_ENABLED=0 go vet ./internal/db/... ./db/...
+	@$(db-with-disk-tmp) GOTOOLCHAIN=auto CGO_ENABLED=0 go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./internal/db/... ./db/...

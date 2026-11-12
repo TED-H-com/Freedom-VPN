@@ -1,5 +1,5 @@
 # Standalone and root aggregate targets for the control framework.
-export GOTOOLCHAIN := local
+export GOTOOLCHAIN := auto
 export CGO_ENABLED := 0
 CONTROL_PACKAGES := ./apps/control/... ./apps/worker/... ./internal/httpapi/... ./internal/auth/... ./internal/operations/... ./internal/audit/... ./internal/config/...
 CONTROL_CODEGEN := github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.8.1

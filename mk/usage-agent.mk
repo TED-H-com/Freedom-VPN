@@ -9,7 +9,7 @@
 #   usage-agent-verify  lint, test and build
 
 USAGE_AGENT_GO ?= go
-USAGE_AGENT_ENV := CGO_ENABLED=0 GOTOOLCHAIN=local
+USAGE_AGENT_ENV := CGO_ENABLED=0 GOTOOLCHAIN=auto
 USAGE_AGENT_PKGS := ./node/internal/meter/... ./node/internal/usagestore/... ./node/internal/usageupload/... ./node/agent/cmd/fvpn-agent/...
 USAGE_AGENT_STATICCHECK := honnef.co/go/tools/cmd/staticcheck@v0.8.2
 
