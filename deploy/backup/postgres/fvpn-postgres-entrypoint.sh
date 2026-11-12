@@ -36,6 +36,9 @@ prepare_isolated_restore() {
 		-c ssl=off -c archive_mode=off -c archive_command= -c archive_library=
 		-c archive_timeout=0 -c wal_level=replica -c hot_standby=on
 		-c external_pid_file= -c logging_collector=off -c log_destination=stderr -c lc_messages=C
+		# The restore runner must see the named DETAIL on a recovery resource
+		# mismatch even if the primary suppressed warnings or their details.
+		-c log_min_messages=warning -c log_error_verbosity=default
 		# Host-specific libraries are unavailable in this verifier image. Do not
 		# load inherited background workers or connection-time libraries.
 		-c shared_preload_libraries= -c session_preload_libraries= -c local_preload_libraries=

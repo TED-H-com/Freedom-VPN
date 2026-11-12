@@ -10,7 +10,7 @@ import (
 
 func TestAT30_IsolatedNames(t *testing.T) {
 	for _, option := range []string{"--db-user", "--db-name"} {
-		for _, value := range []string{"", "a\nhost all all 0.0.0.0/0 trust", "a,b", `a"b`, "a/b", "+group", "a b", strings.Repeat("a", 64)} {
+		for _, value := range []string{"", "a\nhost all all 0.0.0.0/0 trust", "a,b", `a"b`, "a/b", "+group", "a b", "é", strings.Repeat("a", 64)} {
 			cmd := exec.Command("bash", "../../deploy/backup/restore-pitr.sh", "--latest", "--isolated-container", "unused", option, value)
 			out, err := cmd.CombinedOutput()
 			if err == nil || !strings.Contains(string(out), "invalid isolated --db-user or --db-name") {
@@ -66,6 +66,7 @@ cat "$1/config/pg_hba.conf" "$1/config/pg_ident.conf"`, "_", dir)
 				"max_prepared_transactions=12", "max_locks_per_transaction=128",
 				"ssl=off", "archive_mode=off", "archive_command=\n", "archive_library=\n",
 				"port=5432", "listen_addresses=127.0.0.1", "shared_preload_libraries=\n",
+				"log_min_messages=warning", "log_error_verbosity=default",
 				`local "replication" "all" peer map=fvpn_verifier`,
 				`hostnossl "replication" "all" 127.0.0.1/32 trust`, `fvpn_verifier postgres "all"`,
 			} {
