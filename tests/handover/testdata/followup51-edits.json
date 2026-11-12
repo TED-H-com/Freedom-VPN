@@ -2446,5 +2446,16 @@
       "deploy/backup/systemd/fvpn-backup-diff.service:20",
       "packaging/installer/isolation.go:28"
     ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "a_archiver_initial_repository",
+    "before": "```ini\nwal_level = replica",
+    "after": "Carried gap: provision the repository and stanza, including an initial recoverable base backup, before relying on this archiver configuration. The first-host provisioning procedure remains absent; §3.1 carries the same prerequisite for scheduled backups.\n\n```ini\nwal_level = replica",
+    "evidence": [
+      "deploy/backup/postgres/fvpn-archiving.conf:5",
+      "docs/ops/backups.md:71",
+      "docs/handover/follow-up-51.md:182"
+    ]
   }
 ]

@@ -27,6 +27,8 @@ Carried gap: the PostgreSQL server/archiver must receive the repository passphra
 - **Lab / CI Override (`TEST ONLY`)**: Containerized lab and drill environments may set `FVPN_PG_ARCHIVE_TIMEOUT=10s` on `deploy/backup/postgres/Dockerfile` to bound idle archive lag during automated tests.
 - **Isolated Verification Containers**: When `restore-pitr.sh` launches an isolated verification container (`--network none`), it sets `FVPN_PG_ISOLATED_RESTORE=1` and mounts the backup repository read-only (`:ro`). The entrypoint writes `archive_mode = off` inside the verification container so promotion to a new timeline never pushes WAL segments back to the primary repository.
 
+Carried gap: provision the repository and stanza, including an initial recoverable base backup, before relying on this archiver configuration. The first-host provisioning procedure remains absent; §3.1 carries the same prerequisite for scheduled backups.
+
 ```ini
 wal_level = replica
 archive_mode = on

@@ -135,8 +135,8 @@ follow-up 50's revisions and record this cut's changes. All existing headings
 in the three revised documents remain unchanged. The
 [pre-cut provenance](../../tests/handover/testdata/followup51-snapshots.json) and
 [edit manifest](../../tests/handover/testdata/followup51-edits.json) preserve
-14 exact copies from the cutoff and permit exactly 218 replacements: 12 cut-line
-edits, 190 guide corrections, gap notices and existing-procedure pointers,
+14 exact copies from the cutoff and permit exactly 219 replacements: 12 cut-line
+edits, 191 guide corrections, gap notices and existing-procedure pointers,
 eight link-fragment fixes, and eight delivery-guide revision edits. Every other
 byte must match. Older claims retain their assertions; follow-up 50 reads these
 pre-cut copies. An additional exact base copy of the claims-test source
