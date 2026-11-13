@@ -982,7 +982,7 @@
     "path": "docs/DELIVERY.en.md",
     "name": "F2_delivery_en",
     "before": "[Follow-up 52](handover/follow-up-52.md) corrects deployment, calibration, restore, operator and backup statements at `6972be03`: enrollment and release-policy fields, the two-resolver resilience recommendation (one is accepted without redundancy), fair-use and HTTP helper names, a repeated recovery-gap notice, node checks and token-file selection, enforcement names and reserved conntrack batches, updater space and attempt bounds, the member-usage read-back route, configuration defaults, and the linux/amd64 backup migrator. The dated restore record stays unchanged; the cut records the `UploadOnce` / `Uploader.Once` erratum. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 51 recorded them.",
-    "after": "[Follow-up 52](handover/follow-up-52.md) corrects deployment, calibration, restore, operator and backup statements at `6972be03`: enrollment and release-policy fields, the two-resolver resilience recommendation (one is accepted without redundancy), fair-use acknowledgement versus current liveness, the policy event pipeline, HTTP helper names, a repeated recovery-gap notice, node checks and token-file selection, enforcement names and reserved conntrack batches, revoke-step eligibility and public/audit diagnostics, updater space and attempt bounds and rollback health, the member-usage read-back route, configuration defaults and bounded LRU scanning, current incarnation/discovery/probe/schema names, provisional health qualifications and planned renewal spacing in calibration, operator and member guidance, fence audit fields and separate peer/identity denial tracking with resource fallbacks, rejected/accepted update-result projections and omitted/null error-code receipt differences, revocation address filters, stale-observation grace, the public-key digest encoding and baseline attempts versus confirmed isolation in deployment and operator guidance, Apply/dependency acknowledgement gates, eligible same-generation repair, attempted quarantine and separate meter-path failures, and the linux/amd64 backup migrator. The dated restore record stays unchanged; the cut records the `UploadOnce` / `Uploader.Once` erratum. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 51 recorded them.",
+    "after": "[Follow-up 52](handover/follow-up-52.md) corrects deployment, calibration, restore, operator and backup statements at `6972be03`: enrollment and release-policy fields, the two-resolver resilience recommendation (one is accepted without redundancy), fair-use acknowledgement versus current liveness, the policy event pipeline, HTTP helper names, a repeated recovery-gap notice, node checks and token-file selection, enforcement names and reserved conntrack batches, revoke-step eligibility and public/audit diagnostics, updater space and attempt bounds and rollback health, the member-usage read-back route, configuration defaults and bounded LRU scanning, current incarnation/discovery/probe/schema names, provisional health and central expiry conditions, eligible renewal attempts, and a member-guide link to provisional reports and renewal spacing, fence audit fields and separate peer/identity denial tracking with resource fallbacks, rejected/accepted update-result projections and omitted/null error-code receipt differences, revocation address filters, stale-observation grace, the public-key digest encoding and baseline attempts versus confirmed isolation in deployment and operator guidance, Apply/dependency acknowledgement gates, eligible same-generation repair, quarantine prerequisites, containment confirmation and wrapper/Apply evidence and separate meter-path failures, and the linux/amd64 backup migrator. The dated restore record stays unchanged; the cut records the `UploadOnce` / `Uploader.Once` erratum. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 51 recorded them.",
     "evidence": [
       "docs/handover/follow-up-52.md:21",
       "internal/leases/leases.go:438",
@@ -1003,14 +1003,20 @@
       "node/agent/serving.go:65",
       "node/enforce/quarantine.go:57",
       "node/agent/decide.go:360",
-      "node/agent/sync.go:235"
+      "node/agent/sync.go:235",
+      "node/enforce/quarantine.go:63",
+      "node/enforce/quarantine.go:97",
+      "node/agent/quarantine.go:203",
+      "node/agent/sync.go:85",
+      "node/agent/sync.go:256",
+      "docs/handover/member-guide.md:398"
     ]
   },
   {
     "path": "docs/DELIVERY.md",
     "name": "F2_delivery_zh",
     "before": "[Follow-up 52](handover/follow-up-52.md) 修正 `6972be03` 的部署、參數校準、還原、營運與備份敘述：註冊與發行政策欄位、兩台 resolver 的韌性建議（程式接受一台，但沒有備援）、公平使用與 HTTP 函式名稱、重複的復原缺口提示、節點檢查與權杖檔案選擇、執行層名稱與預留的 conntrack 批次、更新程式空間與次數界限、會員用量讀回路由、設定預設值，以及 linux/amd64 備份遷移工具。有日期的還原紀錄保持不變；切點另記 `UploadOnce` / `Uploader.Once` 勘誤。此切點不新增程序或部署證據；既有缺口維持 follow-up 51 的紀錄。",
-    "after": "[Follow-up 52](handover/follow-up-52.md) 修正 `6972be03` 的部署、參數校準、還原、營運與備份敘述：註冊與發行政策欄位、兩台 resolver 的韌性建議（程式接受一台，但沒有備援）、公平使用確認與目前存活狀態的區別、政策事件流程、HTTP 函式名稱、重複的復原缺口提示、節點檢查與權杖檔案選擇、執行層名稱與預留的 conntrack 批次、撤銷步驟的條件與公開回應／稽核診斷、更新程式空間與次數界限及回滾健康狀態、會員用量讀回路由、設定預設值與有界 LRU 掃描、目前的 incarnation／探索／探測／schema 名稱、參數校準、營運與會員指南中的暫候 grant 健康前提與計畫續租間隔、保護性 fence 稽核欄位與分別追蹤的 peer／identity 拒絕及資源回退、拒收／接受更新結果的投影與省略／null 錯誤碼的收據差異、撤銷位址篩選、過期世代觀測的寬限、公開金鑰摘要的編碼與部署與營運指南中 baseline 嘗試與隔離確認的區別、Apply／相依項目失敗的世代確認條件、符合條件的同世代修復、隔離嘗試及獨立的計量路徑失敗，以及 linux/amd64 備份遷移工具。有日期的還原紀錄保持不變；切點另記 `UploadOnce` / `Uploader.Once` 勘誤。此切點不新增程序或部署證據；既有缺口維持 follow-up 51 的紀錄。",
+    "after": "[Follow-up 52](handover/follow-up-52.md) 修正 `6972be03` 的部署、參數校準、還原、營運與備份敘述：註冊與發行政策欄位、兩台 resolver 的韌性建議（程式接受一台，但沒有備援）、公平使用確認與目前存活狀態的區別、政策事件流程、HTTP 函式名稱、重複的復原缺口提示、節點檢查與權杖檔案選擇、執行層名稱與預留的 conntrack 批次、撤銷步驟的條件與公開回應／稽核診斷、更新程式空間與次數界限及回滾健康狀態、會員用量讀回路由、設定預設值與有界 LRU 掃描、目前的 incarnation／探索／探測／schema 名稱、暫候 grant 的健康前提與中央到期條件、符合條件的續租嘗試，以及會員指南中連至暫候狀態回報與續租間隔的連結、保護性 fence 稽核欄位與分別追蹤的 peer／identity 拒絕及資源回退、拒收／接受更新結果的投影與省略／null 錯誤碼的收據差異、撤銷位址篩選、過期世代觀測的寬限、公開金鑰摘要的編碼與部署與營運指南中 baseline 嘗試與隔離確認的區別、Apply／相依項目失敗的世代確認條件、符合條件的同世代修復、隔離的前提、圍堵確認與 wrapper／Apply 證據及獨立的計量路徑失敗，以及 linux/amd64 備份遷移工具。有日期的還原紀錄保持不變；切點另記 `UploadOnce` / `Uploader.Once` 勘誤。此切點不新增程序或部署證據；既有缺口維持 follow-up 51 的紀錄。",
     "evidence": [
       "docs/handover/follow-up-52.md:21",
       "internal/leases/leases.go:438",
@@ -1031,7 +1037,13 @@
       "node/agent/serving.go:65",
       "node/enforce/quarantine.go:57",
       "node/agent/decide.go:360",
-      "node/agent/sync.go:235"
+      "node/agent/sync.go:235",
+      "node/enforce/quarantine.go:63",
+      "node/enforce/quarantine.go:97",
+      "node/agent/quarantine.go:203",
+      "node/agent/sync.go:85",
+      "node/agent/sync.go:256",
+      "docs/handover/member-guide.md:398"
     ]
   },
   {
@@ -1153,7 +1165,7 @@
     "path": "docs/handover/operator-guide.md",
     "name": "F7_quarantine_attempts",
     "before": "   - **D-090 containment boundary (#262):** `enforce.Quarantine(ctx, executor, model)` withdraws serving, installs and verifies the no-probe baseline, sets every member-facing link of the applied model administratively down, never deletes foreign tc objects, and persists recovery intent as an empty owned nft set `quarantine_<interface>` in `inet fvpn`. Agent-core follow-up 22 (#272) wires it at `rejectServing` through the Apply executor. Retained applied models survive baselines and restart as containment evidence only; live and Apply-triggered failures retain sanitized evidence. **Member links are administratively down until a clean verified Apply**. Clearing containment and restoring serving additionally require a passing member-path check (D-096: hashes of the pre-Apply local topology and the applied peers’ member route). Live lab: zero bypass packets after quarantine, control path still working. Another privileged daemon (NetBird) may raise a member link between steps: re-containment on the next step is proven, uninterrupted containment is not. Uplink filters are outside member-link containment. Netlab follow-up 14 (#285) now measures D-096 on the native IPv4 NetBird-owned path; D-108 keeps NetBird as the route/address owner while the agent waits. Installer-owned transit and IPv6 configurations remain outside that closure. D-100: topology expectations refresh only through a clean verified Apply of a newer published generation; no out-of-band override.",
-    "after": "   - **D-090 containment boundary (#262):** `enforce.Quarantine(ctx, executor, model)` independently attempts to record recovery intent as an empty owned nft set `quarantine_<interface>` in `inet fvpn`, lower the applied model’s member-facing link, and install and read back the no-probe baseline; it never deletes foreign tc objects. `enforce.Quarantine` does not change the agent’s serving state: `rejectServing` calls the agent’s quarantine wrapper and then `withdraw`. Confirmed containment requires the link to read back down and the baseline to be verified. Any failed step leaves quarantine incomplete and isolation unconfirmed; the agent remains non-serving and reports partial evidence in `ObservationReport.errors` at `stage: \"quarantine\"`, with `\"quarantine_incomplete\"` for a returned quarantine error. Agent-core follow-up 22 (#272) wires it at `rejectServing` through the Apply executor. Retained applied models survive baselines and restart as containment evidence only; live and Apply-triggered failures retain sanitized evidence. **The agent raises a link recorded by quarantine only after a clean full Apply verification with that link held down**. Clearing containment and restoring serving additionally require a passing member-path check (D-096: hashes of the pre-Apply local topology and the applied peers’ member route). Live lab: zero bypass packets after quarantine, control path still working. Another privileged daemon (NetBird) may raise a member link between steps: re-containment on the next step is proven, uninterrupted containment is not. Uplink filters are outside member-link containment. Netlab follow-up 14 (#285) now measures D-096 on the native IPv4 NetBird-owned path; D-108 keeps NetBird as the route/address owner while the agent waits. Installer-owned transit and IPv6 configurations remain outside that closure. D-100: topology expectations refresh only through a clean verified Apply of a newer published generation; no out-of-band override.",
+    "after": "   - **D-090 containment boundary (#262):** After validating the datapath, `enforce.Quarantine(ctx, executor, model)` independently attempts to record recovery intent as an empty owned nft set `quarantine_<interface>` in `inet fvpn`, lower the applied model’s member-facing link, and install and read back the no-probe baseline; it never deletes foreign tc objects. `enforce.Quarantine` does not change the agent’s serving state: `rejectServing` calls the agent’s quarantine wrapper and then `withdraw`. Containment is confirmed when the link reads back down and the baseline is verified. A returned error means the quarantine procedure did not complete; a marker failure alone can return an error while containment is confirmed. The agent remains non-serving. Quarantine evidence in `ObservationReport.errors` uses `initial_quarantine` for the wrapper’s first call, `quarantine` for its latest call, and `apply_quarantine` for Apply’s own quarantine. The wrapper reports `quarantine_incomplete` at `quarantine` only when its own quarantine call returns an error. Agent-core follow-up 22 (#272) wires it at `rejectServing` through the Apply executor. Retained applied models survive baselines and restart as containment evidence only; live and Apply-triggered failures retain sanitized evidence. **The agent raises a link recorded by quarantine only after a clean full Apply verification with that link held down**. Clearing containment and restoring serving additionally require a passing member-path check (D-096: hashes of the pre-Apply local topology and the applied peers’ member route). Live lab: zero bypass packets after quarantine, control path still working. Another privileged daemon (NetBird) may raise a member link between steps: re-containment on the next step is proven, uninterrupted containment is not. Uplink filters are outside member-link containment. Netlab follow-up 14 (#285) now measures D-096 on the native IPv4 NetBird-owned path; D-108 keeps NetBird as the route/address owner while the agent waits. Installer-owned transit and IPv6 configurations remain outside that closure. D-100: topology expectations refresh only through a clean verified Apply of a newer published generation; no out-of-band override.",
     "evidence": [
       "node/enforce/quarantine.go:57",
       "node/enforce/quarantine.go:67",
@@ -1175,7 +1187,15 @@
       "node/agent/quarantine.go:212",
       "node/enforce/apply.go:242",
       "node/enforce/apply.go:255",
-      "node/enforce/quarantine.go:163"
+      "node/enforce/quarantine.go:163",
+      "node/enforce/quarantine.go:63",
+      "node/enforce/quarantine.go:66",
+      "node/enforce/quarantine.go:68",
+      "node/agent/quarantine.go:94",
+      "node/agent/quarantine.go:134",
+      "node/agent/quarantine.go:149",
+      "node/agent/quarantine.go:203",
+      "node/agent/quarantine.go:209"
     ]
   },
   {
@@ -1229,7 +1249,7 @@
     "path": "docs/handover/member-guide.md",
     "name": "F7_member_provisional",
     "before": "after a node restart `fvpn-agent` treats a same-generation grant-less lease (`members: []`) as provisional under `D-067` (`#193`, `#198`, `#200`, reporting `awaiting_member_grants` and renewing after one heartbeat, then doubling, capped at `60 s`)",
-    "after": "after a node restart `fvpn-agent` treats a fresh, in-force same-generation grant-less lease (`members: []`) as provisional when valid desired state has nonempty bindings under `D-067` (`#193`, `#198`, `#200`, reporting `awaiting_member_grants` and using planned renewal spacing starting at one heartbeat capped at `60 s` and doubling up to that cap, which the renewal lead can shorten and server `Retry-After` can lengthen)",
+    "after": "after a node restart `fvpn-agent` treats a fresh, in-force same-generation grant-less lease (`members: []`) as provisional when valid desired state has nonempty bindings under `D-067` (`#193`, `#198`, `#200`; see the [operator guide’s provisional-window entry](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication) for reports and renewal spacing)",
     "evidence": [
       "node/agent/decide.go:229",
       "node/agent/decide.go:550",
@@ -1237,7 +1257,55 @@
       "node/agent/sync.go:139",
       "node/agent/sync.go:194",
       "node/agent/sync.go:207",
-      "node/agent/sync.go:235"
+      "node/agent/sync.go:235",
+      "node/agent/decide.go:214",
+      "node/agent/decide.go:227",
+      "node/agent/decide.go:593",
+      "docs/handover/operator-guide.md:518"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "F8_calibration_cap",
+    "before": "expires such a grant-less lease after `60 s` (`expires_at = issued_at + min(max_offline_seconds, 60s)`).",
+    "after": "sets `expires_at = issued_at + min(max_offline_seconds, 60s)` only when the node is published and registered and either not ready or its mapping is frozen; other grant-less leases keep the ordinary fleet offline expiry.",
+    "evidence": [
+      "internal/leases/leases.go:397",
+      "internal/leases/leases.go:438",
+      "internal/leases/leases.go:440",
+      "internal/leases/leases.go:447"
+    ]
+  },
+  {
+    "path": "docs/handover/member-guide.md",
+    "name": "F8_member_renewal",
+    "before": "renews the serving lease immediately in the step that applies a new desired-state generation",
+    "after": "attempts a serving-lease renewal in the step that applies a new desired-state generation when renewal is eligible, subject to the existing attempt and retry gates",
+    "evidence": [
+      "node/agent/engine.go:789",
+      "node/agent/engine.go:795",
+      "node/agent/sync.go:85",
+      "node/agent/sync.go:256",
+      "node/agent/sync.go:267"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F8_operator_reporting_and_renewal",
+    "before": "   - In `ObservationReport.forwarding.reason`, the node agent reports `policy_missing` when desired state is missing/unverified/expired/unpublished or when the stored lease is missing or belongs to another generation (in which case the `lease` check reports `STALE_GENERATION`), reports `awaiting_member_grants` (`D-067`, `D-071`, `#191`, `#198`, `#200`, `#213`, `#216`) when the stored lease for the applied generation is still inside its anchored monotonic deadline (`leaseInForce`) with `members: []` while `DesiredState.device_bindings` is non-empty, and reports `lease_expired` only when the anchored monotonic deadline of the lease for the applied generation has passed (other reasons: `safety_check_failed`, `check_failed`, `meter_unavailable`, `update_in_progress`, `recovery_required`). Revision 11 (`#213`, `#216`) names that provisional state `AWAITING_MEMBER_GRANTS`: the node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. In an otherwise healthy state with published, verified, unexpired desired state and nonempty bindings, the `lease`, `qos`, and `source_binding` checks carry `AWAITING_MEMBER_GRANTS`, with the sole lease-stage error `Serving lease has no member grants yet.` and passed safety. A retained Apply error or missing dependency overrides those three check codes; the independent lease-stage awaiting-grant error remains. Safety and probe-derived data health are computed independently, so their failures retain their codes and require investigation. The grant wait itself is not a deadline failure or a malformed policy. A passed deadline stays `lease_expired` / `LEASE_EXPIRED` (`Serving lease is not in force.`). A generation mismatch stays `policy_missing` / `STALE_GENERATION`. An empty desired `device_bindings` list carries neither reason nor this code. The step that applies a new desired generation requests a serving lease immediately when the stored lease's `config_generation` differs, without waiting for the renewal lead window, and admits bare IPv4 `allowed_ipv4` addresses in lease bindings as `/32`.",
+    "after": "   - In `ObservationReport.forwarding.reason`, the node agent reports `policy_missing` when desired state is missing/unverified/expired/unpublished or when the stored lease is missing or belongs to another generation (in which case the `lease` check reports `STALE_GENERATION`), and reports `lease_expired` only when the anchored monotonic deadline of the lease for the applied generation has passed (other reasons: `safety_check_failed`, `check_failed`, `meter_unavailable`, `update_in_progress`, `recovery_required`). Revision 11 (`#213`, `#216`) names that provisional state `AWAITING_MEMBER_GRANTS`: the node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. In an otherwise healthy state with published, verified, unexpired desired state and nonempty bindings, the `lease`, `qos`, and `source_binding` checks carry `AWAITING_MEMBER_GRANTS`, with the sole lease-stage error `Serving lease has no member grants yet.` and passed safety. A retained Apply error or missing dependency overrides those three check codes; the independent lease-stage awaiting-grant error remains. Safety and probe-derived data health are computed independently, so their failures retain their codes and require investigation. The grant wait itself is not a deadline failure or a malformed policy. A passed deadline stays `lease_expired` / `LEASE_EXPIRED` (`Serving lease is not in force.`). A generation mismatch stays `policy_missing` / `STALE_GENERATION`. An empty desired `device_bindings` list carries neither reason nor this code. The step that applies a new desired generation attempts a serving-lease renewal when eligible, subject to the existing attempt and retry gates, and admits bare IPv4 `allowed_ipv4` addresses in lease bindings as `/32`.",
+    "evidence": [
+      "node/agent/decide.go:214",
+      "node/agent/decide.go:227",
+      "node/agent/decide.go:593",
+      "docs/handover/operator-guide.md:518",
+      "node/agent/engine.go:789",
+      "node/agent/engine.go:795",
+      "node/agent/sync.go:85",
+      "node/agent/sync.go:256",
+      "node/agent/sync.go:267",
+      "node/agent/decide.go:675",
+      "node/agent/decide.go:759"
     ]
   }
 ]

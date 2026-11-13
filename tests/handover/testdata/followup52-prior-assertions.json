@@ -39,6 +39,20 @@
   },
   {
     "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_Followup9Claims",
+    "source_commit": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
+    "bytes": 7608,
+    "sha256": "d3cb86afeb8a4e4d7ca198628ac83ebddd16309cd372121a1210b542f3923963",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/calibration.md\")",
+        "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/calibration.md\"))",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "source": "tests/handover/handover_test.go",
     "function": "TestHandover_Followup10Claims",
     "source_commit": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
     "bytes": 5604,
