@@ -97,6 +97,15 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if !matches {
 			return "", errors.New("device event mismatch")
 		}
+		if event.EventType != "netbird.device_sync" {
+			captureCtx, release, err := nodelib.BeginOperationCapture(ctx, pool, event)
+			if err != nil {
+				return "", err
+			}
+			defer release()
+			ctx = captureCtx
+		}
+
 		syncErr := s.HTTP.Devices.SyncDevice(ctx, p.DeviceID)
 		if e := errors.Join(syncErr, recompileFencedMember(ctx, s, p.MemberID)); e != nil {
 			return "", e
@@ -116,6 +125,12 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if !current {
 			return "", errors.New("future entitlement event")
 		}
+		captureCtx, release, err := nodelib.BeginOperationCapture(ctx, pool, event)
+		if err != nil {
+			return "", err
+		}
+		defer release()
+		ctx = captureCtx
 		if err := commandtx.InTx(commandtx.WithClaim(ctx, event), pool, db.TxOptions{}, func(tx pgx.Tx) error {
 			return nodelib.CloseInactiveGenerationHoldsTx(ctx, tx, uuid.Nil, time.Now().UTC())
 		}); err != nil {
@@ -234,6 +249,9 @@ func memberJob(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		return "", e
 	}
 	e = db.InTx(ctx, pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := nodelib.FinishOperationCaptureTx(ctx, tx, time.Now().UTC()); err != nil {
+			return err
+		}
 		var exists bool
 		if _, e := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,121))`, event.ID.String()); e != nil {
 			return e

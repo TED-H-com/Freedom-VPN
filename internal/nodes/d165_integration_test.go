@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"net/netip"
 	"os"
+	"slices"
 	"sync"
 	"testing"
 	"time"
@@ -27,11 +28,13 @@ import (
 	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire"
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // Only the external identity and NetBird read-back are TEST ONLY inputs. All
@@ -422,4 +425,205 @@ func TestD165_T11_ReportBeforeCaptureCommitCounts(t *testing.T) {
 	w.dispatch("device.revoked")
 	w.wantStep(op, true)
 	w.target(op, w.reports[0].NodeId, "acknowledged")
+}
+
+// captureExistingMemberOperations routes older readiness fixtures through the
+// same worker boundary. SQL reads supply only the TEST ONLY external adapter;
+// target/capture/operation writes remain owned by product code.
+func captureExistingMemberOperations(t *testing.T, r *httpwire.Runtime, compiler *desiredstate.Compiler) {
+	t.Helper()
+	store, err := entitlement.NewStore(entitlement.TestConfig())
+	if err != nil {
+		t.Fatal(err)
+	}
+	peers := &d165Peers{peers: map[string]devices.Peer{}}
+	rows, err := r.Pool.Query(t.Context(), `SELECT d.deployment_id,d.peer_id,u.external_user_id,b.overlay_scope,host(b.overlay_ip),d.status='authorized',coalesce(e.projection->'exit_group_ids','[]') FROM member_devices d JOIN netbird_user_bindings u ON u.member_id=d.member_id AND u.deployment_id=d.deployment_id JOIN LATERAL (SELECT overlay_scope,overlay_ip FROM device_bindings WHERE device_id=d.id ORDER BY binding_revision DESC LIMIT 1) b ON true LEFT JOIN entitlements e ON e.member_id=d.member_id`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for rows.Next() {
+		var p devices.Peer
+		var ip string
+		var raw []byte
+		if err = rows.Scan(&p.DeploymentID, &p.ID, &p.ExternalUserID, &p.OverlayScope, &ip, &p.Authorized, &raw); err != nil {
+			t.Fatal(err)
+		}
+		p.OverlayIP = netip.MustParseAddr(ip)
+		p.Platform = "linux"
+		if err = json.Unmarshal(raw, &p.Groups); err != nil {
+			t.Fatal(err)
+		}
+		peers.peers[p.ID] = p
+	}
+	if err = rows.Err(); err != nil {
+		t.Fatal(err)
+	}
+	rows.Close()
+	services := &membersruntime.Services{HTTP: httpadapter.Services{Members: &members.Service{Pool: r.Pool, Entitlements: store}, Devices: &devices.Service{Pool: r.Pool, Entitlements: store, Adapter: peers}, Billing: &billing.Service{}}, Compiler: compiler}
+	events, err := db.ClaimOutbox(t.Context(), r.Pool, "TEST ONLY existing capture", 1000, time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A latest entitlement event includes earlier committed member operations.
+	slices.Reverse(events)
+	for _, event := range events {
+		switch event.EventType {
+		case "member.entitlement_changed", "member.suspended", "member.grant_revoked", "device.authorized", "device.revoked":
+			if _, err = worker.MemberJobs()[event.EventType](worker.WithMembers(t.Context(), services), event); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
+}
+
+type d165Peers struct{ peers map[string]devices.Peer }
+
+func (p *d165Peers) ObservePeer(_ context.Context, _, id string) (devices.Peer, error) {
+	v, ok := p.peers[id]
+	if !ok {
+		return v, fmt.Errorf("TEST ONLY peer missing")
+	}
+	return v, nil
+}
+func (p *d165Peers) SetAuthorization(_ context.Context, _, id string, allow bool, groups []uuid.UUID) error {
+	v := p.peers[id]
+	v.Authorized = allow
+	v.Groups = slices.Clone(groups)
+	p.peers[id] = v
+	return nil
+}
+
+func TestD165_RetryPreservesPinsAndAcceptedOutOfOrderAck(t *testing.T) {
+	w := newD165World(t, 1)
+	op := w.revokeDevice()
+	events, err := db.ClaimOutbox(t.Context(), w.r.Pool, "TEST ONLY retry", 1000, time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var event db.ClaimedEvent
+	for _, e := range events {
+		if e.EventType == "device.revoked" {
+			event = e
+		}
+	}
+	if event.ID == uuid.Nil {
+		t.Fatal("missing revoke event")
+	}
+	ctx := worker.WithMembers(t.Context(), w.services)
+	if _, err = worker.MemberJobs()[event.EventType](ctx, event); err != nil {
+		t.Fatal(err)
+	}
+	pinned := w.report(w.reports[0], "clean")
+	var original string
+	if err = w.r.Pool.QueryRow(t.Context(), `SELECT generation::text FROM node_operation_targets WHERE operation_id=$1`, op).Scan(&original); err != nil {
+		t.Fatal(err)
+	}
+	// An idempotent event retry may compile again but must not replace its pin.
+	if _, err = worker.MemberJobs()[event.EventType](ctx, event); err != nil {
+		t.Fatal(err)
+	}
+	var again string
+	if err = w.r.Pool.QueryRow(t.Context(), `SELECT generation::text FROM node_operation_targets WHERE operation_id=$1`, op).Scan(&again); err != nil || again != original {
+		t.Fatal("retry moved pin", again, original, err)
+	}
+	w.observe(w.report(w.reports[0], "pending"))
+	// Arrives later with an earlier observed_at; the node projection stays newer,
+	// but the accepted evidence still proves this operation's immutable pin.
+	w.observe(pinned)
+	w.wantStep(op, true)
+	w.target(op, pinned.NodeId, "acknowledged")
+}
+
+func TestD165_RevokedAndRetiredTargetsAreUnconfirmed(t *testing.T) {
+	for _, retire := range []bool{false, true} {
+		t.Run(fmt.Sprintf("retired_%v", retire), func(t *testing.T) {
+			w := newD165World(t, 1)
+			op := w.revokeDevice()
+			w.dispatch("device.revoked")
+			r := w.reports[0]
+			detail, _, err := w.r.Nodes.GetNode(t.Context(), r.NodeId)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cmd := enrollment.Command{Principal: "admin:" + w.admin.String(), Key: uuid.New()}
+			reason := "node_revoked"
+			if retire {
+				_, err = w.r.Enrollment.RetireNode(t.Context(), cmd, r.NodeId, &detail.ResourceVersion, "TEST ONLY retirement")
+				reason = "node_retired"
+			} else {
+				_, err = w.r.Enrollment.RevokeNode(t.Context(), cmd, r.NodeId, &detail.ResourceVersion, "TEST ONLY revocation")
+			}
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err = w.r.Nodes.SweepStaleNodes(t.Context(), 0, 0); err != nil {
+				t.Fatal(err)
+			}
+			w.wantStep(op, true)
+			w.target(op, r.NodeId, "unconfirmed")
+			var got string
+			if err = w.r.Pool.QueryRow(t.Context(), `SELECT reason FROM node_operation_targets WHERE operation_id=$1 AND node_id=$2`, op, r.NodeId).Scan(&got); err != nil || got != reason {
+				t.Fatal("unconfirmed reason", got, err)
+			}
+		})
+	}
+}
+
+func TestD165_FutureGrantLinksThroughMovedRevision(t *testing.T) {
+	w := newD165World(t, 1)
+	removed, err := w.services.HTTP.Members.RevokeMemberGrant(t.Context(), d165Command("admin", w.admin), w.member, w.grant, "TEST ONLY disconnected future grant")
+	if err != nil {
+		t.Fatal(err)
+	}
+	w.dispatch("member.entitlement_changed")
+	w.observe(w.report(w.reports[0], "clean"))
+	w.wantStep(*removed.OperationID, true)
+
+	var revision uuid.UUID
+	if err := w.r.Pool.QueryRow(t.Context(), `SELECT plan_revision_id FROM entitlement_grants WHERE id=$1`, w.grant).Scan(&revision); err != nil {
+		t.Fatal(err)
+	}
+	start := time.Now().UTC().Add(500 * time.Millisecond)
+	future, err := w.services.HTTP.Members.Grant(t.Context(), d165Command("admin", w.admin), w.member, api.GrantCreateRequest{Source: api.GrantSourceAdminGrant, ValidFrom: &start, ValidUntil: start.Add(13 * time.Hour), PlanRevisionId: &revision, Reason: "TEST ONLY future grant"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var before decstr.U64
+	if err = w.r.Pool.QueryRow(t.Context(), `SELECT desired_generation::text FROM operations WHERE id=$1`, future.OperationID).Scan(&before); err != nil {
+		t.Fatal(err)
+	}
+	// Replaying a previously claimed event must not capture the future operation.
+	var old db.ClaimedEvent
+	if err = w.r.Pool.QueryRow(t.Context(), `SELECT id,aggregate_id,aggregate_type,aggregate_version::text,event_type,schema_version,payload,lease_owner,lease_token FROM outbox_events WHERE event_type='member.entitlement_changed' AND aggregate_id=$1 ORDER BY created_at,id LIMIT 1`, w.member).Scan(&old.ID, &old.AggregateID, &old.AggregateType, &old.AggregateVersion, &old.EventType, &old.SchemaVersion, &old.Payload, &old.Worker, &old.LeaseToken); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = worker.MemberJobs()[old.EventType](worker.WithMembers(t.Context(), w.services), old); err != nil {
+		t.Fatal(err)
+	}
+	var captured bool
+	if err = w.r.Pool.QueryRow(t.Context(), `SELECT EXISTS(SELECT 1 FROM node_operation_captures WHERE operation_id=$1)`, future.OperationID).Scan(&captured); err != nil || captured {
+		t.Fatal("future grant captured before activation", captured, err)
+	}
+	timer := time.NewTimer(time.Until(start.Add(time.Millisecond)))
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+	case <-t.Context().Done():
+		t.Fatal(t.Context().Err())
+	}
+	if err = db.InTx(t.Context(), w.r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		_, e := w.services.HTTP.Members.Entitlements.Recompute(t.Context(), tx, w.member)
+		return e
+	}); err != nil {
+		t.Fatal(err)
+	}
+	var after decstr.U64
+	if err = w.r.Pool.QueryRow(t.Context(), `SELECT desired_generation::text FROM operations WHERE id=$1`, future.OperationID).Scan(&after); err != nil || after <= before {
+		t.Fatal("future grant did not move to activation revision", before, after, err)
+	}
+	w.dispatch("member.entitlement_changed")
+	w.wantStep(*future.OperationID, false)
+	w.observe(w.report(w.reports[0], "clean"))
+	w.wantStep(*future.OperationID, true)
+	w.target(*future.OperationID, w.reports[0].NodeId, "acknowledged")
 }

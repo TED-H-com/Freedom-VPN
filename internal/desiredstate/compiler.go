@@ -280,6 +280,10 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		}
 		return CompiledDesiredState{}, err
 	}
+	var previousEnvelope []byte
+	if err := tx.QueryRow(ctx, `SELECT coalesce((SELECT envelope FROM desired_state_envelopes WHERE node_id=$1 AND incarnation_id=$2),'{}'::jsonb)`, nodeID, currentIncarnationID).Scan(&previousEnvelope); err != nil {
+		return CompiledDesiredState{}, err
+	}
 	if currentIncarnationID == nil || *currentIncarnationID == uuid.Nil {
 		return CompiledDesiredState{}, apierr.Newf(apierr.StateConflict, "node %s has no active incarnation", nodeID)
 	}
@@ -650,6 +654,10 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		SET desired_config_generation = $2::numeric,
 		    resource_version = resource_version + 1
 		WHERE id = $1`, nodeID, strconv.FormatUint(nextGen, 10)); err != nil {
+		return CompiledDesiredState{}, err
+	}
+
+	if err := nodes.RecordOperationTargetsTx(ctx, tx, nodeID, incarnationID, strconv.FormatUint(nextGen, 10), previousEnvelope, envJSON); err != nil {
 		return CompiledDesiredState{}, err
 	}
 

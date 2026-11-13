@@ -365,6 +365,7 @@ func TestM3_RevokeOperationHeldOnPendingIsolationApplyErrorAndCompletedOnResolut
 			t.Fatalf("TransitionOperation netbird: %v", err)
 		}
 
+		captureExistingMemberOperations(t, r, compiler)
 		compRevoke, err := compiler.Compile(ctx, report.NodeId)
 		if err != nil {
 			t.Fatalf("Compile after RevokeDevice: %v", err)
@@ -520,84 +521,11 @@ func TestM3_RevokeOperationHeldOnPendingIsolationApplyErrorAndCompletedOnResolut
 		{name: "conntrack_not_installed", detail: "Conntrack is not installed."},
 	} {
 		t.Run("member_suspend_and_grant_revoke_complete_when_node_fails_closed_"+failClosedCase.name, func(t *testing.T) {
-			r, _, report := nodestest.BaselineObservation(t, "../../contracts/examples/valid/ObservationReport.json")
+			w := newD165World(t, 1)
+			r, report, now := w.r, w.reports[0], w.now
 			ctx := t.Context()
-			now := report.ObservedAt.UTC()
-
-			if _, err := r.Nodes.SubmitObservation(ctx, report.NodeId, report.NodeIncarnationId, report); err != nil {
-				t.Fatalf("SubmitObservation baseline: %v", err)
-			}
-
-			adminID := uuid.New()
-			var grp api.MemberGroup
-			if err := db.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-				var gErr error
-				grp, gErr = r.Nodes.CreateGroupTx(ctx, tx, "admin:"+adminID.String(), nil, api.MemberGroupCreate{
-					Code: "grp-m3-fc",
-					Name: "M3 FailClosed Group",
-				})
-				return gErr
-			}); err != nil {
-				t.Fatalf("CreateGroupTx: %v", err)
-			}
-
-			compiler := r.DesiredStateCompiler()
-			exitsSvc := exits.NewService(r.Pool, compiler, nil, exits.WithClock(func() time.Time { return now }))
-			_, etag, err := r.Nodes.GetNode(ctx, report.NodeId)
-			if err != nil {
-				t.Fatalf("GetNode: %v", err)
-			}
-			groupIDs := []uuid.UUID{grp.GroupId}
-			if _, _, err := exitsSvc.SetPublication(ctx, exits.SetPublicationParams{
-				NodeID:         report.NodeId,
-				Principal:      "admin:" + adminID.String(),
-				IdempotencyKey: uuid.New(),
-				IfMatch:        etag,
-				Request: api.PublicationRequest{
-					PublicationIntent: api.PublicationIntentPublished,
-					Reason:            "TEST ONLY M-3 fail-closed test",
-					GroupIds:          &groupIDs,
-				},
-			}); err != nil {
-				t.Fatalf("SetPublication: %v", err)
-			}
-
-			memberID := uuid.New()
-			planID := uuid.New()
-			planRevID := uuid.New()
-			if _, err := r.Pool.Exec(ctx, `INSERT INTO members (id, status) VALUES ($1, 'active')`, memberID); err != nil {
-				t.Fatalf("insert member: %v", err)
-			}
-			if _, err := r.Pool.Exec(ctx, `INSERT INTO plans (id, code) VALUES ($1, 'plan-m3-fc')`, planID); err != nil {
-				t.Fatalf("insert plan: %v", err)
-			}
-			if _, err := r.Pool.Exec(ctx, `INSERT INTO plan_revisions (id, plan_id, revision, device_limit, exit_group_ids, schema_version, payload) VALUES ($1, $2, 1, 3, $3, 1, '{"rate_limit":{"down_bps":100000000,"up_bps":50000000}}')`, planRevID, planID, []uuid.UUID{grp.GroupId}); err != nil {
-				t.Fatalf("insert plan_revision: %v", err)
-			}
-
-			entStore, err := entitlement.NewStore(entitlement.TestConfig())
-			if err != nil {
-				t.Fatalf("entitlement.NewStore: %v", err)
-			}
-			entStore.Now = func() time.Time { return now }
-			membersSvc := &members.Service{Pool: r.Pool, Entitlements: entStore}
-
-			validFrom := now.Add(-time.Hour)
-			validUntil := now.Add(12 * time.Hour)
-			grantRes, err := membersSvc.Grant(ctx, entitlement.Command{
-				Actor: entitlement.Actor{Role: "admin", ID: adminID, RequestID: uuid.New()},
-				Key:   uuid.New(),
-			}, memberID, api.GrantCreateRequest{
-				Source:         api.GrantSourceAdminGrant,
-				ValidFrom:      &validFrom,
-				ValidUntil:     validUntil,
-				Reason:         "TEST ONLY M-3 grant",
-				PlanRevisionId: &planRevID,
-			})
-			if err != nil {
-				t.Fatalf("members.Grant: %v", err)
-			}
-			grantID := grantRes.ResourceID
+			adminID, memberID, grantID := w.admin, w.member, w.grant
+			compiler, membersSvc := w.compiler, w.services.HTTP.Members
 
 			compInitial, err := compiler.Compile(ctx, report.NodeId)
 			if err != nil {
@@ -654,6 +582,7 @@ func TestM3_RevokeOperationHeldOnPendingIsolationApplyErrorAndCompletedOnResolut
 				}
 			}
 
+			captureExistingMemberOperations(t, r, compiler)
 			compRevoke, err := compiler.Compile(ctx, report.NodeId)
 			if err != nil {
 				t.Fatalf("Compile after suspend: %v", err)
@@ -893,6 +822,7 @@ func TestM3_RevokeOperationHeldOnPendingIsolationApplyErrorAndCompletedOnResolut
 			t.Fatalf("TransitionOperation netbird: %v", err)
 		}
 
+		captureExistingMemberOperations(t, r, compiler)
 		compRev1, err := compiler.Compile(ctx, report1.NodeId)
 		if err != nil {
 			t.Fatalf("Compile node1 revoke: %v", err)
@@ -1239,6 +1169,7 @@ func TestD067_AwaitingMemberGrantsReadModelAndOperationProjection(t *testing.T) 
 		t.Fatalf("TransitionOperation netbird: %v", err)
 	}
 
+	captureExistingMemberOperations(t, r, compiler)
 	comp, err := compiler.Compile(ctx, report.NodeId)
 	if err != nil {
 		t.Fatalf("Compile: %v", err)
@@ -1490,6 +1421,7 @@ func (w *r14World) revoke(m r14Member) uuid.UUID {
 	if err != nil {
 		w.t.Fatal(err)
 	}
+	captureExistingMemberOperations(w.t, w.r, w.compiler)
 	return opID
 }
 

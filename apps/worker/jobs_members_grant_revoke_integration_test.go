@@ -98,9 +98,11 @@ func TestAT29_D077_GrantWithdrawalReconcilesFenceBeforeReceipt(t *testing.T) {
 					t.Fatal("withdrawal leased a fenced device")
 				}
 			}
-			var observed, awaitingNodes bool
-			if err = f.pool.QueryRow(t.Context(), `SELECT steps->'netbird'->>'status'='succeeded' AND steps->'netbird'->>'observed_at' IS NOT NULL,steps->'nodes'->>'status'='pending' AND steps->'nodes'->>'observed_at' IS NULL AND completed_at IS NULL AND status<>'succeeded' FROM operations WHERE id=$1`, withdrawal.OperationID).Scan(&observed, &awaitingNodes); err != nil || !observed || !awaitingNodes {
-				t.Fatal("withdrawal skipped read-back or fabricated node enforcement", observed, awaitingNodes, err)
+			// D-165: this fixture has never reported. Complete with explicit
+			// unconfirmed evidence, never an invented enforcement ACK.
+			var observed, unconfirmed bool
+			if err = f.pool.QueryRow(t.Context(), `SELECT steps->'netbird'->>'status'='succeeded' AND steps->'netbird'->>'observed_at' IS NOT NULL,steps->'nodes'->>'status'='succeeded' AND completed_at IS NOT NULL AND status='succeeded' AND EXISTS(SELECT 1 FROM node_operation_targets t WHERE t.operation_id=operations.id AND t.outcome='unconfirmed' AND t.reason='observation_stale' AND t.observed_ref IS NULL) FROM operations WHERE id=$1`, withdrawal.OperationID).Scan(&observed, &unconfirmed); err != nil || !observed || !unconfirmed {
+				t.Fatal("withdrawal skipped read-back or fabricated node enforcement", observed, unconfirmed, err)
 			}
 		})
 	}

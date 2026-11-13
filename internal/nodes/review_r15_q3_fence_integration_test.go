@@ -72,7 +72,7 @@ func TestReviewR15_QuietPeerReleasesTheRevokeAfterNinetyOneSeconds(t *testing.T)
 // TestReviewR15_RevokedPlanRevisionStillHoldsTheFence grants a plan in group
 // OLD and revokes that sole grant, leaving projected exit_group_ids empty.
 // The projector writes the active projection. A peer published only in OLD
-// must not keep member_device.revoke once the active projection is empty.
+// remains a target when its pre-compile configuration named the device (D-165).
 func TestReviewR15_RevokedPlanRevisionStillHoldsTheFence(t *testing.T) {
 	w := newR14World(t)
 	ctx := w.t.Context()
@@ -82,6 +82,9 @@ func TestReviewR15_RevokedPlanRevisionStillHoldsTheFence(t *testing.T) {
 	w.observe(ready)
 	w.publish(peer.NodeId, oldGroup)
 	member := w.bindDevice("r15-old", "100.64.0.62", []uuid.UUID{oldGroup})
+	if _, n := w.prepare(peer, true, false); n != 1 {
+		t.Fatalf("former carrier bindings=%d, want 1", n)
+	}
 
 	var grantID uuid.UUID
 	if err := w.r.Pool.QueryRow(ctx, `SELECT id FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL`, member.id).Scan(&grantID); err != nil {
@@ -110,12 +113,12 @@ func TestReviewR15_RevokedPlanRevisionStillHoldsTheFence(t *testing.T) {
 		t.Fatalf("active projection exit_group_ids = %s after revoking the only grant, want [] before claiming the fence (setup, not a finding)", groups)
 	}
 
+	opID := w.revoke(member)
 	dirty, n := w.prepare(peer, true, true)
 	if n != 0 {
 		t.Fatalf("peer compiled %d bindings from an empty active projection", n)
 	}
 	w.observe(dirty)
-	opID := w.revoke(member)
 	clean, n := w.prepare(w.primary, true, false)
 	if n != 0 {
 		t.Fatalf("clean node compiled %d bindings from an empty active projection", n)
@@ -123,6 +126,13 @@ func TestReviewR15_RevokedPlanRevisionStillHoldsTheFence(t *testing.T) {
 	w.observe(clean)
 	op := w.operation(opID)
 	st, ok := nodesStep(op)
+	if !ok || op.Status == api.OperationStatusSucceeded || st.Status == api.OperationStepStatusSucceeded {
+		t.Fatalf("D165 former carrier did not hold empty projection: operation=%s step=%s", op.Status, stepText(st))
+	}
+	resolved, _ := w.prepare(peer, false, false)
+	w.observe(resolved)
+	op = w.operation(opID)
+	st, ok = nodesStep(op)
 	if !ok || op.Status != api.OperationStatusSucceeded || st.Status != api.OperationStepStatusSucceeded {
 		t.Fatalf("revoked grant still holds the empty-projection fence: operation=%s step=%s", op.Status, stepText(st))
 	}
