@@ -107,6 +107,7 @@ func newDatabase(t testing.TB, migrate bool) (*pgxpool.Pool, string) {
 	cfg.ConnConfig.RuntimeParams["lock_timeout"] = "10000"
 	cfg.ConnConfig.RuntimeParams["idle_in_transaction_session_timeout"] = "30000"
 	cfg.MaxConns = 10
+	db.ConfigureUTC(cfg)
 	pool, err = pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatal("open isolated database failed")

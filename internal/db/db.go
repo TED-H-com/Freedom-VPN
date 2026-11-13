@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -54,6 +56,7 @@ func Open(ctx context.Context, dsn string, opts OpenOptions) (*pgxpool.Pool, err
 		cfg.ConnConfig.RuntimeParams[key] = strconv.FormatInt(max(1, value.Milliseconds()), 10)
 	}
 	cfg.ConnConfig.RuntimeParams["timezone"] = "UTC"
+	ConfigureUTC(cfg)
 	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		return nil, errors.New("cannot create database pool")
@@ -68,4 +71,31 @@ func Open(ctx context.Context, dsn string, opts OpenOptions) (*pgxpool.Pool, err
 		return nil, errors.New("database connection failed")
 	}
 	return pool, nil
+}
+
+// ConfigureUTC makes every new pool connection scan scalar timestamptz values in UTC
+// (§14.1). The server's timezone setting alone does not affect binary decoding.
+// Call this before creating the pool. Any existing AfterConnect runs first; its
+// errors are preserved, and UTC registration follows only if it succeeds.
+// Ranges and multiranges of timestamptz resolve their bounds through the
+// connection's type map, so they scan in UTC.
+// Arrays of timestamptz retain pgx's default element codec: elements scanned into
+// pgtype.Timestamptz or another pgtype.TimestamptzScanner can use the local zone,
+// while elements scanned into time.Time use the connection's map and scan in UTC.
+// No product query scans timestamptz arrays.
+func ConfigureUTC(cfg *pgxpool.Config) {
+	afterConnect := cfg.AfterConnect
+	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		if afterConnect != nil {
+			if err := afterConnect(ctx, conn); err != nil {
+				return err
+			}
+		}
+		conn.TypeMap().RegisterType(&pgtype.Type{
+			Name:  "timestamptz",
+			OID:   pgtype.TimestamptzOID,
+			Codec: &pgtype.TimestamptzCodec{ScanLocation: time.UTC},
+		})
+		return nil
+	}
 }
