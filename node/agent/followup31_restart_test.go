@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"testing/synctest"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/google/uuid"
@@ -65,49 +66,55 @@ func (p *cancelAfterReadPlane) VerifyServing(ctx context.Context, m enforce.Mode
 }
 
 func TestF31_AT13_CancellationAfterLiveReadKeepsRestartAuthorization(t *testing.T) {
-	r := newRig(t)
-	alignControlClock(r)
-	serveBoundGeneration(t, r)
-	r.manualUsage(t)
-	ctx, cancel := context.WithCancel(t.Context())
-	defer cancel()
-	r.eng.plane = &cancelAfterReadPlane{r.plane, cancel}
-	baselines, lease, deadline := r.plane.baselines, r.eng.lease.LeaseId, r.eng.policyExpires
-	if err := r.eng.Step(ctx); err != context.Canceled {
-		t.Fatalf("Step returned %v, want cancellation", err)
-	}
-	if !r.eng.storageOK || r.eng.usagePersist || !r.eng.serving {
-		t.Fatalf("canceled Step poisoned healthy storage/serving: storage=%v persist=%v serving=%v; %s", r.eng.storageOK, r.eng.usagePersist, r.eng.serving, r.log.String())
-	}
-	restartEngine(t, r, r.plane)
-	if !r.eng.serving || r.plane.baselines != baselines || r.eng.lease.LeaseId != lease || r.eng.policyExpires != deadline {
-		t.Fatal("restart lost original valid authorization")
-	}
+	synctest.Test(t, func(t *testing.T) {
+		r := newRig(t)
+		alignControlClock(r)
+		serveBoundGeneration(t, r)
+		r.manualUsage(t)
+		ctx, cancel := context.WithCancel(t.Context())
+		defer cancel()
+		r.eng.plane = &cancelAfterReadPlane{r.plane, cancel}
+		baselines, lease, deadline := r.plane.baselines, r.eng.lease.LeaseId, r.eng.policyExpires
+		if err := r.eng.Step(ctx); err != context.Canceled {
+			t.Fatalf("Step returned %v, want cancellation", err)
+		}
+		if !r.eng.storageOK || r.eng.usagePersist || !r.eng.serving {
+			t.Fatalf("canceled Step poisoned healthy storage/serving: storage=%v persist=%v serving=%v; %s", r.eng.storageOK, r.eng.usagePersist, r.eng.serving, r.log.String())
+		}
+		closeAdoptionControl(t, r)
+		restartEngine(t, r, r.plane)
+		if !r.eng.serving || r.plane.baselines != baselines || r.eng.lease.LeaseId != lease || r.eng.policyExpires != deadline {
+			t.Fatal("restart lost original valid authorization")
+		}
+	})
 }
 
 func TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization(t *testing.T) {
 	for _, phase := range []string{"apply", "member_path"} {
 		t.Run(phase, func(t *testing.T) {
-			r := newRig(t)
-			alignControlClock(r)
-			serveBoundGeneration(t, r)
-			r.manualUsage(t)
-			ctx, cancel := context.WithCancel(t.Context())
-			defer cancel()
-			r.eng.plane = &cancelLocalWorkPlane{memPlane: r.plane, cancel: cancel, phase: phase}
-			requireApplyChangeForTest(r)
-			baselines, lease, deadline := r.plane.baselines, r.eng.lease.LeaseId, r.eng.policyExpires
-			_ = r.eng.Step(ctx)
-			if ctx.Err() == nil {
-				t.Fatal("cancellation callback did not run")
-			}
-			if !r.eng.storageOK || r.eng.usagePersist || !r.eng.serving || r.eng.applyError != nil {
-				t.Fatalf("cancellation interrupted local %s: storage=%v persist=%v serving=%v error=%v", phase, r.eng.storageOK, r.eng.usagePersist, r.eng.serving, r.eng.applyError)
-			}
-			restartEngine(t, r, r.plane)
-			if !r.eng.serving || r.plane.baselines != baselines || r.eng.lease.LeaseId != lease || r.eng.policyExpires != deadline {
-				t.Fatal("restart lost original valid authorization")
-			}
+			synctest.Test(t, func(t *testing.T) {
+				r := newRig(t)
+				alignControlClock(r)
+				serveBoundGeneration(t, r)
+				r.manualUsage(t)
+				ctx, cancel := context.WithCancel(t.Context())
+				defer cancel()
+				r.eng.plane = &cancelLocalWorkPlane{memPlane: r.plane, cancel: cancel, phase: phase}
+				requireApplyChangeForTest(r)
+				baselines, lease, deadline := r.plane.baselines, r.eng.lease.LeaseId, r.eng.policyExpires
+				_ = r.eng.Step(ctx)
+				if ctx.Err() == nil {
+					t.Fatal("cancellation callback did not run")
+				}
+				if !r.eng.storageOK || r.eng.usagePersist || !r.eng.serving || r.eng.applyError != nil {
+					t.Fatalf("cancellation interrupted local %s: storage=%v persist=%v serving=%v error=%v", phase, r.eng.storageOK, r.eng.usagePersist, r.eng.serving, r.eng.applyError)
+				}
+				closeAdoptionControl(t, r)
+				restartEngine(t, r, r.plane)
+				if !r.eng.serving || r.plane.baselines != baselines || r.eng.lease.LeaseId != lease || r.eng.policyExpires != deadline {
+					t.Fatal("restart lost original valid authorization")
+				}
+			})
 		})
 	}
 }

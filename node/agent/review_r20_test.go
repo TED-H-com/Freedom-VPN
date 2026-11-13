@@ -15,6 +15,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -139,7 +140,9 @@ func r20ReadUsage(t *testing.T, cfg Config, node, inc uuid.UUID) r20Usage {
 // the serving rules and the open same-boot epoch. The returned source is the
 // kernel the successor reads: the retained rules counted 4096 more bytes in
 // the process gap.
-func r20ServedPendingDelta(t *testing.T) (*rig, *r20DynamicSource, string) {
+// beforeSample lets a bubble caller stop network I/O and advance the sample
+// clock; ordinary callers keep their existing wall-clock setup.
+func r20ServedPendingDelta(t *testing.T, beforeSample ...func(*rig)) (*rig, *r20DynamicSource, string) {
 	t.Helper()
 	r := newRig(t)
 	alignControlClock(r)
@@ -147,6 +150,9 @@ func r20ServedPendingDelta(t *testing.T) (*rig, *r20DynamicSource, string) {
 	r.eng.cfg.ExtraDeniedV4 = []string{"203.0.113.1/32"}
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
+	for _, prepare := range beforeSample {
+		prepare(r)
+	}
 	binding := r.eng.appliedModel.Bindings[0]
 	upName := meter.CounterName(binding.DeviceID, meter.DirUpload)
 	r.eng.meter.Close()
@@ -506,34 +512,37 @@ func (p *r20GenVerifyPlane) VerifyServing(ctx context.Context, m enforce.Model, 
 // live health challenge must not read that descriptor as the updater's lock
 // (false D-064) and replace the retained rules with a probe baseline.
 func TestR20_M2_AdoptionLockIsNotUpdaterLock(t *testing.T) {
-	r := newRig(t)
-	alignControlClock(r)
-	serveBoundGeneration(t, r)
-	r.manualUsage(t)
-	probeChallenge(t, r, labProbe(), 0)
-	if err := r.eng.Close(); err != nil {
-		t.Fatal(err)
-	}
-	plane := &r20GenVerifyPlane{memPlane: r.plane}
-	next, err := Start(Options{Config: r.eng.cfg, Clock: r.clock, Plane: plane,
-		MeterSource: staticSource{boot: r.eng.bootID.String()}, Prober: passProbe{}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = next.Close() })
-	before := len(r.plane.calls)
-	if err := next.Boot(t.Context()); err != nil {
-		t.Fatal(err)
-	}
-	for _, c := range r.plane.calls[before:] {
-		if c.kind == "baseline_model" && c.model.Probe != nil {
-			t.Fatalf("M-2: adoption read its own node lock as the updater's and installed a probe baseline (D-064); serving=%v", next.serving)
+	synctest.Test(t, func(t *testing.T) {
+		r := newRig(t)
+		alignControlClock(r)
+		serveBoundGeneration(t, r)
+		r.manualUsage(t)
+		probeChallenge(t, r, labProbe(), 0)
+		closeAdoptionControl(t, r)
+		if err := r.eng.Close(); err != nil {
+			t.Fatal(err)
 		}
-	}
-	if !next.serving || r.plane.last.Generation != 2 {
-		t.Fatalf("M-2: unchanged same-boot rules not adopted: serving=%v kernel generation=%d errors=%v",
-			next.serving, r.plane.last.Generation, next.decision.Errors)
-	}
+		plane := &r20GenVerifyPlane{memPlane: r.plane}
+		next, err := Start(Options{Config: r.eng.cfg, Clock: r.clock, Plane: plane,
+			MeterSource: staticSource{boot: r.eng.bootID.String()}, Prober: passProbe{}})
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { _ = next.Close() })
+		before := len(r.plane.calls)
+		if err := next.Boot(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		for _, c := range r.plane.calls[before:] {
+			if c.kind == "baseline_model" && c.model.Probe != nil {
+				t.Fatalf("M-2: adoption read its own node lock as the updater's and installed a probe baseline (D-064); serving=%v", next.serving)
+			}
+		}
+		if !next.serving || r.plane.last.Generation != 2 {
+			t.Fatalf("M-2: unchanged same-boot rules not adopted: serving=%v kernel generation=%d errors=%v",
+				next.serving, r.plane.last.Generation, next.decision.Errors)
+		}
+	})
 }
 
 // M-3: a stop that withdraws serving records the withdrawal in the heartbeat.
@@ -821,112 +830,122 @@ func TestR20_Q3_Held_CorruptOrRebootedRetainedAppliedFailsClosed(t *testing.T) {
 
 func TestR20_Q6_Held_TwoCrashesAndRebootCounterRecovery(t *testing.T) {
 	t.Run("two_consecutive_crashes_same_boot_recover_once", func(t *testing.T) {
-		r := newRig(t)
-		alignControlClock(r)
-		r.srv.SetUsageUnavailable(1000)
-		serveBoundGeneration(t, r)
-		r.manualUsage(t)
+		synctest.Test(t, func(t *testing.T) {
+			r := newRig(t)
+			alignControlClock(r)
+			r.srv.SetUsageUnavailable(1000)
+			serveBoundGeneration(t, r)
+			r.manualUsage(t)
+			closeAdoptionControl(t, r)
+			// A changed counter needs a nonempty interval on the bubble clock.
+			time.Sleep(time.Microsecond)
 
-		binding := r.eng.appliedModel.Bindings[0]
-		upName := meter.CounterName(binding.DeviceID, meter.DirUpload)
+			binding := r.eng.appliedModel.Bindings[0]
+			upName := meter.CounterName(binding.DeviceID, meter.DirUpload)
 
-		r.eng.meter.Close()
-		src := &r20DynamicSource{
-			boot:     r.eng.bootID.String(),
-			bindings: r.eng.meterBindings,
-			counters: map[string]enforce.CounterValue{upName: {Packets: 1, Bytes: 4096}},
-		}
-		var err error
-		r.eng.meter, err = meter.New(meter.Config{
-			NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: src,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := r.eng.meter.Sample(t.Context()); err != nil {
-			t.Fatal(err)
-		}
-		// Crash 1: counter advances to 6144, process dies without final sample.
-		src.setCounter(upName, enforce.CounterValue{Packets: 2, Bytes: 6144})
-		r.eng.meter.Close()
-		_ = r.eng.usage.Close()
-		if r.eng.usageLock != nil {
-			r.eng.usageLock.Release()
-		}
-		_ = r.eng.store.Close()
-
-		// Process 2 adopts same-boot serving, then crashes before sampling while counter advances to 8192.
-		eng2, err := Start(Options{
-			Config:      r.eng.cfg,
-			Clock:       r.clock,
-			Plane:       r.plane,
-			MeterSource: src,
-			Prober:      passProbe{},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		src.setBindings(eng2.meterBindings)
-		if err := eng2.Boot(t.Context()); err != nil {
-			t.Fatal(err)
-		}
-		if !eng2.serving {
-			t.Fatal("expected eng2 to adopt same-boot serving")
-		}
-		if eng2.loopCancel != nil {
-			eng2.loopCancel()
-			eng2.loops.Wait()
-		}
-		src.setCounter(upName, enforce.CounterValue{Packets: 3, Bytes: 8192})
-		eng2.meter.Close()
-		_ = eng2.usage.Close()
-		if eng2.usageLock != nil {
-			eng2.usageLock.Release()
-		}
-		_ = eng2.store.Close()
-
-		// Process 3 adopts same-boot serving and samples once.
-		eng3, err := Start(Options{
-			Config:      r.eng.cfg,
-			Clock:       r.clock,
-			Plane:       r.plane,
-			MeterSource: src,
-			Prober:      passProbe{},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Cleanup(func() { _ = eng3.Close() })
-		src.setBindings(eng3.meterBindings)
-		if err := eng3.Boot(t.Context()); err != nil {
-			t.Fatal(err)
-		}
-		if !eng3.serving {
-			t.Fatal("expected eng3 to adopt same-boot serving")
-		}
-		if eng3.loopCancel != nil {
-			eng3.loopCancel()
-			eng3.loops.Wait()
-		}
-		if err := eng3.meter.Sample(t.Context()); err != nil {
-			t.Fatal(err)
-		}
-		snap, err := usagestore.ReadSnapshot(t.Context(), r.eng.cfg.UsageDBPath())
-		if err != nil {
-			t.Fatal(err)
-		}
-		var total uint64
-		for _, ev := range snap.UnackedEvents {
-			for _, rec := range ev.Records {
-				n, err := strconv.ParseUint(rec.UploadBytes, 10, 64)
-				if err != nil {
-					t.Fatal(err)
-				}
-				total += n
+			r.eng.meter.Close()
+			src := &r20DynamicSource{
+				boot:     r.eng.bootID.String(),
+				bindings: r.eng.meterBindings,
+				counters: map[string]enforce.CounterValue{upName: {Packets: 1, Bytes: 4096}},
 			}
-		}
-		if total != 8192 {
-			t.Fatalf("recovered %d bytes across two consecutive crashes, want 8192", total)
-		}
+			var err error
+			r.eng.meter, err = meter.New(meter.Config{
+				NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: src,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := r.eng.meter.Sample(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			// Crash 1: counter advances to 6144, process dies without final sample.
+			src.setCounter(upName, enforce.CounterValue{Packets: 2, Bytes: 6144})
+			r.eng.meter.Close()
+			_ = r.eng.usage.Close()
+			if r.eng.usageLock != nil {
+				r.eng.usageLock.Release()
+			}
+			_ = r.eng.store.Close()
+
+			// Process 2 adopts same-boot serving, then crashes before sampling while counter advances to 8192.
+			eng2, err := Start(Options{
+				Config:      r.eng.cfg,
+				Clock:       r.clock,
+				Plane:       r.plane,
+				MeterSource: src,
+				Prober:      passProbe{},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() {
+				r20Crash(eng2)
+				eng2.client.Close()
+			})
+			src.setBindings(eng2.meterBindings)
+			if err := eng2.Boot(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			if !eng2.serving {
+				t.Fatal("expected eng2 to adopt same-boot serving")
+			}
+			if eng2.loopCancel != nil {
+				eng2.loopCancel()
+				eng2.loops.Wait()
+			}
+			src.setCounter(upName, enforce.CounterValue{Packets: 3, Bytes: 8192})
+			eng2.meter.Close()
+			_ = eng2.usage.Close()
+			if eng2.usageLock != nil {
+				eng2.usageLock.Release()
+			}
+			_ = eng2.store.Close()
+
+			// Process 3 adopts same-boot serving and samples once.
+			eng3, err := Start(Options{
+				Config:      r.eng.cfg,
+				Clock:       r.clock,
+				Plane:       r.plane,
+				MeterSource: src,
+				Prober:      passProbe{},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { _ = eng3.Close() })
+			src.setBindings(eng3.meterBindings)
+			if err := eng3.Boot(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			if !eng3.serving {
+				t.Fatal("expected eng3 to adopt same-boot serving")
+			}
+			if eng3.loopCancel != nil {
+				eng3.loopCancel()
+				eng3.loops.Wait()
+			}
+			time.Sleep(time.Microsecond)
+			if err := eng3.meter.Sample(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			snap, err := usagestore.ReadSnapshot(t.Context(), r.eng.cfg.UsageDBPath())
+			if err != nil {
+				t.Fatal(err)
+			}
+			var total uint64
+			for _, ev := range snap.UnackedEvents {
+				for _, rec := range ev.Records {
+					n, err := strconv.ParseUint(rec.UploadBytes, 10, 64)
+					if err != nil {
+						t.Fatal(err)
+					}
+					total += n
+				}
+			}
+			if total != 8192 {
+				t.Fatalf("recovered %d bytes across two consecutive crashes, want 8192", total)
+			}
+		})
 	})
 }

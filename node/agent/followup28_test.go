@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -217,25 +218,28 @@ func TestAT13_ISOF603_ExactProducerReplay955To961(t *testing.T) {
 }
 
 func TestAT13_ISOF603_SameBootRestartKeepsRulesAndDeadline(t *testing.T) {
-	r := newRig(t)
-	alignControlClock(r)
-	serveBoundGeneration(t, r)
-	r.manualUsage(t)
-	deadline, lease, anchor := r.eng.policyExpires, r.eng.lease.LeaseId, r.eng.leaseMono
-	baselines, applies := r.plane.baselines, r.plane.applies
-	head, err := r.eng.usage.Head(t.Context())
-	if err != nil {
-		t.Fatal(err)
-	}
-	r.clock.Advance(time.Second)
-	restartEngine(t, r, r.plane)
-	if !r.eng.serving || r.plane.baselines != baselines || r.plane.applies != applies || r.eng.policyExpires != deadline || r.eng.lease.LeaseId != lease || r.eng.leaseMono != anchor {
-		t.Fatal("restart changed rules/lease/deadline")
-	}
-	after, err := r.eng.usage.Head(t.Context())
-	if err != nil || after.OpenEpoch != head.OpenEpoch {
-		t.Fatal("restart lost meter continuity", err)
-	}
+	synctest.Test(t, func(t *testing.T) {
+		r := newRig(t)
+		alignControlClock(r)
+		serveBoundGeneration(t, r)
+		r.manualUsage(t)
+		closeAdoptionControl(t, r)
+		deadline, lease, anchor := r.eng.policyExpires, r.eng.lease.LeaseId, r.eng.leaseMono
+		baselines, applies := r.plane.baselines, r.plane.applies
+		head, err := r.eng.usage.Head(t.Context())
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.clock.Advance(time.Second)
+		restartEngine(t, r, r.plane)
+		if !r.eng.serving || r.plane.baselines != baselines || r.plane.applies != applies || r.eng.policyExpires != deadline || r.eng.lease.LeaseId != lease || r.eng.leaseMono != anchor {
+			t.Fatal("restart changed rules/lease/deadline")
+		}
+		after, err := r.eng.usage.Head(t.Context())
+		if err != nil || after.OpenEpoch != head.OpenEpoch {
+			t.Fatal("restart lost meter continuity", err)
+		}
+	})
 }
 
 func TestAT13_ISOF603_ControlStallKeepsVerifiedRules(t *testing.T) {
@@ -265,31 +269,34 @@ func TestAT13_ISOF603_ControlStallKeepsVerifiedRules(t *testing.T) {
 func TestAT13_ISOF603_RestartWaitsForHealthyWatchdogRead(t *testing.T) {
 	for _, phase := range []string{"stop", "boot"} {
 		t.Run(phase, func(t *testing.T) {
-			r := newRig(t)
-			alignControlClock(r)
-			serveBoundGeneration(t, r)
-			r.manualUsage(t)
-			before := r.plane.baselines
-			if phase == "boot" {
-				if err := r.eng.Close(); err != nil {
+			synctest.Test(t, func(t *testing.T) {
+				r := newRig(t)
+				alignControlClock(r)
+				serveBoundGeneration(t, r)
+				r.manualUsage(t)
+				closeAdoptionControl(t, r)
+				before := r.plane.baselines
+				if phase == "boot" {
+					if err := r.eng.Close(); err != nil {
+						t.Fatal(err)
+					}
+				}
+				lock, err := nodelock.TryAcquire(r.eng.cfg.LockPath)
+				if err != nil {
 					t.Fatal(err)
 				}
-			}
-			lock, err := nodelock.TryAcquire(r.eng.cfg.LockPath)
-			if err != nil {
-				t.Fatal(err)
-			}
-			released := make(chan struct{})
-			go func() {
-				time.Sleep(50 * time.Millisecond)
-				lock.Release()
-				close(released)
-			}()
-			restartEngine(t, r, r.plane)
-			<-released
-			if !r.eng.serving || r.plane.baselines != before {
-				t.Fatal("healthy watchdog lock contention withdrew forwarding")
-			}
+				released := make(chan struct{})
+				go func() {
+					time.Sleep(50 * time.Millisecond)
+					lock.Release()
+					close(released)
+				}()
+				restartEngine(t, r, r.plane)
+				<-released
+				if !r.eng.serving || r.plane.baselines != before {
+					t.Fatal("healthy watchdog lock contention withdrew forwarding")
+				}
+			})
 		})
 	}
 }

@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -39,87 +40,91 @@ func f49Watch(r *rig, p *f49RestartPlane) *watchdog.Watch {
 func TestD156_WatchdogBetweenStartupAndAdoption(t *testing.T) {
 	for _, scenario := range []string{"adopt", "stall", "refuse"} {
 		t.Run(scenario, func(t *testing.T) {
-			r := newRig(t)
-			serveBoundGeneration(t, r)
-			// Shorten nothing: D and the original heartbeat age are captured from
-			// production state and remain unchanged through this process replacement.
-			prior := mustBeat(t, r)
-			cfg := r.eng.cfg
-			boot := r.eng.bootID
-			if err := r.eng.Close(); err != nil {
-				t.Fatal(err)
-			}
-			p := &f49RestartPlane{memPlane: r.plane}
-			w := f49Watch(r, p)
-			before := p.baselines
-			observed := false
-			p.atStartup = func() {
-				observed = true
-				b := mustBeat(t, r)
-				if b.Serving || b.BaselineOK {
-					t.Error("startup claimed adoption before verification")
+			synctest.Test(t, func(t *testing.T) {
+				r := newRig(t)
+				serveBoundGeneration(t, r)
+				r.manualUsage(t)
+				closeAdoptionControl(t, r)
+				// Shorten nothing: D and the original heartbeat age are captured from
+				// production state and remain unchanged through this process replacement.
+				prior := mustBeat(t, r)
+				cfg := r.eng.cfg
+				boot := r.eng.bootID
+				if err := r.eng.Close(); err != nil {
+					t.Fatal(err)
 				}
-				if err := w.Once(context.Background()); err != nil {
-					t.Error(err)
-				}
-				if p.baselines != before {
-					t.Error("watchdog withdrew retained generation before adoption")
-				}
-				if b.Mono != prior.Mono || b.PolicyExpires != prior.PolicyExpires {
-					t.Error("startup extended receipt age or deadline")
-				}
-				if scenario == "stall" {
-					r.clock.Advance(time.Duration(cfg.WatchdogStaleSeconds)*time.Second + time.Nanosecond)
+				p := &f49RestartPlane{memPlane: r.plane}
+				w := f49Watch(r, p)
+				before := p.baselines
+				observed := false
+				p.atStartup = func() {
+					observed = true
+					b := mustBeat(t, r)
+					if b.Serving || b.BaselineOK {
+						t.Error("startup claimed adoption before verification")
+					}
 					if err := w.Once(context.Background()); err != nil {
 						t.Error(err)
 					}
-					if p.baselines != before+1 {
-						t.Error("stalled successor not withdrawn at staleness bound")
+					if p.baselines != before {
+						t.Error("watchdog withdrew retained generation before adoption")
+					}
+					if b.Mono != prior.Mono || b.PolicyExpires != prior.PolicyExpires {
+						t.Error("startup extended receipt age or deadline")
+					}
+					if scenario == "stall" {
+						r.clock.Advance(time.Duration(cfg.WatchdogStaleSeconds)*time.Second + time.Nanosecond)
+						if err := w.Once(context.Background()); err != nil {
+							t.Error(err)
+						}
+						if p.baselines != before+1 {
+							t.Error("stalled successor not withdrawn at staleness bound")
+						}
 					}
 				}
-			}
-			if scenario == "refuse" {
-				cfg.HostV4 = []string{"192.0.2.42/32"}
-			}
-			next, err := Start(Options{Config: cfg, Clock: r.clock, Plane: p, Log: r.eng.log, MeterSource: staticSource{boot: boot.String()}, Prober: passProbe{}})
-			if err != nil {
-				t.Fatal(err)
-			}
-			defer next.Close()
-			r.eng = next
-			if err := next.Boot(context.Background()); err != nil {
-				t.Fatal(err)
-			}
-			if !observed {
-				t.Fatal("startup seam not reached")
-			}
-			if scenario != "adopt" {
-				if next.serving || p.last.Generation != 0 || !mustBeat(t, r).BaselineOK {
-					t.Fatal("refused adoption did not install baseline")
+				if scenario == "refuse" {
+					cfg.HostV4 = []string{"192.0.2.42/32"}
 				}
-				return
-			}
-			if !next.serving || p.baselines != before {
-				t.Fatalf("successor failed to adopt: %s", r.log.String())
-			}
-			// Drive only the independent watchdog, keeping agent/lease renewal idle.
-			// The old kernel admission deadline is checked without changing it.
-			r.clock.Advance(prior.PolicyExpires - r.clock.Mono() - time.Nanosecond)
-			// Refresh liveness as a healthy successor would, keeping exactly D.
-			next.beat()
-			if err := w.Once(context.Background()); err != nil {
-				t.Fatal(err)
-			}
-			if p.baselines != before || next.servingDeadline() != prior.PolicyExpires {
-				t.Fatal("healthy retained rules withdrawn before D")
-			}
-			r.clock.Advance(time.Nanosecond)
-			if err := w.Once(context.Background()); err != nil {
-				t.Fatal(err)
-			}
-			if p.last.Generation != 0 {
-				t.Fatal("rules survived D")
-			}
+				next, err := Start(Options{Config: cfg, Clock: r.clock, Plane: p, Log: r.eng.log, MeterSource: staticSource{boot: boot.String()}, Prober: passProbe{}})
+				if err != nil {
+					t.Fatal(err)
+				}
+				defer next.Close()
+				r.eng = next
+				if err := next.Boot(context.Background()); err != nil {
+					t.Fatal(err)
+				}
+				if !observed {
+					t.Fatal("startup seam not reached")
+				}
+				if scenario != "adopt" {
+					if next.serving || p.last.Generation != 0 || !mustBeat(t, r).BaselineOK {
+						t.Fatal("refused adoption did not install baseline")
+					}
+					return
+				}
+				if !next.serving || p.baselines != before {
+					t.Fatalf("successor failed to adopt: %s", r.log.String())
+				}
+				// Drive only the independent watchdog, keeping agent/lease renewal idle.
+				// The old kernel admission deadline is checked without changing it.
+				r.clock.Advance(prior.PolicyExpires - r.clock.Mono() - time.Nanosecond)
+				// Refresh liveness as a healthy successor would, keeping exactly D.
+				next.beat()
+				if err := w.Once(context.Background()); err != nil {
+					t.Fatal(err)
+				}
+				if p.baselines != before || next.servingDeadline() != prior.PolicyExpires {
+					t.Fatal("healthy retained rules withdrawn before D")
+				}
+				r.clock.Advance(time.Nanosecond)
+				if err := w.Once(context.Background()); err != nil {
+					t.Fatal(err)
+				}
+				if p.last.Generation != 0 {
+					t.Fatal("rules survived D")
+				}
+			})
 		})
 	}
 }
