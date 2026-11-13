@@ -102,8 +102,10 @@ func (m *budgetManagement) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	respond(obj)
 }
 
-// The barrier is reached after the member try-lock query has completed. Each
-// event then owns capture + member sessions before any device sync proceeds.
+// Members wait just before the deployment-lock statement, each holding four
+// connections: operation capture, member session, device session and deployment
+// lock connection. After release, the lock holder's binding work takes a fifth
+// connection while the other three wait inside the statement and keep theirs.
 type budgetTrace struct {
 	pool         *pgxpool.Pool
 	high         atomic.Int32
@@ -112,7 +114,6 @@ type budgetTrace struct {
 	arrived      atomic.Int32
 	enabled      atomic.Bool
 }
-type budgetTraceKey struct{}
 
 func (tr *budgetTrace) TraceQueryStart(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryStartData) context.Context {
 	if tr.pool != nil {
@@ -123,25 +124,21 @@ func (tr *budgetTrace) TraceQueryStart(ctx context.Context, _ *pgx.Conn, data pg
 			}
 		}
 	}
-	if tr.enabled.Load() && strings.Contains(data.SQL, "pg_try_advisory_lock") && len(data.Args) > 0 {
-		if key, ok := data.Args[0].(string); ok && strings.HasPrefix(key, "member:") {
-			return context.WithValue(ctx, budgetTraceKey{}, true)
+	if tr.enabled.Load() && strings.Contains(data.SQL, "pg_advisory_lock(hashtextextended($1,119))") {
+		if tr.arrived.Add(1) == tr.participants {
+			// Count only the first synchronized arrival of each member.
+			tr.enabled.Store(false)
+			close(tr.barrier)
+		}
+		select {
+		case <-tr.barrier:
+		case <-ctx.Done():
 		}
 	}
 	return ctx
 }
-func (tr *budgetTrace) TraceQueryEnd(ctx context.Context, _ *pgx.Conn, data pgx.TraceQueryEndData) {
-	if ctx.Value(budgetTraceKey{}) != true || data.Err != nil {
-		return
-	}
-	if tr.arrived.Add(1) == tr.participants {
-		close(tr.barrier)
-	}
-	select {
-	case <-tr.barrier:
-	case <-ctx.Done():
-	}
-}
+func (tr *budgetTrace) TraceQueryEnd(context.Context, *pgx.Conn, pgx.TraceQueryEndData) {}
+
 func budgetPool(t *testing.T, base *pgxpool.Pool, size int, tr *budgetTrace) *pgxpool.Pool {
 	t.Helper()
 	cfg := base.Config()
@@ -291,10 +288,13 @@ func TestAT02_MemberPoolPeaks(t *testing.T) {
 					tr.high.Store(0)
 					start := time.Now()
 					receipt, err := MemberJobs()[kind](ctx, event)
+					ctxErr := ctx.Err()
 					elapsed := time.Since(start)
-					t.Logf("peak=%d available=%d observed=%d elapsed=%s receipt=%t error=%v", peak, size, tr.high.Load(), elapsed, receipt != "", err)
-					if size == peak && (err != nil || receipt == "") {
-						t.Fatalf("declared peak cannot complete: %v", err)
+					t.Logf("peak=%d available=%d observed=%d elapsed=%s receipt=%t error=%v late=%t", peak, size, tr.high.Load(), elapsed, receipt != "", err, ctxErr != nil)
+					if size == peak {
+						if err := peakCompleted(receipt, err, ctxErr); err != nil {
+							t.Fatalf("declared peak cannot complete: %v", err)
+						}
 					}
 					if size < peak && err != nil && ctx.Err() == nil {
 						t.Fatalf("smaller pool failed without a deadline: %v", err)
@@ -306,6 +306,8 @@ func TestAT02_MemberPoolPeaks(t *testing.T) {
 }
 
 func TestAT02_MemberPoolStallSchedule(t *testing.T) {
+	// Four members hold four connections each at the barrier; the lock holder's binding work takes one more.
+	const heldAtMaximum = 4*4 + 1
 	derived, err := PoolSize(4)
 	if err != nil {
 		t.Fatal(err)
@@ -357,6 +359,9 @@ func TestAT02_MemberPoolStallSchedule(t *testing.T) {
 			t.Logf("pool=%d first_wave delivered=%d retries_scheduled=%d handler_errors=%d observed_connections=%d synchronized_members=%d", size, delivered, retries, len(errorsSeen), tr.high.Load(), tr.arrived.Load())
 			if size == int(derived) && (delivered != 4 || retries != 0 || len(errorsSeen) != 0 || tr.arrived.Load() != 4) {
 				t.Fatal("derived pool did not complete the concurrent schedule")
+			}
+			if size == int(derived) && tr.high.Load() < heldAtMaximum {
+				t.Fatalf("derived pool did not reach the maximum holding point: observed=%d", tr.high.Load())
 			}
 			// The 10-connection case is observational. Recover any retries sequentially
 			// to record the persisted attempts, without assuming that it must stall.

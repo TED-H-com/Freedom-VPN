@@ -203,9 +203,12 @@ func runBudgetPair(t *testing.T, name string, peak int, factory func(*testing.T,
 			defer cancel()
 			start := time.Now()
 			receipt, err := run(ctx)
-			t.Logf("%s peak=%d available=%d observed=%d elapsed=%s receipt=%t error=%v", name, peak, size, tr.high.Load(), time.Since(start), receipt != "", err)
-			if size == peak && (err != nil || receipt == "") {
-				t.Fatalf("declared peak cannot complete: %v", err)
+			ctxErr := ctx.Err()
+			t.Logf("%s peak=%d available=%d observed=%d elapsed=%s receipt=%t error=%v late=%t", name, peak, size, tr.high.Load(), time.Since(start), receipt != "", err, ctxErr != nil)
+			if size == peak {
+				if err := peakCompleted(receipt, err, ctxErr); err != nil {
+					t.Fatalf("declared peak cannot complete: %v", err)
+				}
 			}
 			if size < peak && err != nil && ctx.Err() == nil {
 				t.Fatalf("smaller pool failed without deadline: %v", err)

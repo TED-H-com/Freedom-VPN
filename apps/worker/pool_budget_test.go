@@ -88,3 +88,35 @@ func TestAPI01_OpenRejectsMissingPeak(t *testing.T) {
 		}
 	}
 }
+
+func TestAPI01_OpenRejectsInvalidRunners(t *testing.T) {
+	catalog, err := productionRegistration()
+	if err != nil {
+		t.Fatal(err)
+	}
+	peak := catalog.runnerPeak("members.schedule")
+	if peak < 1 {
+		t.Fatal("members.schedule peak required")
+	}
+	run := func(context.Context) error { return nil }
+	for _, tc := range []struct {
+		name    string
+		runners []Runner
+		want    string
+	}{
+		{"duplicate", []Runner{{Name: "members.schedule", Peak: peak, Run: run}, {Name: "members.schedule", Peak: peak, Run: run}}, "duplicate worker runner: members.schedule"},
+		{"negative peak", []Runner{{Name: "members.schedule", Peak: -1, Run: run}}, "invalid runner or missing connection peak"},
+		{"wrong peak", []Runner{{Name: "members.schedule", Peak: peak + 1, Run: run}}, "unregistered connection peak"},
+		{"unknown runner", []Runner{{Name: "test.unknown_runner", Peak: 1, Run: run}}, "unregistered connection peak"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := Open(t.Context(), Dependencies{Config: config.Defaults()}, Domain{Name: "test", Build: func(context.Context, Dependencies) (Built, error) {
+				return Built{RunnerRegistrations: tc.runners}, nil
+			}})
+			if err == nil || !strings.Contains(err.Error(), tc.want) {
+				t.Fatalf("got %v, want %q", err, tc.want)
+			}
+			t.Log(err)
+		})
+	}
+}
