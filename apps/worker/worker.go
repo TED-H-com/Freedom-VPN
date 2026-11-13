@@ -267,7 +267,10 @@ type Domain struct {
 type Built struct {
 	Jobs    Registry
 	Context func(context.Context) context.Context
-	Runners []Runner
+	// Runners is retained for source compatibility. Open rejects unbudgeted
+	// runners; production builders use RunnerRegistrations.
+	Runners             []func(context.Context) error
+	RunnerRegistrations []Runner
 }
 type Application struct {
 	dispatcher *Dispatcher
@@ -307,6 +310,9 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 		if e != nil {
 			return nil, fmt.Errorf("worker domain %s: %w", domain.Name, e)
 		}
+		if len(result.Runners) > 0 {
+			return nil, fmt.Errorf("worker domain %s: runner connection peaks required", domain.Name)
+		}
 		for name, handler := range result.Jobs {
 			if name == "" || handler == nil {
 				return nil, fmt.Errorf("worker domain %s: invalid handler", domain.Name)
@@ -319,7 +325,7 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 			}
 			registry[name] = handler
 		}
-		for _, run := range result.Runners {
+		for _, run := range result.RunnerRegistrations {
 			if runnerNames[run.Name] {
 				return nil, fmt.Errorf("duplicate worker runner: %s", run.Name)
 			}
@@ -334,7 +340,7 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 		if result.Context != nil {
 			app.contexts = append(app.contexts, result.Context)
 		}
-		for _, run := range result.Runners {
+		for _, run := range result.RunnerRegistrations {
 			app.runners = append(app.runners, run.Run)
 		}
 		built = append(built, result)
@@ -371,7 +377,7 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 				events = append(events, name)
 			}
 			slices.Sort(events)
-			d.Logger.Info("worker domain built", "domain", domain.Name, "events", events, "runners", len(built[i].Runners))
+			d.Logger.Info("worker domain built", "domain", domain.Name, "events", events, "runners", len(built[i].RunnerRegistrations))
 		}
 	}
 	return app, nil

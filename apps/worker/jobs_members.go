@@ -49,7 +49,7 @@ func members() Domain {
 				return Built{}, e
 			}
 		}
-		return Built{Jobs: MemberJobs(), Context: func(ctx context.Context) context.Context { return WithMembers(ctx, services) }, Runners: []Runner{memberRunner(services)}}, nil
+		return Built{Jobs: MemberJobs(), Context: func(ctx context.Context) context.Context { return WithMembers(ctx, services) }, RunnerRegistrations: []Runner{memberRunner(services)}}, nil
 	}}
 }
 

@@ -67,7 +67,8 @@ func TestAPI01_OpenRejectsMissingPeak(t *testing.T) {
 	h := func(context.Context, db.ClaimedEvent) (string, error) { return "test", nil }
 	for _, built := range []Built{
 		{Jobs: Registry{"test.without_peak": h}},
-		{Runners: []Runner{{Name: "members.schedule", Run: func(context.Context) error { return nil }}}},
+		{Runners: []func(context.Context) error{func(context.Context) error { return nil }}},
+		{RunnerRegistrations: []Runner{{Name: "members.schedule", Run: func(context.Context) error { return nil }}}},
 	} {
 		_, err := Open(t.Context(), Dependencies{Config: c}, Domain{Name: "test", Build: func(context.Context, Dependencies) (Built, error) { return built, nil }})
 		if err == nil || !strings.Contains(err.Error(), "peak") {
