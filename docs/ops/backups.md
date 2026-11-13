@@ -21,11 +21,11 @@ This runbook specifies the production and lab backup architecture, continuous WA
 
 ### 2.1 PostgreSQL 17 WAL Archiving Fragment (`deploy/backup/postgres/fvpn-archiving.conf`)
 
-Installed at `/etc/postgresql/conf.d/50-fvpn-archiving.conf` (included via `include_dir = '/etc/postgresql/conf.d'` in `postgresql.conf`):
+For normal primary/lab startup, installed at `/etc/postgresql/conf.d/50-fvpn-archiving.conf` (included via `include_dir = '/etc/postgresql/conf.d'` in `postgresql.conf`):
 
 Carried gap: the PostgreSQL server/archiver must receive the repository passphrase and object-store credentials for encrypted `archive-push`. Only the three backup services load `/etc/fvpn/secrets/pgbackrest-repo.env`; their `EnvironmentFile` does not configure PostgreSQL. The repository has no production procedure to deliver this environment to PostgreSQL.
 - **Lab / CI Override (`TEST ONLY`)**: Containerized lab and drill environments may set `FVPN_PG_ARCHIVE_TIMEOUT=10s` on `deploy/backup/postgres/Dockerfile` to bound idle archive lag during automated tests.
-- **Isolated Verification Containers**: When `restore-pitr.sh` launches an isolated verification container (`--network none`), it sets `FVPN_PG_ISOLATED_RESTORE=1` and mounts the backup repository read-only (`:ro`). The entrypoint writes `archive_mode = off` inside the verification container so promotion to a new timeline never pushes WAL segments back to the primary repository.
+- **Isolated Verification Containers**: `restore-pitr.sh` uses `--network none`, a read-only backup repository and `FVPN_PG_ISOLATED_RESTORE=1`. The entrypoint creates independent PostgreSQL configuration, HBA and ident outside PGDATA, ignoring primary includes, preloads and hooks. The helper retains only this restore’s validated pgBackRest recovery block; command-line settings pin `archive_mode=off`, so promotion cannot archive WAL back to the primary repository. This verifies the isolated copy, not a production-configuration restart.
 
 Carried gap: provision the repository and stanza, including an initial recoverable base backup, before relying on this archiver configuration. The first-host provisioning procedure remains absent; §3.1 carries the same prerequisite for scheduled backups.
 
@@ -82,7 +82,7 @@ systemctl daemon-reload
 systemctl enable --now fvpn-backup-full.timer fvpn-backup-diff.timer fvpn-backup-verify.timer
 ```
 
-The host needs Python 3, pgBackRest 2.60.0, PostgreSQL client tools, Docker, the built backup image and a linux/amd64 `/usr/local/bin/fvpn-migrate` for the verify unit's `--migrate-bin`. Without `--migrate-bin`, `verify.sh` builds a linux/amd64 migrator. The verify unit requires the secrets file and a nonempty `PGBACKREST_REPO1_CIPHER_PASS`. `--host-repo --primary-host --db-user postgres` reads primary archive state via host psql and copies repo 1 using the same host pgBackRest configuration/environment as `backup.sh`. Raw encrypted objects are staged under `/var/lib/fvpn/backup-verify` on disk, preserving repository modification times, then checked and restored in a network-none container. Allow space for the retained repository plus the restored database. Missing/changed objects or expiry during copying fail verification; rerun with a fresh copy. Cleanup removes only that run's scratch. This full-copy path can be expensive; measure it on the production repository before adopting an RTO. Repository `PGBACKREST_REPO1_*` environment variables are forwarded by name; the explicit staged mount selects POSIX path/type for recovery.
+The host needs Python 3, pgBackRest 2.60.0, PostgreSQL client tools, Docker, the built backup image and a linux/amd64 `/usr/local/bin/fvpn-migrate` for the verify unit's `--migrate-bin`. Without `--migrate-bin`, `verify.sh` builds a linux/amd64 migrator. The verify unit requires the secrets file and a nonempty `PGBACKREST_REPO1_CIPHER_PASS`. `--host-repo --primary-host --db-user postgres` reads primary archive state via host psql and copies repo 1 using the same host pgBackRest configuration/environment as `backup.sh`. Raw encrypted objects are staged under `/var/lib/fvpn/backup-verify` on disk, preserving repository modification times, then checked and restored in a network-none container. Allow space for the retained repository plus the restored database. Missing/changed objects or expiry during copying fail verification; rerun with a fresh copy. Cleanup removes only that run's scratch. This full-copy path can be expensive; measure it on the production repository before adopting an RTO. Only `PGBACKREST_REPO1_CIPHER_PASS` and `PGBACKREST_REPO1_CIPHER_TYPE` are forwarded by name into isolated helper/restore containers; the passphrase can also be resolved from `FVPN_PGBACKREST_CIPHER_PASS`. The explicit staged mount selects POSIX path/type for recovery.
 
 ### 3.2 Retention & Post-Restore Data Minimization (`§16.4`, `§17.2`)
 
@@ -167,7 +167,9 @@ Monitor inside the JSON output:
 
 ### 6.1 Restoring into an Isolated Container (`--network none`, Recommended for Verification & Staging)
 
-Carried gap: when this isolated restore uses an encrypted repository, the calling shell must already export the repository passphrase and any required repository credentials. `restore-pitr.sh` loads no secret file and forwards only already-exported `PGBACKREST_REPO1_*` names to the helper container. The repository has no production environment-delivery procedure for this invocation. The lab profile leaves encryption off unless explicitly enabled; that unencrypted case does not need a decryption passphrase.
+Carried gap: an encrypted isolated restore needs its passphrase supplied by the caller. `restore-pitr.sh` loads no secret file: it resolves `PGBACKREST_REPO1_CIPHER_PASS` with `FVPN_PGBACKREST_CIPHER_PASS` as fallback and forwards only `PGBACKREST_REPO1_CIPHER_PASS` and `PGBACKREST_REPO1_CIPHER_TYPE` by name to the helper/restore containers. Host repository copying still uses host pgBackRest configuration/environment; remote repository credentials are not forwarded into the isolated containers. The repository has no production environment-delivery procedure for this invocation. The lab profile leaves encryption off unless explicitly enabled; that unencrypted case does not need a decryption passphrase.
+
+Isolated `--db-user` and `--db-name` accept 1–63 ASCII characters: an ASCII letter or underscore first, then ASCII letters, digits, underscores or hyphens. `9vpn` and `vpn.prod` are refused. No operator locale override is required; parsing controls are command-local and do not globally change the caller’s locale.
 
 ```bash
 deploy/backup/restore-pitr.sh \
@@ -321,6 +323,8 @@ Using the existing recovery CLI (`./internal/usage/cmd/fvpn-usage-admin`, backed
 3. **Reconcile NetBird Overlay, Exit Publication Intents & DNS (`§5.2`, `§12.5`, `§17.4 Steps 3–4`)**:
    Carried gap: production AdGuard bootstrap and listener wiring remain prerequisites for the resolver convergence checked in this step; see [deployment §4.3](../handover/deploy.md#43-adguard-home-resolvers-v010759-12-docsdnsbackendmd-docsdnsprivacymd).
    - `node.reconcile` handles generation holds, fleet database job state and bootstrap expiry. `members.reconcile` recomputes entitlements and syncs existing device rows with authorization read-back; D-076 fences qualifying unexplained withdrawals. The separate `devices.discover` sweep skips userless/ephemeral peers and may authorize an eligible unknown member peer. These jobs do not promise global orphan-peer deletion or published-route/policy drift cleanup; see the [restore reconciliation limits](../handover/restore-drill.md#phase-5-reconcile-netbird-overlay-node-pki-and-dns-state-52-64-122-174).
+
+   - `node.staleness.sweep` independently classifies central receipt age and settles eligible capture targets. It neither reconciles peers/routes nor changes publication intent; the surrounding recovery gaps and observed-enforcement requirements still apply. See [scheduled status aging](../handover/operator-guide.md#11-daily-operator-tasks) and [capture evidence](../handover/11-database-and-retention.md#operation-captures-and-evidence).
    - Carried gap: inventory and revocation of peers authorized after the restore point, including peers absent from restored records. The sweeps are not proof that all such peers, routes or policies were withdrawn.
    - For any exit node listed in Section `[3/6]` of `post-restore-checklist.sql` whose post-restore publication intent cannot be confirmed, keep `publication_intent` in `unpublished` or `disabled` (fail-closed).
    - Verify `dns_publication_heads` and resolver convergence (`dns.publish`).
@@ -346,11 +350,15 @@ Using the existing recovery CLI (`./internal/usage/cmd/fvpn-usage-admin`, backed
 
 The full physical backup, WAL switch, and isolated PITR restore drill is automated in `tests/backup/drill_integration_test.go` (`TestAT30_BackupPITRDrill`) and runs on every push touching backup paths via `.github/workflows/backup.yml`:
 
+The fixed recipe also selects `TestAT30_IsolatedHostConfig` (time/LSN/latest restore, direct-failure cleanup and pre-existing-volume ownership) and `TestAT30_BackupLocaleGuards` in the built image. [The inventory checker](../../tests/backup/check_drill.py) requires every listed test/subtest to run and pass, never be absent or skipped. Each locale matrix requires 771 guard checks after Bash behavior controls; missing/unusable locales or warnings fail. That count is fixed in [the guard script](../../tests/backup/testdata/locale-guards.sh), not a new measurement here. The recipe has no `BACKUP_DRILL_RUN` selector. The unit gate rejects unreviewed locale/environment constructs; operators need no locale override.
+
 ```bash
 make -f mk/backup.mk backup-lint backup-test backup-drill
 ```
 
 What `backup-drill` proves on every run. Container, volume, network, and image-tag names come from `FVPN_BACKUP_DRILL_PREFIX` when that variable matches `fvpn-w4-ops-backups-<lowercase-run-id>`. A non-empty invalid value fails the drill before it creates resources. Only an unset/empty value selects `fvpn-w4-ops-backups-` plus 8 lowercase hex digits (`docs/handover/restore-drill.md`). The test removes only that prefix.
+
+Engineering handover: [the environment scanner](../../tests/backup/environment_contract_test.go) uses literal physical-line patterns and limited word scanning, not a Bash parser. IFS-prefixed words, brace expansion, relative `env` paths and internally quoted/escaped trap words can escape recognition, so exact-source review remains necessary. Conversely, standalone listed words, including `wait` or dot in ordinary commands/data, can demand review; only reviewed lines belong in the fixed allowlist. This describes static source-analysis limits, not an executed bypass test.
 1. Builds `deploy/backup/postgres/Dockerfile` (`PostgreSQL 17` + `pgBackRest 2.60.0`) and starts primary container `<prefix>-primary` with `archive_mode=on` and repo volume `<prefix>-repo`.
 2. Applies all forward migrations via `fvpn-migrate up`.
 3. Creates drill-only table `_backup_drill` (never touching product tables, `D-050`) and commits Marker `A`.

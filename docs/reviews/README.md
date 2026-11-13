@@ -1,7 +1,7 @@
 # Adversarial Security Reviews Archive (`r3`–`r17`)
 
-**Archived cut:** [follow-up 52](../handover/follow-up-52.md), #527 at `6972be03`; consolidated deliveries and guide revisions.
-**Earlier archived cut:** [follow-up 51](../handover/follow-up-51.md), #524–#526 at `66de6a24`; the registers below retain that cut's content.
+**Archived cut:** [follow-up 53](../handover/follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; consolidated deliveries and guide revisions.
+**Earlier archived cut:** [follow-up 52](../handover/follow-up-52.md), #527 at `6972be03`; the registers below retain that cut's content.
 
 - **Date:** 2026-10-29 to 2026-10-31 (closure status)
 - **Reviewing model:** `grok/grok-4.7`, `agy/gemini-4-argon-high`, `antigravity/gemini`, `antigravity/gemini-4-argon` (see per-review metadata below; `r5` and `r8` commits carried no `Agent:` trailer)

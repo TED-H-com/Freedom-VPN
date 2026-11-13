@@ -1,0 +1,66 @@
+[
+  {
+    "name": "operator_rollback",
+    "path": "docs/handover/operator-guide.md",
+    "heading": "Operator changes at #356",
+    "erratum": "- `docs/handover/operator-guide.md`, [“Operator changes at #356”](operator-guide.md#operator-changes-at-356), including the 2026-11-03 rollback confirmation: baseline installation/read-back can fail; without a verified baseline isolation is unconfirmed. The verified conntrack-delete exception can keep serving below its durably reserved batch bound. The [living enforcement explanation](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication) states those conditions.",
+    "passages": [
+      {
+        "base_lines": "83-103",
+        "text": "## Operator changes at #356\n\n**D-134 expiry window:** the absolute deadline D includes an intentional\n100 ms installation reserve plus 1 ms truncation. The conservative transition\nwindow is **[D−101 ms, D]**, never extra authorization after D. Count every\npre-D and renewal loss; literal zero pre-D loss is not established. Report the\nfull completed outer-guard distribution per run. The historical 52.596 ms\nmaximum is a measurement, not a guaranteed ceiling. An install overrun never\nopens the guard; the closed generation-0 baseline replaces it atomically.\nD-104 / D-120 / AT13 / AT29 predicates are unchanged.\n\n**D-135 rollback — confirmed by the owner, 2026-11-03:** a failed\nApply closes every member on that node until the next successful Apply.\nRollback installs the node-wide generation-0 baseline, preserving revocation;\nit does not restore the previous generation. Repeated failures can keep that\nbaseline indefinitely. The 100 ms bound is an install budget, not an outage\nceiling. Retain the admitted sibling's baseline→recovery bracket and every\nlost packet; report the bracket, never waive it. A stronger availability\nguarantee requires a separate enforcement design under D-133. Historical AT02\nremains failed. [Evidence and owner boundary](follow-up-22.md).\n\n"
+      }
+    ]
+  },
+  {
+    "name": "dated_node_diagnostics",
+    "path": "docs/handover/operator-guide.md",
+    "heading": "3.4 Node Egress Probe & Sanitized Check Details",
+    "erratum": "- `docs/handover/operator-guide.md`, “3.4 Node Egress Probe & Sanitized Check Details”, [2026-11-01 — Node diagnostics (#386)](operator-guide.md#34-node-egress-probe--sanitized-check-details-d-058a-d-058b-171-nodeagentprobego-nodeagentprobeexcgo): failure stops serving and attempts a baseline; a failed install/read-back does not confirm isolation. See the [living enforcement explanation](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication).",
+    "passages": [
+      {
+        "base_lines": "550-557",
+        "text": "**2026-11-01 — Node diagnostics (#386).** Adding a trace, or another foreign\nnft table or rule, to a node closes that node by design when it fails the\nfail-closed verifier: `ISOLATION_POLICY_INVALID` makes the agent install the\ndeny baseline until the rule is removed and serving verification succeeds.\nThe TEST ONLY unscoped `meta nftrace set 1` in a foreign `mangle` table caused\nthis in devstack 25; it was harness interference, not a product defect.\nDiagnose from the member side, or capture packets without touching the node's\nruleset. See the [dated devstack 26 analysis](../e2e/runs/2026-11-01/followup26/analysis.md).\n"
+      }
+    ]
+  },
+  {
+    "name": "dated_member_renewal",
+    "path": "docs/handover/member-guide.md",
+    "heading": "2026-10-31 更新 / update (D-087, #250)",
+    "erratum": "- `docs/handover/member-guide.md`, [“2026-10-31 更新 / update (D-087, #250)”](member-guide.md#2026-10-31-更新--update-d-087-250): heartbeat/doubling spacing describes planned slots. Renewal lead can shorten them; `Retry-After`, request I/O and ongoing work can delay actual attempts. See [current renewal scheduling](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication).",
+    "passages": [
+      {
+        "base_lines": "513-517",
+        "text": "### 2026-10-31 更新 / update (D-087, #250)\n\n無成員授權的租約仍持續排程續租，包括尚無 desired bindings 的情況。首次請求時段為一個 heartbeat 後（上限 60 秒），之後倍增至最多每 60 秒，且遵守租約提前續租時間。這是請求排程，不是 I/O 完成保證；取得有成員授權的租約還需要已發布且有合格綁定的 generation、已接受的 readiness，以及可回應的控制服務。`identity_frozen` 沒有會員可見欄位；會員只會看到裝置不再提供服務及 Fair-Use 摘要。\n\nD-087 (#250): every accepted grant-less lease has a renewal schedule, even before desired bindings arrive. The first request slot is one heartbeat after the empty lease (capped at 60 s), then doubling, never more than 60 s of local waiting between requests; the lease renewal lead can bring a slot forward. A populated lease additionally needs a published generation with eligible member bindings, accepted readiness, and a responsive control service. A scheduled request slot is not completed I/O: ongoing work, request latency and server `Retry-After` can delay completion. Empty bindings do not stop renewal. `identity_frozen` has no member-visible surface; members see the device become non-serving and the Fair-Use summary. See the [dated acceptance snapshot](../ops/README.md#follow-up-14-acceptance-snapshot-2026-10-31-edt) for usage #257 and members #268. The members run did not exercise portal rendering of D-077.\n"
+      }
+    ]
+  },
+  {
+    "name": "dated_decisions_register",
+    "path": "docs/handover/README.md",
+    "heading": "Follow-up 49 decisions register (2026-11-05 EST)",
+    "erratum": "- `docs/handover/README.md`, [“Follow-up 49 decisions register (2026-11-05 EST)”](README.md#follow-up-49-decisions-register-2026-11-05-est), expiry/rollback rows: baseline installation/read-back is fallible, and failed isolation is not proof that deny rules were installed. The verified conntrack-delete exception can retain serving below its reserved batch bound; see [current enforcement conditions](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication).",
+    "passages": [
+      {
+        "base_lines": "190-191",
+        "text": "| D-134 | Decided 16:0x EDT, 2026-10-31, from netlab 21 (#355). Absolute expiry reserves 100 ms for installation plus 1 ms truncation: conservative transition window [D−101 ms, D]. Every pre-D and renewal loss stays counted; never claim literal zero pre-D loss. Retain the atomic outer guard and report the full p50 / p90 / p99 / max distribution per run; historical 52.596 ms is a measurement, not a guarantee. An install overrun never opens the guard: baseline atomically replaces it with closed generation-0 rules. D-104 / D-120 / AT13 / AT29 predicates unchanged. |\n| D-135 | 17:2x EDT, 2026-10-31 — **confirmed by Ted, 2026-11-03 about 12:30 EST**, from agent-core 29 request 2 (#356). A failed Apply installs the node-wide generation-0 baseline by design; no previous-generation restoration, revocation always preserved. Every member closes, and the admitted sibling returns with the next successful Apply. Repeated failures keep baseline indefinitely; 100 ms is an install budget, not an outage ceiling. Proposed AT02 positive control asserts revoked-source drop and brackets the sibling outage baseline→recovery ending at the next successful Apply, every loss counted; the bracket is reported, never waived. Historical AT02 stays failed. Any stronger availability guarantee is a separate enforcement design under D-133. Owner confirmation remains required. |\n"
+      }
+    ]
+  },
+  {
+    "name": "versioned_contract_renewal",
+    "path": "docs/contracts/README.md",
+    "heading": "Revision 13; Revision 11 / D-071 `ErrorCode.AWAITING_MEMBER_GRANTS`",
+    "erratum": "- `docs/contracts/README.md`, [“Revision 13”](../contracts/README.md#revision-13) and [“Revision 11” / “D-071 `ErrorCode.AWAITING_MEMBER_GRANTS`”](../contracts/README.md#d-071-errorcodeawaiting_member_grants): the first identity-freeze renewal uses an explicit attempt/retry gate reset, not a same-generation Apply guarantee. Grant-less heartbeat/doubling slots remain subject to renewal lead, `Retry-After` and ongoing I/O/work; see [current retry gates and scheduling](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication).",
+    "passages": [
+      {
+        "base_lines": "389-398",
+        "text": "## Revision 13\n\nAPI version **1.9.0**. The endpoint count remains **49**.\n\nrevision 13 (2026-10-31): `ObservationAccepted.identity_frozen` (D-088); `source: installer` on update results (D-089); error code `TC_FOREIGN_FILTER` (D-085).\n\n`ObservationAccepted.identity_frozen` is an optional, non-nullable boolean. When\ntrue, the reporting incarnation is frozen by the clone detector (D-072 / D-084):\nthe agent must drop every member grant immediately and renew its lease at once.\nAbsent or false means no change; the three existing required fields are unchanged.\n"
+      },
+      {
+        "base_lines": "453-459",
+        "text": "## Revision 11\n\nAPI version **1.7.0**. The endpoint count stays **47**. No new operation.\n\n### D-071 `ErrorCode.AWAITING_MEMBER_GRANTS`\n\nThe node lease for this generation is inside its anchored deadline and `config_generation` equals the desired generation, but `lease.members` is empty while desired `device_bindings` is non-empty. The agent renews on the D-067 schedule (one heartbeat, then doubling, capped at 60 seconds). This is not a deadline failure and not a malformed policy.\n"
+      }
+    ]
+  }
+]

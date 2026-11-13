@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
@@ -243,7 +243,7 @@ D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T
       --primary-dir /var/lib/postgresql/17/main \
       --target-dir /var/lib/postgresql/17/restore-candidate
     ```
-    Start the candidate with an isolated configuration/socket and no public listener, or use `verify.sh --host-repo --primary-host` for a `--network none` copy. Check migrations and the read-only checklist against the candidate. Only after validating that copy, preserve the old cluster and explicitly switch the service configuration to the candidate; do not overwrite the old data. Steps 2.2 onward use the checked candidate's connection configuration.
+    Start the candidate with an isolated configuration/socket and no public listener, or use `verify.sh --host-repo --primary-host --db-user postgres` for a `--network none` copy when the primary is accessed as `postgres` (`verify.sh` otherwise defaults to `fvpn`). The isolated verifier uses its own configuration, HBA, ident and socket boundary; it does not start restored production configuration. See the [verification configuration boundary](../ops/backups.md#21-postgresql-17-wal-archiving-fragment-deploybackuppostgresfvpn-archivingconf). Check migrations and the read-only checklist against the candidate. Only after validating that copy, preserve the old cluster and explicitly switch the service configuration to the candidate; do not overwrite the old data. Steps 2.2 onward use the checked candidate's connection configuration.
   - **Logical Restore (`pg_restore`)** (`docs/db/README.md`, `F-02`–`F-04`):
     `[production only]` — this logical restore path remains unverified. `guard_append_only()` guards `UPDATE`/`DELETE`/`TRUNCATE` on `audit_events`, `billing_records`, `usage_adjustments`, `usage_events`, `usage_samples`, `projection_receipts`, `usage_event_payloads`, `usage_ledger_gaps` and `fup_evaluations`; on `usage_rollups` it guards `DELETE`/`TRUNCATE`. `usage_checkpoints` instead has a separate `forbid_delete()` guard for `DELETE`/`TRUNCATE`.
 
@@ -332,6 +332,8 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
   - `node.reconcile` runs on `nodes.json:reconcile_seconds`. It reconciles generation holds, updates fleet job state/attention, and expires bootstrap secrets in the database. Fleet reconciliation does not read or delete NetBird peers.
   - `members.reconcile` runs on `members.json:device_sync_seconds`, recomputes member entitlements and calls `SyncMember` over the member's existing `member_devices` rows. `SyncDevice` applies the intended authorization and verifies it with peer read-back. Under [D-076](../members/README.md#restored-authorization-does-not-re-grant-d-076), an otherwise eligible authorized device with a previously authorized observation and an unexplained current withdrawal is fenced after confirming that withdrawal. Existing fences keep `allow=false`; fenced devices appear pending until explicit re-authorization. A new fence appends `device.authorization.external_withdrawal` with reason `external_withdrawal`. The warning `device authorization unconfirmed during ledger restore` and `fvpn_device_restore_fence_decisions_total` apply when ledger mode is `frozen` or `reconciling`; fencing itself is not restricted to those modes. Keep the fence through restore and follow step 6.3 after `complete-recovery`.
   - The separate `devices.discover` sweep skips userless and ephemeral peers. An unknown peer with an eligible verified member identity can enter `ObserveAndAuthorize`; absence from the restored device table does not imply deletion.
+
+  - `node.staleness.sweep` independently classifies central receipt age and settles eligible capture targets through `SweepStaleNodes`; it does not reconcile peers/routes or change publication intent. See [scheduled status aging](operator-guide.md#11-daily-operator-tasks) and [capture outcomes](11-database-and-retention.md#operation-captures-and-evidence).
   - Carried gap: inventory and revocation of peers authorized after the restore point, including peers absent from restored records. No complete procedure for that inventory/revocation is supplied here; these sweeps must not be treated as proof that every such peer, route or policy has been withdrawn.
   List failed and in-flight operations with SQL; investigate failures and operations that remain pending or running:
   ```sql
@@ -397,6 +399,8 @@ Portal follow-up 16 (#255) supplies `/admin/devices` with authorization-unconfir
 ## 7. Automated Docker PITR Drill Names (`tests/backup`, `FVPN_BACKUP_DRILL_PREFIX`)
 
 `TestAT30_BackupPITRDrill` (`go test -tags integration ./tests/backup/`, also `make -f mk/backup.mk backup-drill`) builds a PostgreSQL 17 + pgBackRest image and runs the primary, the isolated restore, and `verify.sh` on one Docker prefix. Concurrent drills must not share that prefix. The repository-wide integration gate and a second local run can execute at the same time.
+
+The fixed `backup-drill` selection also requires `TestAT30_IsolatedHostConfig` (time, LSN, latest, direct-failure cleanup and pre-existing-volume protection) and `TestAT30_BackupLocaleGuards` in the built image. Required tests and subtests must run and pass; absence or skipping fails the inventory check. Each drill cleans only its owned resources under its own prefix, preserving pre-existing volumes. See [the current drill checks](../ops/backups.md#8-automated-ci-drill--measured-results-mkbackupmk-docsopsbackups).
 
 Set `FVPN_BACKUP_DRILL_PREFIX` to choose the prefix. The value must match `fvpn-w4-ops-backups-<lowercase-run-id>`: the family name, then one or more hyphen-separated segments of lowercase letters and digits, at most 63 characters. `.github/workflows/backup.yml` sets `fvpn-w4-ops-backups-gha<run_id>-<run_attempt>`.
 
