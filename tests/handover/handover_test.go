@@ -19629,10 +19629,10 @@ func TestHandover_Followup52Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-52.md", "9bc82b075bdd3776690e99eb20fdc3e83ca3136b088d3d9cc56515119a6f429b", 10264},
+		{"docs/handover/follow-up-52.md", "53bb9b322de320f92e2b5692ecf13b3921b429594dfd0fe84bae78acb04e3d6b", 10421},
 		{"tests/handover/testdata/followup52-main.json", "714db17f0ea0346c47debba55fb8d65e079dee1d8735bce5f5fb037be5112204", 598},
 		{"tests/handover/testdata/followup52-snapshots.json", "e4b88ad998436a49fa9cfec2135fe913891232c8067d956ced873471ff3afa91", 4368},
-		{"tests/handover/testdata/followup52-edits.json", "6da6a969dc19b7a0e7d02c22e9ce96166f2d717f49b965656262d0da43cc5e15", 109653},
+		{"tests/handover/testdata/followup52-edits.json", "d2617e28879962f2a8bf8414f8620fa83fef1015d5e2dc0444e0813d2177b55a", 111423},
 		{"tests/handover/testdata/followup52-prior-assertions.json", "4f762fd5e6f9e62c21c0b7ed3c83bba28838a17e6057ca6bbce246ba46cba398", 2736},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
@@ -19807,12 +19807,20 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			{"F8_baseline", "**How to interpret `ISOLATION_POLICY_INVALID`", "`e.plane.Baseline`, implemented by `SystemPlane.Baseline` through `enforce.ApplyBaseline`", "`plane.ApplyBaseline`"},
 			{"R3_1_expiry", "**Reading the provisional window", "only when the node is published and registered and either not ready or its mapping is frozen; other grant-less leases keep the ordinary fleet offline expiry", "expires such a grant-less lease after **`60 s`** (`expires_at = issued_at + min(max_offline_seconds, 60s)`)"},
 			{"R3_1_spacing", "**Reading the provisional window", "planned grant-less renewal spacing starts at one heartbeat capped at `60 s` and doubles up to that cap; the renewal lead can shorten it and server `Retry-After` can lengthen it", "renews after **one heartbeat**, then **doubling**, capped at **`60 s`**"},
-			{"R3_2_ack", "**How to interpret `ISOLATION_POLICY_INVALID`", "without acknowledging the generation.", "without acknowledging the generation or renewing the lease"},
+			{"R3_2_ack", "**How to interpret `ISOLATION_POLICY_INVALID`", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed`, the agent attempts the baseline and does not acknowledge the generation.", "without acknowledging the generation or renewing the lease"},
 			{"R3_3_scope", "Plan downgrades keep the oldest authorizations", "Inspect `device.authorize` denial audits: the `recordDiscoveryDenial` path audits **once per decision transition**. `identity_binding.rejected` is separately deduplicated through `noteDiscoveryDecision`.", "only denials sent through `recordDiscoveryDenial` are audited **once per decision transition**"},
 			{"R3_3_reasons", "Plan downgrades keep the oldest authorizations", "Inspect `device.authorize` denial audits:", "for the bounded reasons `device_limit_reached`, `entitlement_inactive` or `identity_unmapped`"},
 			{"R3_3_relax", "Plan downgrades keep the oldest authorizations", "updates a previously stored decision, if any", "first changes the stored decision hash to admitted"},
 			{"R3_4_resource", "Plan downgrades keep the oldest authorizations", "uses the peer's existing device row when present, otherwise a known member; `fleet_config:00000000-0000-0000-0000-000000000001` (`fleet_config`) is the fallback when neither is known, never to an invented member", "with `identity_unmapped` denials attributed to `fleet_config:00000000-0000-0000-0000-000000000001` (`fleet_config`), never to an invented member"},
 			{"R3_5_receipt", "**Result validation, failed-result cause", "omitting the required `error_code` property returns `422 VALIDATION_FAILED` before the result transaction, without a receipt; an otherwise valid, job-bound `failed` result with `error_code: null` returns `422 VALIDATION_FAILED` with a rejection receipt", "a missing `error_code` at `check` or any other stage returns `422 VALIDATION_FAILED` with an immutable rejection receipt"},
+			{"R4_1_attempt", "**How to interpret `ISOLATION_POLICY_INVALID`", "`fvpn-agent` stops serving and attempts the fail-closed baseline", "fails isolation closed and installs the baseline"},
+			{"R4_2_reasons", "**How to interpret `ISOLATION_POLICY_INVALID`", "`member_forwarding_enabled=false`, `safety_status=failed`, and `forwarding_block_reasons` includes `safety_check_failed`; other reasons can coexist", "forwarding_block_reasons=[\"safety_check_failed\"]"},
+			{"R4_3_missing_baseline", "**How to interpret `ISOLATION_POLICY_INVALID`", "without it, `internet_only` fails with `ISOLATION_BASELINE_MISSING`, meaning isolation is not confirmed", "`METER_PATH_INVALID`, `ISOLATION_BASELINE_MISSING`, `METER_EPOCH_CHANGE`) appears on a failed `source_binding`, `qos`, `lease`, `internet_only`, or `meter_path` check"},
+			{"R4_4_ack", "**How to interpret `ISOLATION_POLICY_INVALID`", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed`, the agent attempts the baseline and does not acknowledge the generation.", "ruleset or QoS verification failed and the agent withdrew to the fail-closed baseline without acknowledging the generation"},
+			{"R4_5_apply_code", "**How to interpret `ISOLATION_POLICY_INVALID`", "A retained `stage: \"apply\"` error makes `lease`, `qos` and `source_binding` fail with its code: the enforcement check's reason when it is a valid API code, otherwise `HEALTH_CHECK_FAILED`.", "when another revision-8 enforcement verification code"},
+			{"R4_6_dependency", "**How to interpret `ISOLATION_POLICY_INVALID`", "Without a retained Apply error, a missing executable makes those checks fail with `DEPENDENCY_UNAVAILABLE`.", "appears on a failed `source_binding`, `qos`, `lease`, `internet_only`, or `meter_path` check"},
+			{"R4_7_meter", "**How to interpret `ISOLATION_POLICY_INVALID`", "Separately, `METER_PATH_INVALID` on `meter_path` means the backend is not `kernel` or the meter failed; it adds `meter_path_invalid` and by itself does not withhold the generation acknowledgement.", "ruleset or QoS verification failed and the agent withdrew to the fail-closed baseline without acknowledging the generation"},
+			{"R4_8_confirmed_baseline", "**How to interpret `ISOLATION_POLICY_INVALID`", "With the baseline in force, `internet_only=failed` has `error_code: ISOLATION_POLICY_INVALID` and detail `\"Conntrack delete exceeded the retry bound.\"` or `\"Conntrack is not installed.\"`", "fails isolation closed and installs the baseline"},
 		} {
 			t.Run(c.Name, func(t *testing.T) {
 				var places []string
@@ -19829,7 +19837,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 				}
 			})
 		}
-		t.Logf("Checked 21 scoped statement forms covering 13 review findings")
+		t.Logf("Checked 29 scoped statement forms covering 14 review findings")
 	})
 	checkLinks := func(t *testing.T, sources []struct{ doc, text string }) {
 		t.Helper()
