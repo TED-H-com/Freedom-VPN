@@ -108,11 +108,12 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-if [[ ! "$VERIFY_PREFIX" =~ ^fvpn-w4-ops-backups-[a-z0-9]+(-[a-z0-9]+)*$ || ${#VERIFY_PREFIX} -gt 70 ]]; then
+# Enumerate ASCII characters: regex ranges depend on the caller's locale.
+if [[ ! "$VERIFY_PREFIX" =~ ^fvpn-w4-ops-backups-[abcdefghijklmnopqrstuvwxyz0123456789]+(-[abcdefghijklmnopqrstuvwxyz0123456789]+)*$ || ${#VERIFY_PREFIX} -gt 70 ]]; then
 	echo "verify.sh: invalid --verify-prefix family or run suffix" >&2
 	exit 2
 fi
-if [[ ! "$STANZA" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+if [[ ! "$STANZA" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]+$ ]]; then
 	echo "verify.sh: invalid stanza" >&2
 	exit 2
 fi
@@ -176,7 +177,7 @@ else
 	PRIMARY_PSQL=(docker exec -i --user postgres "$PRIMARY_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME")
 fi
 ARCHIVER_LAG_MS="$("${PRIMARY_PSQL[@]}" -v ON_ERROR_STOP=1 -tA <"${SCRIPT_DIR}/archive-state.sql" | tr -d '[:space:]')"
-if [[ ! "$ARCHIVER_LAG_MS" =~ ^[0-9]+$ ]] || (( ARCHIVER_LAG_MS > 900000 )); then
+if [[ ! "$ARCHIVER_LAG_MS" =~ ^[0123456789]+$ ]] || (( ARCHIVER_LAG_MS > 900000 )); then
 	echo "verify.sh: archive state unknown, future-dated, or older than 15 minutes" >&2
 	exit 1
 fi

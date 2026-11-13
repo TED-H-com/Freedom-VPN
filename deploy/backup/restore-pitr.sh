@@ -138,7 +138,8 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-if [[ ! "$STANZA" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+# Enumerate ASCII characters: regex ranges depend on the caller's locale.
+if [[ ! "$STANZA" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]+$ ]]; then
 	echo "restore-pitr.sh: invalid stanza name: $STANZA" >&2
 	exit 2
 fi
@@ -156,7 +157,7 @@ fi
 PGBACKREST_TARGET_ARGS=()
 if [[ -n "$TARGET_TIME" ]]; then
 	# Accept strict UTC RFC 3339 (YYYY-MM-DDTHH:MM:SS[.ffffff]Z) or PG UTC (YYYY-MM-DD HH:MM:SS[.ffffff]+00).
-	if [[ "$TARGET_TIME" =~ ^([0-9]{4}-[0-9]{2}-[0-9]{2})[T\ ]([0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,6})?)(Z|\+00(:00)?)$ ]]; then
+	if [[ "$TARGET_TIME" =~ ^([0123456789]{4}-[0123456789]{2}-[0123456789]{2})[T\ ]([0123456789]{2}:[0123456789]{2}:[0123456789]{2}(\.[0123456789]{1,6})?)(Z|\+00(:00)?)$ ]]; then
 		PG_TIME="${BASH_REMATCH[1]} ${BASH_REMATCH[2]}+00"
 		PGBACKREST_TARGET_ARGS=(--type=time "--target=${PG_TIME}" --target-action=promote)
 	else
@@ -164,7 +165,7 @@ if [[ -n "$TARGET_TIME" ]]; then
 		exit 2
 	fi
 elif [[ -n "$TARGET_LSN" ]]; then
-	if [[ "$TARGET_LSN" =~ ^[0-9A-Fa-f]{1,8}/[0-9A-Fa-f]{1,8}$ ]]; then
+	if [[ "$TARGET_LSN" =~ ^[0123456789ABCDEFabcdef]{1,8}/[0123456789ABCDEFabcdef]{1,8}$ ]]; then
 		PGBACKREST_TARGET_ARGS=(--type=lsn "--target=${TARGET_LSN}" --target-action=promote)
 	else
 		echo "restore-pitr.sh: invalid WAL LSN '${TARGET_LSN}' (expected X/YYYYYYYY)" >&2
@@ -233,8 +234,17 @@ if [[ -n "$TARGET_DIR" ]]; then
 	exit 0
 fi
 
+# Restrict identifiers before using them in the isolated HBA/ident and DSN.
+# Double-quoted HBA names also make keywords such as "all" literal names.
+for DB_IDENTIFIER in "$DB_USER" "$DB_NAME"; do
+	if [[ ! "$DB_IDENTIFIER" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_][abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]{0,62}$ ]]; then
+		echo "restore-pitr.sh: invalid isolated --db-user or --db-name (expected 1-63 ASCII identifier characters)" >&2
+		exit 2
+	fi
+done
+
 # Isolated container mode: validate identifiers and enforce live-primary refusal guards.
-if [[ ! "$ISOLATED_CONTAINER" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+if [[ ! "$ISOLATED_CONTAINER" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-]+$ ]]; then
 	echo "restore-pitr.sh: invalid isolated container name: $ISOLATED_CONTAINER" >&2
 	exit 2
 fi
@@ -247,11 +257,14 @@ if [[ -n "$PRIMARY_CONTAINER" ]] && [[ "$ISOLATED_CONTAINER" == "$PRIMARY_CONTAI
 	exit 2
 fi
 
-EXISTING_CONTAINER="$(docker ps -a --filter "name=^/${ISOLATED_CONTAINER}$" --format '{{.Names}}')"
-if [[ -n "$EXISTING_CONTAINER" ]]; then
-	echo "restore-pitr.sh: container '${ISOLATED_CONTAINER}' already exists; refusing to overwrite live or existing container" >&2
-	exit 2
-fi
+RESTORE_HELPER="${ISOLATED_CONTAINER}-init"
+for candidate in "$ISOLATED_CONTAINER" "$RESTORE_HELPER"; do
+	EXISTING_CONTAINER="$(docker ps -a --filter "name=^/${candidate}$" --format '{{.Names}}')"
+	if [[ -n "$EXISTING_CONTAINER" ]]; then
+		echo "restore-pitr.sh: container '${candidate}' already exists; refusing to overwrite live or existing container" >&2
+		exit 2
+	fi
+done
 
 VOLUME_IN_USE="$(docker ps -a --filter "volume=${TARGET_VOLUME}" --format '{{.Names}}')"
 if [[ -n "$VOLUME_IN_USE" ]]; then
@@ -259,21 +272,58 @@ if [[ -n "$VOLUME_IN_USE" ]]; then
 	exit 2
 fi
 
-docker volume create "$TARGET_VOLUME" >/dev/null
+# Snapshot volume ownership before registering cleanup. A pre-existing empty
+# volume may be used, but a failed attempt must never remove it or its contents.
+EXISTING_VOLUMES="$(docker volume ls --format '{{.Name}}')"
+CREATED_VOLUME=0
+# Labels disambiguate a concurrent invocation that passed the same refusal
+# checks. Docker may return an existing volume from an idempotent create.
+RESTORE_OWNER="${BASHPID}-${RANDOM}-${RANDOM}"
+OWNER_LABEL=fvpn.backup.restore-owner
+cleanup_isolated_failure() {
+	local status=$? candidate identity container_id owner
+	if [[ "$status" -ne 0 ]]; then
+		for candidate in "$ISOLATED_CONTAINER" "$RESTORE_HELPER"; do
+			identity="$(docker inspect --format "{{ .Id }} {{ index .Config.Labels \"$OWNER_LABEL\" }}" "$candidate" 2>/dev/null)" || identity=
+			read -r container_id owner <<<"$identity" || true
+			if [[ "$owner" == "$RESTORE_OWNER" ]]; then
+				docker rm -fv "$container_id" >/dev/null 2>&1 || true
+			fi
+		done
+		if [[ "$CREATED_VOLUME" == 1 ]]; then
+			owner="$(docker volume inspect --format "{{ index .Labels \"$OWNER_LABEL\" }}" "$TARGET_VOLUME" 2>/dev/null)" || owner=
+			if [[ "$owner" == "$RESTORE_OWNER" ]]; then
+				docker volume rm -f "$TARGET_VOLUME" >/dev/null 2>&1 || true
+			fi
+		fi
+	fi
+}
+trap cleanup_isolated_failure EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+if ! grep -Fxq -- "$TARGET_VOLUME" <<<"$EXISTING_VOLUMES"; then
+	docker volume create --label "$OWNER_LABEL=$RESTORE_OWNER" "$TARGET_VOLUME" >/dev/null
+	CREATED_VOLUME=1
+	if [[ "$(docker volume inspect --format "{{ index .Labels \"$OWNER_LABEL\" }}" "$TARGET_VOLUME")" != "$RESTORE_OWNER" ]]; then
+		echo "restore-pitr.sh: target volume was concurrently created by another invocation; refusing to overwrite" >&2
+		exit 2
+	fi
+fi
 
-# Forward repository options, including credentials, as environment names only.
+# Both containers read a local POSIX copy. Forward only cipher inputs, by name;
+# remote repository credentials/options are neither needed nor exposed there.
 REPO_ENV=()
-while IFS= read -r key; do
-	REPO_ENV+=(-e "$key")
-done < <(compgen -e | LC_ALL=C sort | grep '^PGBACKREST_REPO1_' || true)
-# --repo-volume explicitly selects a local repository copy. Environment options
-# for its remote source stay available, but cannot redirect this restore.
+for key in PGBACKREST_REPO1_CIPHER_PASS PGBACKREST_REPO1_CIPHER_TYPE; do
+	if [[ -v "$key" ]]; then
+		REPO_ENV+=(-e "$key")
+	fi
+done
 REPO_ARGS=(--repo1-type=posix --repo1-path=/var/lib/pgbackrest)
 
 # Step 1: Run pgbackrest restore in a one-shot network-none container with the backup repo mounted read-only (:ro).
-RESTORE_HELPER="${ISOLATED_CONTAINER}-init"
 docker run --rm \
 	--name "$RESTORE_HELPER" \
+	--label "$OWNER_LABEL=$RESTORE_OWNER" \
 	--network none \
 	--entrypoint /bin/bash \
 	"${REPO_ENV[@]}" \
@@ -290,28 +340,29 @@ docker run --rm \
 		fi
 		chown postgres:postgres /var/lib/postgresql/data
 		chmod 0700 /var/lib/postgresql/data
-		exec runuser -u postgres -- pgbackrest \
+		runuser -u postgres -- pgbackrest \
 			--stanza="$stanza" \
 			--pg1-path=/var/lib/postgresql/data \
 			--no-delta \
 			--log-path=/tmp \
 			"$@" \
 			restore
+		# Source functions only; do not run the server entrypoint in this helper.
+		source /usr/local/bin/fvpn-postgres-entrypoint.sh
+		rewrite_isolated_recovery /var/lib/postgresql/data/postgresql.auto.conf
 	' _ "$STANZA" "${REPO_ARGS[@]}" "${PGBACKREST_TARGET_ARGS[@]}"
 
 # Step 2: Start the isolated PostgreSQL container with --network none and zero host ports.
 # PostgreSQL replays archived WAL from /var/lib/pgbackrest:ro up to the PITR target and promotes.
 docker run -d \
 	--name "$ISOLATED_CONTAINER" \
+	--label "$OWNER_LABEL=$RESTORE_OWNER" \
 	--network none \
 	-e FVPN_PG_ISOLATED_RESTORE=1 \
 	-e FVPN_PGBACKREST_STANZA="$STANZA" \
 	"${REPO_ENV[@]}" \
-	-e PGBACKREST_REPO1_TYPE=posix \
-	-e PGBACKREST_REPO1_PATH=/var/lib/pgbackrest \
 	-e POSTGRES_USER="$DB_USER" \
 	-e POSTGRES_DB="$DB_NAME" \
-	-e POSTGRES_HOST_AUTH_METHOD=trust \
 	-v "${TARGET_VOLUME}:/var/lib/postgresql/data" \
 	-v "${REPO_VOLUME}:/var/lib/pgbackrest:ro" \
 	"$IMAGE" >/dev/null
@@ -320,7 +371,6 @@ docker run -d \
 NET_MODE="$(docker inspect --format '{{.HostConfig.NetworkMode}}' "$ISOLATED_CONTAINER")"
 PORT_COUNT="$(docker inspect --format '{{len .NetworkSettings.Ports}}' "$ISOLATED_CONTAINER")"
 if [[ "$NET_MODE" != "none" ]] || [[ "$PORT_COUNT" != "0" ]]; then
-	docker rm -fv "$ISOLATED_CONTAINER" >/dev/null 2>&1 || true
 	echo "restore-pitr.sh: isolation invariant violated (NetworkMode=${NET_MODE}, Ports=${PORT_COUNT})" >&2
 	exit 1
 fi
@@ -332,6 +382,13 @@ for _ in $(seq 1 120); do
 	if [[ "$STATE" != "true" ]]; then
 		echo "restore-pitr.sh: isolated container '${ISOLATED_CONTAINER}' exited unexpectedly during recovery:" >&2
 		docker logs "$ISOLATED_CONTAINER" >&2 || true
+		exit 1
+	fi
+	# A later WAL parameter increase can pause hot standby indefinitely. Report
+	# the named resource immediately instead of waiting for promotion timeout.
+	RESOURCE_ERROR="$(docker logs "$ISOLATED_CONTAINER" 2>&1 | grep -E '(max_connections|max_worker_processes|max_wal_senders|max_prepared_transactions|max_locks_per_transaction) = [0-9]+ is a lower setting' || true)"
+	if [[ -n "$RESOURCE_ERROR" ]]; then
+		printf 'restore-pitr.sh: recovery resource mismatch: %s\n' "$RESOURCE_ERROR" >&2
 		exit 1
 	fi
 	if READY="$(docker exec --user postgres "$ISOLATED_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT CASE WHEN NOT pg_is_in_recovery() THEN 'promoted' ELSE 'recovering' END;" 2>/dev/null | tr -d '[:space:]')" && [[ "$READY" == "promoted" ]]; then

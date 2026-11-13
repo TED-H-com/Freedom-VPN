@@ -78,12 +78,13 @@ if [[ -z "$ACTION" ]]; then
 	exit 2
 fi
 
-if [[ ! "$STANZA" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+# Enumerate ASCII characters: regex ranges depend on the caller's locale.
+if [[ ! "$STANZA" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]+$ ]]; then
 	echo "backup.sh: invalid stanza name: $STANZA" >&2
 	exit 2
 fi
 
-if [[ -n "$CONTAINER" ]] && [[ ! "$CONTAINER" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+if [[ -n "$CONTAINER" ]] && [[ ! "$CONTAINER" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-]+$ ]]; then
 	echo "backup.sh: invalid container name: $CONTAINER" >&2
 	exit 2
 fi
