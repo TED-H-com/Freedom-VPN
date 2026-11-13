@@ -691,13 +691,11 @@
     "before": "`mergeRevocations` (`#202`) retains only the addresses in `Failed` alongside any unattempted addresses so already-deleted flows are not re-deleted when a sibling address fails",
     "after": "`pendingAfterFailure` retains distinct pending or previous identities whose address is both in `Failed` and in the address set returned by `planRevokes`. `planRevokes` omits current triples when collecting addresses, but retention then filters by address: a re-admitted triple can remain when another identity at the same address still requires revocation",
     "evidence": [
-      "node/agent/revocation.go:78",
-      "node/agent/revocation.go:81",
-      "node/agent/revocation.go:94",
-      "node/agent/revocation.go:249",
       "node/agent/revocation.go:51",
       "node/agent/revocation.go:63",
+      "node/agent/revocation.go:81",
       "node/agent/revocation.go:85",
+      "node/agent/revocation.go:94",
       "node/agent/revocation.go:101"
     ]
   },
