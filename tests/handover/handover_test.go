@@ -1003,7 +1003,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 
 	// 2. Verify operator-guide.md fleet-config section, the wired-operation claim, and PR #173..#182 catch-up claims.
 	requireHandoverClaimTokens(t, root, "tests/handover/testdata/history/follow-up-15/operator-guide.md", "The existing 49 are wired in `apps/control` on `main`")
-	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	operatorGuide := readOwnedDoc(t, root, followup53InputPath("docs/handover/operator-guide.md"))
 	for _, token := range []string{
 		"#173", "#174", "#175", "#176", "#177", "#178", "#179", "#181", "#182",
 		"D-065",
@@ -1046,7 +1046,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 	}
 
 	// 3. Verify deploy.md and calibration.md fleet-config and devstack follow-up 11 claims.
-	deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+	deployGuide := readOwnedDoc(t, root, followup53InputPath("docs/handover/deploy.md"))
 	for _, token := range []string{
 		"D-065",
 		"#176",
@@ -1072,7 +1072,7 @@ func TestHandover_Followup7Claims(t *testing.T) {
 		}
 	}
 
-	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	calibrationGuide := readOwnedDoc(t, root, followup53InputPath("docs/handover/calibration.md"))
 	for _, token := range []string{
 		"D-065",
 		"#176",
@@ -20081,6 +20081,11 @@ func restoreFollowup53Inputs(source string) string {
 			"readOwnedDoc(t, root, followup53InputPath(\"docs/handover/operator-guide.md\"))", "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
 			"readOwnedDoc(t, root, followup53InputPath(\"docs/handover/member-guide.md\"))", "readOwnedDoc(t, root, \"docs/handover/member-guide.md\")",
 		}},
+		{"TestHandover_Followup7Claims", []string{
+			"readOwnedDoc(t, root, followup53InputPath(\"docs/handover/operator-guide.md\"))", "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+			"readOwnedDoc(t, root, followup53InputPath(\"docs/handover/deploy.md\"))", "readOwnedDoc(t, root, \"docs/handover/deploy.md\")",
+			"readOwnedDoc(t, root, followup53InputPath(\"docs/handover/calibration.md\"))", "readOwnedDoc(t, root, \"docs/handover/calibration.md\")",
+		}},
 	} {
 		header := "func " + p.name + "(t *testing.T) {"
 		start := strings.Index(source, header)
@@ -20113,10 +20118,10 @@ func TestHandover_Followup53Claims(t *testing.T) {
 		Bytes        int
 	}{
 		{"docs/handover/follow-up-53.md", "05c614dd579fdb7179a2af8c50564f2595ccb2957ea4d6e27d3d8665aa998e2e", 9604},
-		{"tests/handover/testdata/followup53-edits.json", "fb600e20537f85455a721a1c1d8b6629999c15c6ca66b288eb2c9435a1cc2ad5", 102074},
+		{"tests/handover/testdata/followup53-edits.json", "5ea09743b3603f9c8206e834eca67d2034dbfc1331efdba3b422b2fe848f9df9", 105499},
 		{"tests/handover/testdata/followup53-historical.json", "b2dd18e07a686a8ed81969d59ea97faf1703cde410e678c6ff33d68fae73c26a", 9820},
 		{"tests/handover/testdata/followup53-main.json", "e9253434de8398c74eabbbcb35732720afe942db687e9ea5776fa778b2801a52", 2479},
-		{"tests/handover/testdata/followup53-prior-assertions.json", "30ef08dc9cac89b196a3fda67250b839556324fa11d7024f2d59d97fc32f6542", 1557},
+		{"tests/handover/testdata/followup53-prior-assertions.json", "3b2cc07ef6071ebbc41fa5c5b0b9f2c74b1f2b2d3a2e327f814155e72b9c7463", 2479},
 		{"tests/handover/testdata/followup53-snapshots.json", "a4de5f9056d2e6d63b3a2eb4e36ca187c2b30e703609107020dd987a2fc690f2", 5036},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
@@ -20367,7 +20372,7 @@ func TestHandover_Followup53Claims(t *testing.T) {
 			}
 		}
 		readJSON(fixture+"followup53-prior-assertions.json", &manifest)
-		functions := []string{"TestHandover_Followup52Claims"}
+		functions := []string{"TestHandover_Followup52Claims", "TestHandover_Followup7Claims"}
 		if len(manifest) != len(functions) {
 			t.Fatal("prior assertion count")
 		}
