@@ -12,10 +12,21 @@ The complete forward inventory is `db/migrations/*.sql`, embedded by the migrato
 | `00190_serving_leases_clamp.sql` | D-084 (#259): the immutable-row guard permits only strictly shortening `expires_at`, with every other column unchanged. The freeze transaction clamps matching stored leases at transaction time + 60 s; signed envelopes and replay stay unchanged. Run this forward migration before the new freeze code. |
 | `00191_installer_update_results.sql` | D-089 / D-097 (#273): append-only installer receipts, exact ACK replay and current-incarnation installer summary. Includes Down; apply before the new control binary. |
 | `00192_installer_outcome_corrections.sql` | D-127 (#322): payload-derived UUID result_id key plus unique outcome_sequence bounded to 1..2 per node/job. First receipt and stored ACKs remain immutable. Apply before control; Down refuses once corrections exist. |
+| `00196_node_operation_targets.sql` | Apply before the new worker and control binaries, through [deployment §3.3](deploy.md#33-running-forward-migrations-fvpn-migrate). Adds operation captures, per-node targets and coalesced outstanding subject removals, with node/subject indexes. Removals have a UUID primary key and a unique node/subject key; both generation columns are positive uint64-bounded numerics. All three tables have spec comments. Eligible ACKs delete outstanding removals; revocation retains them, permanent retirement removes them in the sweep. Down drops all three tables; the wildcard embedded migration round-trip includes 00196 and `DownTo(188)`, without a run/pass claim here. Evidence history remains subject to retention guards. |
 
 The outbox summary is informational and independent of audit retention; it does not alter readiness, leases, or publication. See [operator guide §2.3](operator-guide.md) and [database retention policy](../db/README.md). Historical usage remains attributed to its original node incarnation after reinstall; do not move its ledger to a replacement identity.
 
 Db follow-up 2 (#280), invariant 16: every migration above 00188 must have a working Down. `db-lint` rejects missing/comment-only/empty Down sections; `Test15_5_MigrationsRoundTrip` proves Up → DownTo(188) → Up. This test-time reversibility requirement does not authorize production rollback of evidence tables.
+
+## Compile and capture transaction constraints
+
+The database-wide two-int advisory fence is named by `CompileFenceNamespace` and `CompileFencePurpose` in [compile_fence.go](../../internal/nodes/commandtx/compile_fence.go). Compilation takes the shared fence as its transaction’s first lock; capture takes it exclusively before selection and again at final capture, draining in-flight compiles. Under either fence, all reads and writes stay on the fenced transaction and acquire no extra pool connection, including the resolver publication lookup through `LatestPublishedTx`.
+
+The per-member session lock uses nonblocking `pg_try_advisory_lock` on `hashtextextended(member ID, 165)`; contention returns `ErrLeaseLost` for retry. After the compile fence, row order is node → removal → target → operation. Capture and sweep lock nodes in UUID order; separate removal reads preserve acknowledgements that commit while capture waits. See [capture locking](../../internal/nodes/operation_targets.go) and [removal locking](../../internal/nodes/subject_removals.go).
+
+## Operation captures and evidence
+
+`node_operation_capture:<capture UUID>` is completion evidence even for zero targets. `node.operation_target_acknowledged` and `node.operation_target_unconfirmed` audit individual outcomes; `member.nodes_completed` records the capture and target outcomes, alongside `node.revoke_isolation_pending` and `node.revoke_isolation_resolved`. A succeeded step can include unconfirmed targets. Per-target detail is stored in the database/audit trail; no target-detail API/UI is implemented. Ordinary audit/evidence retention guards still apply; capture history authorizes neither an immutable-evidence purge nor a blanket retention/replay bypass. See [operation target evidence](../../internal/nodes/operation_targets.go) and [retention policy](../db/README.md).
 
 ## D-130 interval projection rollout — #331 / #333
 

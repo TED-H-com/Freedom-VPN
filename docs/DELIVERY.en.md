@@ -40,6 +40,8 @@ mean every platform and failure scenario has passed acceptance.
 
 ## Handover guide revisions
 
+[Follow-up 53](handover/follow-up-53.md) revises deployment, operator, calibration, restore, member, database and backup statements at `e055143e`: central receipt-age status and portal summaries; enrollment verifier encoding; lease fields, configured renewal lead, retry gates and same-generation repair; captured per-node operation outcomes and migration 00196; historical member acceptance qualifications; isolated restore configuration, cipher inputs, identifier grammar and drill/scanner limits. Five dated passages stay unchanged, with errata linked to living guidance. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 52 recorded them.
+
 [Follow-up 52](handover/follow-up-52.md) corrects deployment, calibration, restore, operator and backup statements at `6972be03`: enrollment and release-policy fields, the two-resolver resilience recommendation (one is accepted without redundancy), fair-use acknowledgement versus current liveness, the policy event pipeline, HTTP helper names, a repeated recovery-gap notice, node checks and token-file selection, enforcement names and reserved conntrack batches, revoke-step eligibility and public/audit diagnostics, updater space and attempt bounds and rollback health, the member-usage read-back route, configuration defaults and bounded LRU scanning, current incarnation/discovery/probe/schema names, provisional health and central expiry conditions, eligible renewal attempts, and a member-guide link to provisional reports and renewal spacing, fence audit fields and separate peer/identity denial tracking with resource fallbacks, rejected/accepted update-result projections and omitted/null error-code receipt differences, revocation address filters, stale-observation grace, the public-key digest encoding and baseline attempts versus confirmed isolation in deployment and operator guidance, Apply/dependency acknowledgement gates, eligible same-generation repair, quarantine prerequisites, containment confirmation and wrapper/Apply evidence and separate meter-path failures, and the linux/amd64 backup migrator. The dated restore record stays unchanged; the cut records the `UploadOnce` / `Uploader.Once` erratum. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 51 recorded them.
 
 [Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration, restore-drill and backup statements at `66de6a24`. It records staging authority and grants, installer/DNS behavior, actual configuration and retention bounds, and bounded recovery/reconciliation. The second review adds control-before-worker recovery ordering with its remaining authorization exposure, grant withdrawal, explicit recovery credentials, repository-environment gaps, updater space accounting and credential-only SIGHUP reload. Class review passes looked for credential, reload, process, name, cleanup and gap-notice errors and corrected the cases recorded in the cut. A third review and scripted inventories add repository-environment and retention notices, the node response field, conntrack batch accounting and quoted Go names. These passes are review records, not proof that every statement or dependency has been found. Production procedures and product support absent from the repository remain carried work; no new deployment or acceptance evidence is claimed.
@@ -51,9 +53,9 @@ Living guides can receive scoped corrections. Each cut freezes its pre-revision 
 ## Verification scope and known limits
 
 The [merge record](ROADMAP.md) tracks current implementation;
-[follow-up 52](handover/follow-up-52.md) preserves the #527
-delivery checkpoint at `6972be03`. The earlier [follow-up 51](handover/follow-up-51.md)
-retains #524–#526. Later results have their own acceptance records.
+[follow-up 53](handover/follow-up-53.md) preserves #529, #528, #530, #531 and #532
+at `e055143e`. The earlier [follow-up 52](handover/follow-up-52.md)
+retains #527. Later results have their own acceptance records.
 Unit and integration tests, Linux lab
 tests, actual app devices and production deployments each establish different
 evidence. This guide does not announce a production release or replace unfinished

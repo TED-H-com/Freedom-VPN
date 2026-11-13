@@ -1,0 +1,53 @@
+{
+  "source_commit": "e055143ead570c9ff4357a910d0969c854077b72",
+  "previous_cut": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
+  "merged_prs": [
+    529,
+    528,
+    530,
+    531,
+    532
+  ],
+  "prs": [
+    {
+      "number": 529,
+      "title": "handover: follow-up 52 — cut #527, and correct the deployment, calibration, restore-drill, operator, member and backup guides against the code",
+      "merge_commit": "dd0a898421e5299bf3e62ad5edd1b2caca64e64b",
+      "pre_merge_head": "27f54b2a2ba09963de0c57e7310f289ee1d7ab0c",
+      "merged_at": "2026-11-13T06:01:13Z",
+      "roadmap_commit": "9f40e5a7facdc9a481c9f3d9f660919521684b0f"
+    },
+    {
+      "number": 528,
+      "title": "backup: isolated restores start from configuration they write themselves, keep only the restore's recovery settings and clean up after a failure; script guards no longer depend on the locale",
+      "merge_commit": "8a04d92bbe343dd9abb46a05e2862f089a8b6841",
+      "pre_merge_head": "40cc040b98726bdb96a0df53340efe76773b3125",
+      "merged_at": "2026-11-13T06:09:52Z",
+      "roadmap_commit": "3aed67c61ab1f1a72d5e8e15992e868c1728ea7a"
+    },
+    {
+      "number": 530,
+      "title": "worker: run the node staleness sweep as a scheduled job, so a node that stops reporting becomes stale and then offline instead of staying online",
+      "merge_commit": "e126f45b98d3fd9c0913f106cba35b9fb40046a1",
+      "pre_merge_head": "8309c2d2dec94bd75de3b1d50229b3c3932bf988",
+      "merged_at": "2026-11-13T07:06:47Z",
+      "roadmap_commit": "a6539de4c38fddd25464b21623eff2202971a873"
+    },
+    {
+      "number": 531,
+      "title": "portal: the admin node summary and overview state only what each node's fields show, so stale, offline, enrolling and expired nodes are not called online or serving",
+      "merge_commit": "c5d2a489157cbad19ebb57211589139604cc38b3",
+      "pre_merge_head": "24af2fa3121765db71440c203aa6a2472da836bb",
+      "merged_at": "2026-11-13T09:25:25Z",
+      "roadmap_commit": "67236ea19d162b62242a265a0329b3b03150acbf"
+    },
+    {
+      "number": 532,
+      "title": "nodes: complete a member or device operation's nodes step only when every exit it affects has applied the change or is recorded as unconfirmed",
+      "merge_commit": "74d7ea2c908b712474c45d467e203a1c39f02d2b",
+      "pre_merge_head": "4c36007fc89d5b9d18be720e494de3ec943eac29",
+      "merged_at": "2026-11-13T12:04:53Z",
+      "roadmap_commit": "e055143ead570c9ff4357a910d0969c854077b72"
+    }
+  ]
+}

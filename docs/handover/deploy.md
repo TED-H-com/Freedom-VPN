@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
@@ -80,7 +80,7 @@ By engineering contract (`D-026`, `D-039`, `D-045`), no production binary compil
 | `docs/members/config.example.json` | `vault_active_key`, `vault_key_files` | `"v1-test"`, `/etc/fvpn/secrets/billing-vault-v1.key` | Production key ID (e.g., `"vault-prod-2026-01"`) pointing to a `0600` file containing 32 bytes of CSPRNG output |
 | `docs/members/config.example.json` | `grace_seconds`, `trial_max_seconds`, `grant_max_seconds` | `0`, `0`, `86400` | Explicit business-approved durations (see [`calibration.md`](calibration.md)) |
 | `internal/nodes/nodestest/config.go` | `netbird_deployment`, `netbird_token_file` | `"TEST ONLY"`, `"TEST ONLY synthetic token"` | Production deployment identifier (e.g., `"prod-main"`) and restricted NetBird service-user PAT file (`0600`) |
-| `internal/nodes/nodestest/config.go` | `certificate_seconds`, `renewal_overlap_seconds`, `bootstrap_seconds`, `online_seconds`, `stuck_seconds` | `86400`, `300`, `60`, `180`, `600` | Calibrated production PKI and liveness windows (e.g., 7–30 day node certs with 24–72h overlap; see [`calibration.md`](calibration.md)) |
+| `internal/nodes/nodestest/config.go` | `certificate_seconds`, `renewal_overlap_seconds`, `bootstrap_seconds`, `online_seconds`, `stuck_seconds` | `86400`, `300`, `60`, `180`, `600` | `online_seconds` is both the fleet online window and the central receipt-age offline threshold; calibrate production PKI and liveness windows (e.g., 7–30 day node certs with 24–72h overlap; see [`calibration.md`](calibration.md)) |
 | `internal/nodes/nodestest/config.go` | `release_origins` | `["https://releases.example.invalid"]` | Exact HTTPS origin(s) of the immutable production release bucket (`["https://releases.example.com"]`) |
 | `internal/nodes/nodestest/config.go` | `dns_resolver_ipv4`, `dns_resolver_ipv6` | `["100.64.0.53"]`, `["2001:db8::53"]` | Production AdGuard Home overlay listener IPs (at least 2 IPv4 addresses recommended per `§12.2`) |
 | `docs/dns/config.example.json` | `upstreams`, `bootstrap_dns` | `["192.0.2.53:53", "[2001:db8::53]:53"]` | Production recursive upstream resolvers (`IP:port` literals only; never left to AdGuard defaults, `D-028`) |
@@ -102,6 +102,8 @@ By engineering contract (`D-026`, `D-039`, `D-045`), no production binary compil
 Provision PostgreSQL 17 on a dedicated volume with TLS enabled and continuous WAL archiving to an off-host object store so point-in-time recovery (PITR) meets the RPO target (`≤ 15 minutes` for central control-plane tables, `§17.2`).
 
 For repository configuration, credentials, backup scripts and scheduled units, see the [backup guide](../ops/backups.md).
+
+The isolated verifier starts with its own PostgreSQL configuration, HBA and ident outside restored PGDATA, retaining only this restore’s validated pgBackRest recovery settings. It does not boot restored production configuration or certify a production restart; see [the isolated verification boundary](../ops/backups.md#21-postgresql-17-wal-archiving-fragment-deploybackuppostgresfvpn-archivingconf).
 
 Carried gap: first-host pgBackRest provisioning, initial stanza/base backup, and delivery of repository credentials to PostgreSQL archiving are not completed by the fragment below. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
@@ -506,6 +508,8 @@ Carried gap: this example uses the staging FileProvider authority from §5.3; pr
 }
 ```
 
+`online_seconds` also controls central receipt-age classification: stale at `min(90 seconds, online_seconds)`, offline at `online_seconds`. The `180`-second example therefore becomes stale at 90 seconds and offline at 180 seconds, visible only after a successful `node.staleness.sweep`. The sweep is scheduled at `min(reconcile_seconds, 60 seconds)` for valid positive configuration; dispatch and retries can delay it. See [liveness calibration](calibration.md#14-lease-durations-max_offline_seconds-node-lifetimes-and-health-attestation-61-64-13-163-165-d-053-d-058-d-074).
+
 ### 6.4 `/etc/fvpn/dns.json` (`dns_config_file`, `D-028`, `D-054`, `D-058d`)
 
 Carried gap: create the central configuration/secret directories and service account with the access required in §7.2 before installing this file; that provisioning procedure remains absent.
@@ -815,7 +819,7 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/enrollments" \
   }'
 ```
 
-The response carries `Cache-Control: no-store` and returns the one-time `token` (`EnrollmentCreated.token`, `§6.1`) on initial `201` creation alongside `token_sha256` (`Enrollment.token_sha256`, `#191`, `#195`, `#200`, the 64-hex SHA-256 digest of the stored token hash `node_enrollments.token_hash`, also returned on idempotent replay, `getEnrollment`, and `revokeEnrollment` and recorded unredacted in `enrollment.created` `changes.after.token_sha256`).
+The response carries `Cache-Control: no-store` and returns the one-time `token` (`EnrollmentCreated.token`, `§6.1`) on initial `201` creation alongside `token_sha256` (`Enrollment.token_sha256`, `#191`, `#195`, `#200`, the 64-character lowercase hex encoding of the stored SHA-256 verifier `node_enrollments.token_hash`, computed once from the plaintext token, also returned on idempotent replay, `getEnrollment`, and `revokeEnrollment` and recorded unredacted in `enrollment.created` `changes.after.token_sha256`).
 
 ### 9.3 Running `fvpn-agent enroll` on the Node
 
@@ -839,6 +843,8 @@ Carried gap: complete the real node network, resolver provisioning and single-or
 
 Create or verify the target member group via `POST /api/v1/admin/groups` (`CreateAdminGroup`, `201 MemberGroup`, audited as `group.create` on `member_group:<id>`, `D-057`, `D-059`) or `GET /api/v1/admin/groups` (`ListAdminGroups`). Once the node reports healthy observations (`provisioning_state: "ready"`, `control_status: "online"`, `safety_status: "passed"`, `data_health: "healthy"`, and `checks` entries `internet_only`, `dns_policy`, and `tunnel_probe` with `status: "passed"`) in `GET /api/v1/admin/nodes/{node_id}`, publish the exit node via `PUT /api/v1/admin/nodes/{node_id}/publication` (`SetNodePublication` -> `exits.SetPublicationTx`, `docs/nodes/WIRING.md`) supplying `publication_intent: "published"`, `group_ids: ["<group_uuid>"]`, `If-Match: "<etag>"`, and `Idempotency-Key` (or pre-attach `member_group_ids` via `PATCH /api/v1/admin/nodes/{node_id}` and omit `group_ids` to preserve existing membership). Wait for the returned `202 Accepted` operation (`node.publish`) to reach `status: "succeeded"` with `publication_observed: "active"` and NetBird route read-back evidence (`netbird_route_readback`) before announcing the exit to members.
 
+Central stale/offline status appears after a successful scheduled sweep; it does not replace the publication operation and route read-back above. Receipt-age classification does not change publication intent.
+
 Historical follow-up 15 cutoff; current dispositions are in [follow-up 19](follow-up-19.md).
 
 Installer ENR-06 (#266) historically failed first start because `/var/run/netbird.sock` was outside the packaged write allowlist and consumers could remove shared runtime state. Installer follow-up 3 (#279) fixes this: the daemon owns `/run/fvpn-netbird/netbird.sock` and shared `/run/vpn-node` survives consumer restarts. Offline seed and firstboot now pass with real daemons, but the required full journaled upgrade stays **red** at the absent meter checkpoint (`final_sample`, `CHECKPOINT_FAILED`, health null). Do not infer success from updater exit 0. See [installer follow-up 3](../node/install-followup3-2026-10-31.md). Devstack follow-up 15 remains historically `21 pass / 1 fail`; enrollment follow-up 6 (#288) now verifies ENR-06 startup on the fixed installer (AT06 376/0/0, AT07 26/5/0). Five AT07 rows remain blocked on installer-node exports and ENR-05; startup success does not close the full upgrade test. Updates follow-up 9 passed regular AT23–AT27 on `5575470`, while its separate installer extension remains blocked on measured F9-01…F9-05; [current dispositions](../ops/README.md#follow-up-15-acceptance-snapshot-2026-10-31-edt).
@@ -848,7 +854,7 @@ Installer ENR-06 (#266) historically failed first start because `/var/run/netbir
 - **What `max_offline_lease_seconds` governs (`§16.3`, [`docs/nodes/README.md`](../nodes/README.md), [`docs/nodes/WIRING.md`](../nodes/WIRING.md)):**
   The singleton `fleet_config.max_offline_lease_seconds` governs the longest a node keeps serving member traffic on its last signed `ServingLeaseEnvelope` when `fvpn-control` is unreachable ($\text{node\_lease\_end} = \text{signed\_server\_time} + \text{max\_offline\_lease\_seconds}$ and $\text{member\_lease\_end} = \min(\text{signed\_server\_time} + \text{max\_offline\_lease\_seconds}, \text{effective\_service\_end}, \text{node\_lease\_end})$). Operators and acceptance harnesses (`AT29`) manage this ceiling through `GET`/`PUT /api/v1/admin/fleet-config` rather than editing `fleet_config` in SQL (`D-065`).
 - **Range `60`–`86400` and why the floor is `60` (`D-065`, `#176`, `#179`, `node/agent/sync.go`):**
-  `max_offline_lease_seconds` accepts integer values in **`60`–`86400`** seconds. The read-only field `default_max_offline_lease_seconds` is `86400` (`24` hours — the `§16.3` ceiling and migration seed, not a deployment recommendation; see [`calibration.md` §1.4](calibration.md)). The **`60` s floor** exists for test labs (`AT29` deadline faults) because `fvpn-agent` renews its serving lease at `min(120 s, window/2)` remaining (`renewLead` in `node/agent/sync.go`) with a `10 s` heartbeat tick; the Admin Portal warns below `900 s` (`15` minutes).
+  `max_offline_lease_seconds` accepts integer values in **`60`–`86400`** seconds. The read-only field `default_max_offline_lease_seconds` is `86400` (`24` hours — the `§16.3` ceiling and migration seed, not a deployment recommendation; see [`calibration.md` §1.4](calibration.md)). The **`60` s floor** exists for test labs (`AT29` deadline faults) because `fvpn-agent` renews its serving lease at the configured `RenewLeadSeconds` lead (`renewLead` in `node/agent/engine.go`), clamped to half the lease window and then to at least one second, plus jitter for ordinary populated leases (`node/agent/sync.go`). The lead defaults to `120 s` and `heartbeat_seconds` to `10 s`; the Admin Portal warns below `900 s` (`15` minutes).
 - **`GET` → strong `ETag` → `PUT` flow, HTTP outcomes (`428`/`412`/`409`/`422`), `fleet_config.update` audit, and lease timing (`internal/nodes/httpwire/fleet_config.go`, `TestD065_FleetConfigHTTPReadWrite`, `TestD065_AT29_FleetConfigOnlyChangesNewLeases`, `TestD065_FleetConfigReleaseWriterInterleaving`, `TestD065_FleetConfigMissingRowUsesIssuerDefault`):**
   1. `GET /api/v1/admin/fleet-config` returns `200 OK` `FleetConfig` and strong `ETag: "<resource_version>"` (if the singleton row is absent, `GET` returns `max_offline_lease_seconds: 86400`, `default_max_offline_lease_seconds: 86400`, `resource_version: "0"`, `updated_at: "1970-01-01T00:00:00Z"`, `ETag: "0"` without writing).
   2. `PUT /api/v1/admin/fleet-config` requires `If-Match: "<resource_version>"`, a UUID `Idempotency-Key`, `X-CSRF-Token`, `Origin`, and `{"max_offline_lease_seconds": <60..86400>, "reason": "<1..500 chars>"}`. It locks `fleet_config` (`SELECT ... FOR UPDATE`, serializing with `fleetupdate.CreateBatch` without modifying `generation` or release-support columns), increments `resource_version`, appends one `fleet_config.update` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` (`operation_id: null`) containing both `before` (`{"max_offline_lease_seconds"}`) and `after` (`{"max_offline_lease_seconds", "resource_version", "updated_at", "reason"}`) snapshots (even on an accepted same-value write), and returns synchronous **`200 OK`** `FleetConfig` with the new strong `ETag` (creating zero `operations` or `outbox_events` rows).

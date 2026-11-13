@@ -1,0 +1,70 @@
+[
+  {
+    "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_Followup52Claims",
+    "source_commit": "e055143ead570c9ff4357a910d0969c854077b72",
+    "bytes": 45755,
+    "sha256": "dc6096c087f6cb93969ae513e5d497ee6e266de7e131eae199869c88e33cd41a",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, p.Path)",
+        "after": "readOwnedDoc(t, root, followup53InputPath(p.Path))",
+        "count": 2
+      },
+      {
+        "before": "readOwnedDoc(t, root, path)",
+        "after": "readOwnedDoc(t, root, followup53InputPath(path))",
+        "count": 4
+      },
+      {
+        "before": "readOwnedDoc(t, root, e.Path)",
+        "after": "readOwnedDoc(t, root, followup53InputPath(e.Path))",
+        "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, c.Path)",
+        "after": "readOwnedDoc(t, root, followup53InputPath(c.Path))",
+        "count": 2
+      },
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/deploy.md\")",
+        "after": "readOwnedDoc(t, root, followup53InputPath(\"docs/handover/deploy.md\"))",
+        "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+        "after": "readOwnedDoc(t, root, followup53InputPath(\"docs/handover/operator-guide.md\"))",
+        "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/member-guide.md\")",
+        "after": "readOwnedDoc(t, root, followup53InputPath(\"docs/handover/member-guide.md\"))",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_Followup7Claims",
+    "source_commit": "e055143ead570c9ff4357a910d0969c854077b72",
+    "bytes": 5458,
+    "sha256": "e9478ae491cfe9136c4c0ca0adfc5b752c377504fab8c8ac3798f2eee19b72f7",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+        "after": "readOwnedDoc(t, root, followup53InputPath(\"docs/handover/operator-guide.md\"))",
+        "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/deploy.md\")",
+        "after": "readOwnedDoc(t, root, followup53InputPath(\"docs/handover/deploy.md\"))",
+        "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/calibration.md\")",
+        "after": "readOwnedDoc(t, root, followup53InputPath(\"docs/handover/calibration.md\"))",
+        "count": 1
+      }
+    ]
+  }
+]
