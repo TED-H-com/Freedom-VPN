@@ -19629,10 +19629,10 @@ func TestHandover_Followup52Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-52.md", "046c59780b199c7c6605ba69c22508cdd03859cd4b7a9b1fd9121b1c5952862f", 8503},
+		{"docs/handover/follow-up-52.md", "863f8d71b70da3394e48bf7a33547c2d7cfd169b51a01245cd49b14d1be70fa2", 9624},
 		{"tests/handover/testdata/followup52-main.json", "714db17f0ea0346c47debba55fb8d65e079dee1d8735bce5f5fb037be5112204", 598},
 		{"tests/handover/testdata/followup52-snapshots.json", "e4b88ad998436a49fa9cfec2135fe913891232c8067d956ced873471ff3afa91", 4368},
-		{"tests/handover/testdata/followup52-edits.json", "e68f596225c3842505ccec5e220e68c6628ca7ce3ddbbe6b5c5a64f75f5f0dca", 89621},
+		{"tests/handover/testdata/followup52-edits.json", "1f2ff9edfe07e2d7f75656f9b83c11a618018f8794b6f41dcd4c5b4363bf30aa", 106408},
 		{"tests/handover/testdata/followup52-prior-assertions.json", "4f762fd5e6f9e62c21c0b7ed3c83bba28838a17e6057ca6bbce246ba46cba398", 2736},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
@@ -19707,7 +19707,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup52-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 76 {
+		if len(edits) != 79 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
@@ -19788,6 +19788,40 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			}
 		}
 		t.Logf("Preserved headings and %d historical passages", len(historical))
+	})
+	t.Run("reviewed_operator_statements", func(t *testing.T) {
+		guide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		for _, c := range []struct{ Name, Marker, Current, Old string }{
+			{"F1_contract", "Contract revision 11 (`#191`, `#213`)", "in an otherwise healthy state with published, verified, unexpired desired state and nonempty desired device bindings", "so `fvpn-agent`"},
+			{"F1_checks", "In `ObservationReport.forwarding.reason`", "A retained Apply error or missing dependency overrides those three check codes", "`safety_status` stays `passed`."},
+			{"F1_window", "**Reading the provisional window", "an otherwise healthy node with published, verified, unexpired desired state and nonempty desired bindings reports", "During this provisional window, the node reports"},
+			{"F1_incident", "**Reading the provisional window", "Independent safety or probe failures retain their own codes and need investigation", "This is not an incident; `LEASE_EXPIRED` / `lease_expired` is."},
+			{"F2_audit", "After a ledger restore, `SyncDevice`", "`result = \"succeeded\"`; `changes.after` contains `member_id`, `peer_id`, `observed_groups` and `reason: \"external_withdrawal\"`", "`result = \"failed\"`, `changes.after = {\"observed_authorized\": false, \"peer_id\": \"<peer_id>\", \"reason\": \"external_withdrawal_unconfirmed\"}`"},
+			{"F3_denials", "Plan downgrades keep the oldest authorizations", "only denials sent through `recordDiscoveryDenial` are audited **once per decision transition**", "discovery denials for unmapped or ineligible peers are audited **once per decision transition**"},
+			{"F4_rejection", "**Result validation, failed-result cause", "this validation rejection leaves the job and target projection as they were", "while the job remains `queued` with `needs_attention: false`"},
+			{"F4_acceptance", "**Result validation, failed-result cause", "only when the job is nonterminal and its state can advance to the reported state", "when accepted it marks the target `failed` with `needs_attention: true`"},
+			{"F5_retention", "In `enforce.Apply`", "whose address is both in `Failed` and in the address set returned by `planRevokes`", "excluding re-admitted bindings"},
+			{"F6_grace", "**One-shot stale-generation grace", "report a positive generation at least as high as the stored applied generation", "once per generation change"},
+			{"F6_pair", "**One-shot stale-generation grace", "Advancing the desired generation alone does not reset the mark", "for that same `(desired_generation, applied_config_generation)` pair"},
+			{"F7_digest", "`ListNodeIncarnations` returns", "lowercase hexadecimal encoding of `public_key_fingerprint`, the SHA-256 of the DER SubjectPublicKeyInfo", "SHA-256 of `public_key_fingerprint`"},
+			{"F8_baseline", "**How to interpret `ISOLATION_POLICY_INVALID`", "`e.plane.Baseline`, implemented by `SystemPlane.Baseline` through `enforce.ApplyBaseline`", "`plane.ApplyBaseline`"},
+		} {
+			t.Run(c.Name, func(t *testing.T) {
+				var places []string
+				for _, line := range strings.Split(guide, "\n") {
+					if strings.Contains(line, c.Marker) {
+						places = append(places, line)
+					}
+				}
+				if len(places) != 1 {
+					t.Fatalf("expected one reviewed place, got %d", len(places))
+				}
+				if !strings.Contains(places[0], c.Current) || strings.Contains(places[0], c.Old) {
+					t.Errorf("reviewed operator statement regressed: %s", c.Name)
+				}
+			})
+		}
+		t.Logf("Checked 13 scoped statement forms covering 8 review findings")
 	})
 	checkLinks := func(t *testing.T, sources []struct{ doc, text string }) {
 		t.Helper()
