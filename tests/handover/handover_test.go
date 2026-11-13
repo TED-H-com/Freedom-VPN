@@ -19633,10 +19633,10 @@ func TestHandover_Followup52Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-52.md", "6f8739dcb56c6ad578e7905427a993a68f069ae5b07256b9a8f3fb217ce6f79a", 12262},
+		{"docs/handover/follow-up-52.md", "50ff42a3fe4a4d851f395023fc558db7df89720d7877c74199afc742ac38c797", 12262},
 		{"tests/handover/testdata/followup52-main.json", "714db17f0ea0346c47debba55fb8d65e079dee1d8735bce5f5fb037be5112204", 598},
 		{"tests/handover/testdata/followup52-snapshots.json", "e4b88ad998436a49fa9cfec2135fe913891232c8067d956ced873471ff3afa91", 4368},
-		{"tests/handover/testdata/followup52-edits.json", "ad1b8c08c8c420ddb088934911cf6669cd22958583dc21a4b8155446e40a0693", 131337},
+		{"tests/handover/testdata/followup52-edits.json", "9a921b2c6027ddb612200f59a3ac1bd8faf17e2810ce939196ae9e91dad47984", 132929},
 		{"tests/handover/testdata/followup52-prior-assertions.json", "6d519f0f2348dd28e1a6e79c7b5ee7409aba195086fd3cbd65dcd4f16e7c3549", 3954},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
@@ -19711,7 +19711,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup52-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 90 {
+		if len(edits) != 91 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
@@ -19930,6 +19930,27 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			})
 		}
 		t.Logf("Checked 13 narrowed quarantine, lease and summary statement forms")
+	})
+	t.Run("chinese_member_renewal_and_provisional", func(t *testing.T) {
+		var places []string
+		for _, line := range strings.Split(readOwnedDoc(t, root, "docs/handover/member-guide.md"), "\n") {
+			if strings.Contains(line, "**實測狀態（") {
+				places = append(places, line)
+			}
+		}
+		if len(places) != 1 {
+			t.Fatalf("expected one Chinese measurement-status paragraph, got %d", len(places))
+		}
+		const current = "`node/agent/sync.go` 會在套用新期望狀態世代的步驟中，於符合續租條件時嘗試更新服務租約，並受既有的嘗試與重試限制（`#146`、`#153`、`#162`、`#166`），且節點重啟後，若有效的期望狀態含有非空綁定，`fvpn-agent` 會依 `D-067` 將新鮮、仍在效期內、與期望狀態同世代且沒有授權成員的租約（`members: []`）視為暫時租約（`#193`、`#198`、`#200`；回報內容與續租間隔見[營運指南的暫時窗口條目](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication)）。"
+		if !strings.Contains(places[0], current) {
+			t.Error("Chinese eligible renewal and provisional classification text regressed")
+		}
+		for _, old := range []string{"會在套用新期望狀態世代的同一步驟立即更新服務租約", "以 `D-067` 指數退避（1 次心跳後重試、倍增至上限 `60` 秒，狀態回報 `awaiting_member_grants`）加速恢復轉發"} {
+			if strings.Contains(places[0], old) {
+				t.Errorf("Chinese measurement-status paragraph retains old clause: %s", old)
+			}
+		}
+		t.Log("Checked exact Chinese replacement and absence of 2 old clauses")
 	})
 	checkLinks := func(t *testing.T, sources []struct{ doc, text string }) {
 		t.Helper()

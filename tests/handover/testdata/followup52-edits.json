@@ -1311,5 +1311,25 @@
       "node/agent/observe.go:132",
       "node/agent/observe.go:143"
     ]
+  },
+  {
+    "path": "docs/handover/member-guide.md",
+    "name": "F9_member_zh_renewal_provisional",
+    "before": "`node/agent/sync.go` 會在套用新期望狀態世代的同一步驟立即更新服務租約（`#146`、`#153`、`#162`、`#166`），且於節點冷重啟收到無授權成員之暫時租約（`members: []`）時以 `D-067` 指數退避（1 次心跳後重試、倍增至上限 `60` 秒，狀態回報 `awaiting_member_grants`）加速恢復轉發（`#193`、`#198`、`#200`）。",
+    "after": "`node/agent/sync.go` 會在套用新期望狀態世代的步驟中，於符合續租條件時嘗試更新服務租約，並受既有的嘗試與重試限制（`#146`、`#153`、`#162`、`#166`），且節點重啟後，若有效的期望狀態含有非空綁定，`fvpn-agent` 會依 `D-067` 將新鮮、仍在效期內、與期望狀態同世代且沒有授權成員的租約（`members: []`）視為暫時租約（`#193`、`#198`、`#200`；回報內容與續租間隔見[營運指南的暫時窗口條目](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication)）。",
+    "evidence": [
+      "node/agent/engine.go:789",
+      "node/agent/engine.go:795",
+      "node/agent/sync.go:85",
+      "node/agent/sync.go:257",
+      "node/agent/sync.go:267",
+      "node/agent/decide.go:550",
+      "node/agent/decide.go:554",
+      "node/agent/decide.go:558",
+      "node/agent/decide.go:569",
+      "docs/handover/operator-guide.md:475",
+      "docs/handover/operator-guide.md:518",
+      "docs/handover/member-guide.md:398"
+    ]
   }
 ]

@@ -61,7 +61,7 @@ acceptance records retain their original scope. This cut supplies no missing
 procedure and closes no product or acceptance gap.
 
 The [pre-cut provenance](../../tests/handover/testdata/followup52-snapshots.json)
-pins exact copies from `6972be03`. The claims check permits 90 named edits across
+pins exact copies from `6972be03`. The claims check permits 91 named edits across
 14 source documents, preserves headings and historical passages, resolves
 relative links and heading anchors, and keeps earlier assertions against frozen
 inputs. [Prior assertion provenance](../../tests/handover/testdata/followup52-prior-assertions.json)
