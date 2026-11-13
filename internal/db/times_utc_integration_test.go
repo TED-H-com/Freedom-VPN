@@ -11,6 +11,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -56,24 +57,57 @@ func Test14_1_OpenScansTimestamptzUTC(t *testing.T) {
 	})
 
 	t.Run("existing_after_connect", func(t *testing.T) {
-		conn, err := pool.Acquire(ctx)
-		if err != nil {
-			t.Fatal("acquire isolated connection")
-		}
-		defer conn.Release()
-		for _, wantErr := range []error{nil, errors.New("TEST ONLY connection setup failure")} {
-			calls := 0
-			cfg := &pgxpool.Config{AfterConnect: func(gotCtx context.Context, gotConn *pgx.Conn) error {
-				calls++
-				if gotCtx != ctx || gotConn != conn.Conn() {
-					t.Error("existing AfterConnect received different context or connection")
+		callbackZone := time.FixedZone("callback+3", 3*60*60)
+		for _, tc := range []struct {
+			name         string
+			wantErr      error
+			wantLocation *time.Location
+		}{
+			{name: "success", wantLocation: time.UTC},
+			{name: "error", wantErr: errors.New("TEST ONLY connection setup failure"), wantLocation: callbackZone},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				// A fresh, unpooled connection starts with pgx's default codec and
+				// cannot pass codec mutations to another case or pool borrower.
+				conn, err := pgx.ConnectConfig(ctx, pool.Config().ConnConfig.Copy())
+				if err != nil {
+					t.Fatal("connect isolated callback connection")
 				}
-				return wantErr
-			}}
-			db.ConfigureUTC(cfg)
-			if err := cfg.AfterConnect(ctx, conn.Conn()); !errors.Is(err, wantErr) || calls != 1 {
-				t.Errorf("existing AfterConnect: calls=%d error=%v, want calls=1 error=%v", calls, err, wantErr)
-			}
+				t.Cleanup(func() {
+					closeCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+					if err := conn.Close(closeCtx); err != nil {
+						t.Error("close isolated callback connection")
+					}
+				})
+				calls := 0
+				cfg := &pgxpool.Config{AfterConnect: func(gotCtx context.Context, gotConn *pgx.Conn) error {
+					calls++
+					if gotCtx != ctx || gotConn != conn {
+						t.Error("existing AfterConnect received different context or connection")
+					}
+					gotConn.TypeMap().RegisterType(&pgtype.Type{
+						Name:  "timestamptz",
+						OID:   pgtype.TimestamptzOID,
+						Codec: &pgtype.TimestamptzCodec{ScanLocation: callbackZone},
+					})
+					return tc.wantErr
+				}}
+				db.ConfigureUTC(cfg)
+				if err := cfg.AfterConnect(ctx, conn); !errors.Is(err, tc.wantErr) || calls != 1 {
+					t.Errorf("existing AfterConnect: calls=%d error=%v, want calls=1 error=%v", calls, err, tc.wantErr)
+				}
+				var got time.Time
+				if err := conn.QueryRow(ctx, `SELECT occurred_at FROM utc_times`, pgx.QueryResultFormats{pgx.BinaryFormatCode}).Scan(&got); err != nil {
+					t.Fatal(err)
+				}
+				if got.Location() != tc.wantLocation {
+					t.Errorf("after existing AfterConnect: scanned timestamptz location = %q, want %q", got.Location(), tc.wantLocation)
+				}
+				if !got.Equal(want) {
+					t.Errorf("after existing AfterConnect: scanned instant = %s, want %s", got.Format(time.RFC3339Nano), want.Format(time.RFC3339Nano))
+				}
+			})
 		}
 	})
 }

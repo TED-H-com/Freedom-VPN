@@ -73,10 +73,13 @@ func Open(ctx context.Context, dsn string, opts OpenOptions) (*pgxpool.Pool, err
 	return pool, nil
 }
 
-// ConfigureUTC makes every new pool connection scan timestamptz values in UTC
+// ConfigureUTC makes every new pool connection scan scalar timestamptz values in UTC
 // (§14.1). The server's timezone setting alone does not affect binary decoding.
 // Call this before creating the pool. Any existing AfterConnect runs first; its
 // errors are preserved, and UTC registration follows only if it succeeds.
+// Arrays and ranges of timestamptz retain pgx's default element codec, so values
+// scanned into pgtype types such as pgtype.Timestamptz can use the local zone.
+// No product query scans timestamptz arrays or ranges.
 func ConfigureUTC(cfg *pgxpool.Config) {
 	afterConnect := cfg.AfterConnect
 	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
