@@ -34,6 +34,18 @@ func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 
 func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) Registry {
 	jobs := Registry{}
+	jobs.Register("node.staleness.sweep", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		ctx = commandtx.WithClaim(ctx, event)
+		offlineAfter := time.Duration(r.Config.OnlineSeconds) * time.Second
+		staleAfter := min(nodelib.DefaultStaleTimeout, offlineAfter)
+		if _, err := r.Nodes.SweepStaleNodes(ctx, staleAfter, offlineAfter); err != nil {
+			return "", err
+		}
+		err := commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			return enqueueScheduledNodeJob(ctx, tx, event.EventType, event.ID, time.Now().Add(resolverReconcilePeriod(r.Config.ReconcileSeconds)))
+		})
+		return "staleness-sweep:" + event.ID.String(), err
+	})
 	jobs.Register(nodelib.EventGenerationHoldCheck, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if err := nodelib.ValidateGenerationHoldEvent(event); err != nil {
 			return "", err
@@ -367,7 +379,10 @@ func RunNodeSchedule(ctx context.Context, runtime *httpwire.Runtime) error {
 			if err := enqueueNodeReconcile(ctx, tx, uuid.Nil, time.Now()); err != nil {
 				return err
 			}
-			return enqueueScheduledNodeJob(ctx, tx, "node.resolver_documents.reconcile", uuid.Nil, time.Now())
+			if err := enqueueScheduledNodeJob(ctx, tx, "node.resolver_documents.reconcile", uuid.Nil, time.Now()); err != nil {
+				return err
+			}
+			return enqueueScheduledNodeJob(ctx, tx, "node.staleness.sweep", uuid.Nil, time.Now())
 		})
 	}
 	ticker := time.NewTicker(resolverReconcilePeriod(runtime.Config.ReconcileSeconds))
