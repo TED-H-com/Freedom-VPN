@@ -58,7 +58,8 @@ prepare_isolated_restore() {
 	local config_dir="$1" data_dir="$2" db_user="$3" db_name="$4"
 	local control parameter field value minimum
 	for value in "$db_user" "$db_name"; do
-		if [[ ! "$value" =~ ^[a-zA-Z_][a-zA-Z0-9_-]{0,62}$ ]]; then
+		# Enumerate ASCII characters: regex ranges depend on the caller's locale.
+		if [[ ! "$value" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_][abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]{0,62}$ ]]; then
 			echo "fvpn-postgres-entrypoint: invalid isolated database/user name" >&2
 			return 2
 		fi
@@ -100,7 +101,7 @@ prepare_isolated_restore() {
 		max_locks_per_transaction) field=max_locks_per_xact ;;
 		esac
 		value="$(awk -F: -v key="$field setting" '$1 == key {gsub(/[[:space:]]/, "", $2); print $2}' <<<"$control")"
-		if [[ ! "$value" =~ ^(0|[1-9][0-9]{0,9})$ ]] || (( value > 2147483647 )); then
+		if [[ ! "$value" =~ ^(0|[123456789][0123456789]{0,9})$ ]] || (( value > 2147483647 )); then
 			echo "fvpn-postgres-entrypoint: cannot determine recovery parameter $parameter from pg_controldata" >&2
 			return 1
 		fi
@@ -121,13 +122,13 @@ if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
 fi
 
 STANZA="${FVPN_PGBACKREST_STANZA:-fvpn}"
-if [[ ! "$STANZA" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+if [[ ! "$STANZA" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]+$ ]]; then
 	echo "fvpn-postgres-entrypoint: invalid FVPN_PGBACKREST_STANZA" >&2
 	exit 2
 fi
 
 ARCHIVE_TIMEOUT="${FVPN_PG_ARCHIVE_TIMEOUT:-300s}"
-if [[ ! "$ARCHIVE_TIMEOUT" =~ ^[1-9][0-9]*(ms|s|min)$ ]]; then
+if [[ ! "$ARCHIVE_TIMEOUT" =~ ^[123456789][0123456789]*(ms|s|min)$ ]]; then
 	echo "fvpn-postgres-entrypoint: invalid FVPN_PG_ARCHIVE_TIMEOUT (expected e.g. 300s)" >&2
 	exit 2
 fi

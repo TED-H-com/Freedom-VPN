@@ -138,7 +138,8 @@ while [[ $# -gt 0 ]]; do
 	esac
 done
 
-if [[ ! "$STANZA" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+# Enumerate ASCII characters: regex ranges depend on the caller's locale.
+if [[ ! "$STANZA" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]+$ ]]; then
 	echo "restore-pitr.sh: invalid stanza name: $STANZA" >&2
 	exit 2
 fi
@@ -156,7 +157,7 @@ fi
 PGBACKREST_TARGET_ARGS=()
 if [[ -n "$TARGET_TIME" ]]; then
 	# Accept strict UTC RFC 3339 (YYYY-MM-DDTHH:MM:SS[.ffffff]Z) or PG UTC (YYYY-MM-DD HH:MM:SS[.ffffff]+00).
-	if [[ "$TARGET_TIME" =~ ^([0-9]{4}-[0-9]{2}-[0-9]{2})[T\ ]([0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,6})?)(Z|\+00(:00)?)$ ]]; then
+	if [[ "$TARGET_TIME" =~ ^([0123456789]{4}-[0123456789]{2}-[0123456789]{2})[T\ ]([0123456789]{2}:[0123456789]{2}:[0123456789]{2}(\.[0123456789]{1,6})?)(Z|\+00(:00)?)$ ]]; then
 		PG_TIME="${BASH_REMATCH[1]} ${BASH_REMATCH[2]}+00"
 		PGBACKREST_TARGET_ARGS=(--type=time "--target=${PG_TIME}" --target-action=promote)
 	else
@@ -164,7 +165,7 @@ if [[ -n "$TARGET_TIME" ]]; then
 		exit 2
 	fi
 elif [[ -n "$TARGET_LSN" ]]; then
-	if [[ "$TARGET_LSN" =~ ^[0-9A-Fa-f]{1,8}/[0-9A-Fa-f]{1,8}$ ]]; then
+	if [[ "$TARGET_LSN" =~ ^[0123456789ABCDEFabcdef]{1,8}/[0123456789ABCDEFabcdef]{1,8}$ ]]; then
 		PGBACKREST_TARGET_ARGS=(--type=lsn "--target=${TARGET_LSN}" --target-action=promote)
 	else
 		echo "restore-pitr.sh: invalid WAL LSN '${TARGET_LSN}' (expected X/YYYYYYYY)" >&2
@@ -236,14 +237,14 @@ fi
 # Restrict identifiers before using them in the isolated HBA/ident and DSN.
 # Double-quoted HBA names also make keywords such as "all" literal names.
 for DB_IDENTIFIER in "$DB_USER" "$DB_NAME"; do
-	if [[ ! "$DB_IDENTIFIER" =~ ^[a-zA-Z_][a-zA-Z0-9_-]{0,62}$ ]]; then
+	if [[ ! "$DB_IDENTIFIER" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_][abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-]{0,62}$ ]]; then
 		echo "restore-pitr.sh: invalid isolated --db-user or --db-name (expected 1-63 ASCII identifier characters)" >&2
 		exit 2
 	fi
 done
 
 # Isolated container mode: validate identifiers and enforce live-primary refusal guards.
-if [[ ! "$ISOLATED_CONTAINER" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+if [[ ! "$ISOLATED_CONTAINER" =~ ^[abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-]+$ ]]; then
 	echo "restore-pitr.sh: invalid isolated container name: $ISOLATED_CONTAINER" >&2
 	exit 2
 fi
