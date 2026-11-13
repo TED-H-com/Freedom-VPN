@@ -35,6 +35,14 @@ func Test14_1_OpenScansTimestamptzUTC(t *testing.T) {
 	}
 	t.Cleanup(pool.Close)
 
+	formats := []struct {
+		name string
+		code int16
+	}{
+		{name: "binary", code: pgx.BinaryFormatCode},
+		{name: "text", code: pgx.TextFormatCode},
+	}
+
 	t.Run("new_connections", func(t *testing.T) {
 		// Hold both acquisitions until cleanup to exercise distinct connections.
 		for i := range 2 {
@@ -43,15 +51,17 @@ func Test14_1_OpenScansTimestamptzUTC(t *testing.T) {
 				t.Fatal("acquire isolated connection")
 			}
 			t.Cleanup(conn.Release)
-			var got time.Time
-			if err := conn.QueryRow(ctx, `SELECT occurred_at FROM utc_times`, pgx.QueryResultFormats{pgx.BinaryFormatCode}).Scan(&got); err != nil {
-				t.Fatal(err)
-			}
-			if got.Location() != time.UTC {
-				t.Errorf("connection %d: scanned timestamptz location = %q, want time.UTC", i, got.Location())
-			}
-			if !got.Equal(want) {
-				t.Errorf("connection %d: scanned instant = %s, want %s", i, got.Format(time.RFC3339Nano), want.Format(time.RFC3339Nano))
+			for _, format := range formats {
+				var got time.Time
+				if err := conn.QueryRow(ctx, `SELECT occurred_at FROM utc_times`, pgx.QueryResultFormats{format.code}).Scan(&got); err != nil {
+					t.Fatalf("connection %d (%s): scan timestamptz: %v", i, format.name, err)
+				}
+				if got.Location() != time.UTC {
+					t.Errorf("connection %d (%s): scanned timestamptz location = %q, want time.UTC", i, format.name, got.Location())
+				}
+				if !got.Equal(want) {
+					t.Errorf("connection %d (%s): scanned instant = %s, want %s", i, format.name, got.Format(time.RFC3339Nano), want.Format(time.RFC3339Nano))
+				}
 			}
 		}
 	})
@@ -97,15 +107,17 @@ func Test14_1_OpenScansTimestamptzUTC(t *testing.T) {
 				if err := cfg.AfterConnect(ctx, conn); !errors.Is(err, tc.wantErr) || calls != 1 {
 					t.Errorf("existing AfterConnect: calls=%d error=%v, want calls=1 error=%v", calls, err, tc.wantErr)
 				}
-				var got time.Time
-				if err := conn.QueryRow(ctx, `SELECT occurred_at FROM utc_times`, pgx.QueryResultFormats{pgx.BinaryFormatCode}).Scan(&got); err != nil {
-					t.Fatal(err)
-				}
-				if got.Location() != tc.wantLocation {
-					t.Errorf("after existing AfterConnect: scanned timestamptz location = %q, want %q", got.Location(), tc.wantLocation)
-				}
-				if !got.Equal(want) {
-					t.Errorf("after existing AfterConnect: scanned instant = %s, want %s", got.Format(time.RFC3339Nano), want.Format(time.RFC3339Nano))
+				for _, format := range formats {
+					var got time.Time
+					if err := conn.QueryRow(ctx, `SELECT occurred_at FROM utc_times`, pgx.QueryResultFormats{format.code}).Scan(&got); err != nil {
+						t.Fatalf("after existing AfterConnect (%s): scan timestamptz: %v", format.name, err)
+					}
+					if got.Location() != tc.wantLocation {
+						t.Errorf("after existing AfterConnect (%s): scanned timestamptz location = %q, want %q", format.name, got.Location(), tc.wantLocation)
+					}
+					if !got.Equal(want) {
+						t.Errorf("after existing AfterConnect (%s): scanned instant = %s, want %s", format.name, got.Format(time.RFC3339Nano), want.Format(time.RFC3339Nano))
+					}
 				}
 			})
 		}
