@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"bytes"
 	"os/exec"
 	"path/filepath"
 	"testing"
@@ -15,8 +16,12 @@ func TestAT30_BackupGuardsC(t *testing.T) {
 	}
 	cmd := exec.Command("bash", "testdata/locale-guards.sh", scripts, t.TempDir(), "C", "lang")
 	out, err := cmd.CombinedOutput()
-	if err != nil {
+	if err != nil || localeWarning(out) {
 		t.Fatalf("C guard matrix: %v\n%s", err, out)
 	}
 	t.Logf("%s", out)
+}
+
+func localeWarning(output []byte) bool {
+	return bytes.Contains(output, []byte("setlocale")) || bytes.Contains(output, []byte("cannot change locale"))
 }

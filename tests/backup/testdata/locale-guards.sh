@@ -8,7 +8,7 @@ work=$2
 requested=$3
 mode=${4:-all}
 mkdir -p "$work/bin"
-available=$(locale -a)
+available=$(locale -a 2>"$work/catalog-warnings")
 normalized=$(printf '%s' "$requested" | tr '[:upper:]' '[:lower:]' | tr -d '-')
 if ! printf '%s\n' "$available" | tr '[:upper:]' '[:lower:]' | tr -d '-' | grep -Fxq "$normalized"; then
 	printf 'FAIL required locale %s is unavailable; locale -a:\n%s\n' "$requested" "$available" >&2
@@ -25,9 +25,38 @@ collate) test_env+=(LANG=C.UTF-8 "LC_COLLATE=$requested" LC_CTYPE=C.UTF-8) ;;
 ctype) test_env+=(LANG=C.UTF-8 LC_COLLATE=C.UTF-8 "LC_CTYPE=$requested") ;;
 *) exit 2 ;;
 esac
-snapshot='printf "%s|%s|%s|%s\n" "$LANG" "${LC_ALL-unset}" "${LC_COLLATE-unset}" "${LC_CTYPE-unset}"'
-expected=$("${test_env[@]}" bash -c "$snapshot")
-control_expected=$("${test_env[@]}" bash -c "LC_ALL=C; $snapshot")
+# A catalog entry or an environment string does not prove Bash loaded a locale.
+# These expectations were measured with Bash on the host and in the pinned image.
+case "$requested/$mode" in
+C/all|C/lang) wanted='alpha=refused digit=refused length=2' ;;
+C.UTF-8/all|en_US.UTF-8/ctype) wanted='alpha=refused digit=refused length=1' ;;
+en_US.UTF-8/all|en_US.UTF-8/lang|en_US.UTF-8/collate) wanted='alpha=matched digit=matched length=1' ;;
+*) printf 'FAIL no behaviour control for locale=%s mode=%s\n' "$requested" "$mode" >&2; exit 1 ;;
+esac
+control_status=0
+control=$("${test_env[@]}" bash -c '
+  sample=é; alpha=refused; digit=refused
+  [[ "$sample" =~ ^[a-z]$ ]] && alpha=matched
+  [[ ² =~ ^[0-9]$ ]] && digit=matched
+  printf "alpha=%s digit=%s length=%s\n" "$alpha" "$digit" "${#sample}"
+' 2>"$work/control-warnings") || control_status=$?
+printf 'CONTROL locale=%s mode=%s %s\n' "$requested" "$mode" "$control"
+if [[ "$control_status" != 0 || "$control" != "$wanted" || -s "$work/control-warnings" || -s "$work/catalog-warnings" ]]; then
+	printf 'FAIL locale=%s mode=%s behaviour control expected %s; got %s (locale warnings forbidden)\n' "$requested" "$mode" "$wanted" "$control" >&2
+	cat "$work/control-warnings" "$work/catalog-warnings" >&2
+	exit 1
+fi
+
+GUARD_SNAPSHOT="$(dirname "${BASH_SOURCE[0]}")/locale-snapshot.sh"
+export GUARD_SNAPSHOT
+snapshot='source "$GUARD_SNAPSHOT"; snapshot_locale'
+expected=$("${test_env[@]}" bash -c "$snapshot" 2>"$work/snapshot-warnings")
+control_expected=$("${test_env[@]}" bash -c "LC_ALL=C; $snapshot" 2>>"$work/snapshot-warnings")
+if [[ -s "$work/snapshot-warnings" ]]; then
+	printf 'FAIL locale=%s mode=%s snapshot locale warnings forbidden\n' "$requested" "$mode" >&2
+	cat "$work/snapshot-warnings" >&2
+	exit 1
+fi
 export GUARD_BIN="$work/bin" GUARD_ENV_LOG="$work/commands" GUARD_CONTROL=100 GUARD_LAG=0
 export PATH="$GUARD_BIN:$PATH"
 export FVPN_PGBACKREST_STANZA=fvpn FVPN_PG_ARCHIVE_TIMEOUT=300s FVPN_BACKUP_DB_USER=fvpn FVPN_BACKUP_DB_NAME=fvpn
@@ -37,7 +66,8 @@ cat >"$work/bin/stub" <<'STUB'
 #!/usr/bin/env bash
 set -eu
 name=${0##*/}
-printf '%s:%s|%s|%s|%s\n' "$name" "$LANG" "${LC_ALL-unset}" "${LC_COLLATE-unset}" "${LC_CTYPE-unset}" >>"$GUARD_ENV_LOG"
+source "$GUARD_SNAPSHOT"
+printf '%s:%s\n' "$name" "$(snapshot_locale)" >>"$GUARD_ENV_LOG"
 case "$name" in
 pg_controldata)
   printf 'max_connections setting: %s\n' "$GUARD_CONTROL"
@@ -73,6 +103,10 @@ check() {
 	: >"$GUARD_ENV_LOG"
 	output=$("${test_env[@]}" "$@" 2>&1) || status=$?
 	checks=$((checks + 1))
+	if [[ "$output" == *setlocale* || "$output" == *'cannot change locale'* ]]; then
+		printf 'FAIL %s locale=%s mode=%s Bash locale warning: %s\n' "$guard" "$requested" "$mode" "$output"
+		failures=$((failures + 1))
+	fi
 	if [[ -n "$message" ]]; then
 		if [[ "$status" == 0 || "$output" != *"$message"* ]]; then
 			printf 'FAIL %s locale=%s mode=%s value=%q expected %q; exit=%s output=%s\n' "$guard" "$requested" "$mode" "$value" "$message" "$status" "$output"
@@ -167,5 +201,9 @@ for guard in restore_stanza restore_time restore_lsn restore_user restore_databa
 	for value in "${valid[@]}"; do run_guard "$guard" "$value" 0; done
 	printf 'CHECKED %s locale=%s mode=%s\n' "$guard" "$requested" "$mode"
 done
+if [[ "$checks" != 771 ]]; then
+	printf 'FAIL locale=%s mode=%s guard check count: expected 771, got %s\n' "$requested" "$mode" "$checks"
+	failures=$((failures + 1))
+fi
 printf 'guard checks=%s failures=%s locale=%s mode=%s\n' "$checks" "$failures" "$requested" "$mode"
 [[ "$failures" == 0 ]]

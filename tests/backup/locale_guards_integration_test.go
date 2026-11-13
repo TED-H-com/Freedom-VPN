@@ -40,15 +40,6 @@ locale
 locale -a
 bash --version
 awk -W version
-grep --version | head -n 1
-for probe_locale in C C.UTF-8 en_US.UTF-8; do
-  printf 'diagnostic grep locale=%s: ' "$probe_locale"
-  if printf '%s\n' 'max_connections = ² is a lower setting' | LC_ALL="$probe_locale" grep -Eq 'max_connections = [0-9]+ is a lower setting'; then
-    echo matched
-  else
-    echo refused
-  fi
-done
 `)
 	t.Logf("built image locale/tool evidence:\n%s", out)
 	for i, tc := range []struct{ locale, mode string }{
@@ -61,7 +52,7 @@ done
 				"--mount", "type=bind,src="+filepath.Join(root, "tests/backup/testdata")+",dst=/fixtures,readonly",
 				"--entrypoint", "bash", names.Image, "/fixtures/locale-guards.sh", "/scripts", "/guard-work", tc.locale, tc.mode)
 			output, err := cmd.CombinedOutput()
-			if err != nil {
+			if err != nil || localeWarning(output) {
 				t.Fatalf("required locale guard matrix: %v\n%s", err, output)
 			}
 			t.Logf("%s", output)
