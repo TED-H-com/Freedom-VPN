@@ -3,20 +3,25 @@
 package agent
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
 	"net/netip"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/apps/worker"
+	"github.com/TED-H-com/Freedom-VPN/internal/billing"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/desiredstate"
 	"github.com/TED-H-com/Freedom-VPN/internal/devices"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/exits"
 	"github.com/TED-H-com/Freedom-VPN/internal/members"
+	"github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter"
+	membersruntime "github.com/TED-H-com/Freedom-VPN/internal/members/runtime"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest"
-	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
@@ -192,7 +197,41 @@ func TestReviewR15_AwaitingMemberGrantsReportIsNotAFailure(t *testing.T) {
 	}
 	store.Now = func() time.Time { return now }
 	membersSvc := &members.Service{Pool: r.Pool, Entitlements: store}
-	devicesSvc := &devices.Service{Pool: r.Pool, Entitlements: store}
+	peer := &provisionalReportPeer{peer: devices.Peer{
+		DeploymentID: r.Config.NetBirdDeployment, ID: "TEST ONLY r15 q5 peer", ExternalUserID: "TEST ONLY r15 q5", OverlayScope: "TEST ONLY", OverlayIP: netip.MustParseAddr("100.64.0.71"), Platform: "linux",
+	}}
+	devicesSvc := &devices.Service{Pool: r.Pool, Entitlements: store, Adapter: peer}
+	services := &membersruntime.Services{HTTP: httpadapter.Services{Members: membersSvc, Devices: devicesSvc, Billing: &billing.Service{}}, Compiler: r.DesiredStateCompiler()}
+	dispatch := func(want ...string) {
+		t.Helper()
+		events, err := db.ClaimOutbox(ctx, r.Pool, "TEST ONLY provisional report", 1000, time.Minute)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var ran int
+		// ClaimOutbox returns delivery order (available_at, id). Drain each
+		// command before issuing the next so authorization is compiled before revoke.
+		for _, event := range events {
+			job := worker.MemberJobs()[event.EventType]
+			if job == nil {
+				continue
+			}
+			if ran >= len(want) || event.EventType != want[ran] {
+				t.Fatalf("member worker event=%s at index %d, want %v", event.EventType, ran, want)
+			}
+			if _, err = job(worker.WithMembers(ctx, services), event); err != nil {
+				t.Fatalf("member worker %s: %v", event.EventType, err)
+			}
+			if err = db.CompleteOutbox(ctx, r.Pool, event); err != nil {
+				t.Fatal(err)
+			}
+			ran++
+			t.Logf("member worker event=%s", event.EventType)
+		}
+		if ran != len(want) {
+			t.Fatalf("member worker ran %d events, want %v", ran, want)
+		}
+	}
 	validFrom := now.Add(-time.Hour)
 	validUntil := now.Add(12 * time.Hour)
 	if _, err = membersSvc.Grant(ctx, entitlement.Command{Actor: entitlement.Actor{Role: "admin", ID: admin, RequestID: uuid.New()}, Key: uuid.New()}, memberID, api.GrantCreateRequest{
@@ -200,32 +239,66 @@ func TestReviewR15_AwaitingMemberGrantsReportIsNotAFailure(t *testing.T) {
 	}); err != nil {
 		t.Fatal(err)
 	}
-	dev, err := devicesSvc.AuthorizeDevice(ctx, entitlement.Command{Actor: entitlement.Actor{Role: "system", ID: uuid.New(), RequestID: uuid.New()}, Key: uuid.New()}, devices.Peer{
-		DeploymentID: r.Config.NetBirdDeployment, ID: "TEST ONLY r15 q5 peer", ExternalUserID: "TEST ONLY r15 q5", OverlayScope: "TEST ONLY", OverlayIP: netip.MustParseAddr("100.64.0.71"), Platform: "linux",
-	})
+	dispatch("member.entitlement_changed")
+	dev, err := devicesSvc.AuthorizeDevice(ctx, entitlement.Command{Actor: entitlement.Actor{Role: "system", ID: uuid.New(), RequestID: uuid.New()}, Key: uuid.New()}, peer.peer)
 	if err != nil || dev.OperationID == nil {
 		t.Fatal(err)
+	}
+	dispatch("device.authorized", "netbird.device_sync")
+	var bindingsJSON []byte
+	if err = r.Pool.QueryRow(ctx, `SELECT envelope->'signed'->'device_bindings' FROM desired_state_envelopes WHERE node_id=$1 AND incarnation_id=$2`, nodeID, incID).Scan(&bindingsJSON); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("before revoke device_bindings=%s", bindingsJSON)
+	var bindings []api.DeviceBinding
+	if err = json.Unmarshal(bindingsJSON, &bindings); err != nil {
+		t.Fatal(err)
+	}
+	if len(bindings) != 1 || bindings[0].DeviceId != dev.DeviceID || bindings[0].MemberId != memberID {
+		t.Fatalf("published node must carry the authorized device before revoke: %s", bindingsJSON)
+	}
+	// The addition has no removal fallback: its target proves that the
+	// worker's compile records pins, before the revoke records absence.
+	var additionPresent bool
+	if err = r.Pool.QueryRow(ctx, `SELECT subject_present FROM node_operation_targets WHERE operation_id=$1 AND node_id=$2`, *dev.OperationID, nodeID).Scan(&additionPresent); err != nil || !additionPresent {
+		t.Fatalf("authorization target missing or absent: present=%v err=%v", additionPresent, err)
 	}
 	out, err := devicesSvc.RevokeDevice(ctx, entitlement.Command{Actor: entitlement.Actor{Role: "member", ID: memberID, RequestID: uuid.New()}, Key: uuid.New()}, dev.DeviceID)
 	if err != nil || out.OperationID == nil {
 		t.Fatal(err)
 	}
-	if err = db.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		var auditID uuid.UUID
-		if err := tx.QueryRow(ctx, `SELECT id FROM audit_events LIMIT 1`).Scan(&auditID); err != nil {
-			return err
+	dispatch("device.revoked", "netbird.device_sync")
+	var targetGeneration decstr.U64
+	var targetIncarnation uuid.UUID
+	var present bool
+	var outcome string
+	readTarget := func(phase string) {
+		t.Helper()
+		if err := r.Pool.QueryRow(ctx, `SELECT incarnation_id,generation::text,subject_present,outcome FROM node_operation_targets WHERE operation_id=$1 AND node_id=$2`, *out.OperationID, nodeID).Scan(&targetIncarnation, &targetGeneration, &present, &outcome); err != nil {
+			t.Fatalf("%s revoke target: %v", phase, err)
 		}
-		return entitlement.TransitionOperation(ctx, tx, *out.OperationID, "netbird", api.OperationStepStatusSucceeded, &operations.Evidence{
-			Reference: "audit_event:" + auditID.String(), ObservedAt: now,
-		})
-	}); err != nil {
-		t.Fatal(err)
+		t.Logf("%s revoke target: operation_id=%s node_id=%s incarnation_id=%s generation=%s subject_present=%v outcome=%s", phase, *out.OperationID, nodeID, targetIncarnation, targetGeneration, present, outcome)
 	}
-	compiled, err = r.DesiredStateCompiler().Compile(ctx, nodeID)
+	readTarget("before report")
+	if targetIncarnation != incID || present || outcome != "pending" {
+		t.Fatalf("before provisional report: incarnation=%s present=%v outcome=%s, want current incarnation, absent, pending", targetIncarnation, present, outcome)
+	}
+	before, err := r.Nodes.GetOperation(ctx, *out.OperationID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	submit(compiled.Envelope.Signed.ConfigGeneration, now.Add(2*time.Second))
+	if before.Status == api.OperationStatusSucceeded || before.Status == api.OperationStatusFailed {
+		t.Fatalf("revoke must wait for the provisional report, got %s", before.Status)
+	}
+	rep = submit(targetGeneration, now.Add(2*time.Second))
+	readTarget("after report")
+	if outcome != "acknowledged" {
+		t.Fatalf("provisional report did not acknowledge revoke target: outcome=%s", outcome)
+	}
+	var reportID uuid.UUID
+	if err = r.Pool.QueryRow(ctx, `SELECT report_id FROM node_operation_targets WHERE operation_id=$1 AND node_id=$2`, *out.OperationID, nodeID).Scan(&reportID); err != nil || reportID != rep.ReportId {
+		t.Fatalf("revoke target report=%s, want provisional report=%s: %v", reportID, rep.ReportId, err)
+	}
 	revoked, err := r.Nodes.GetOperation(ctx, *out.OperationID)
 	if err != nil {
 		t.Fatal(err)
@@ -256,4 +329,24 @@ func provisionalReport(t *testing.T, gen decstr.U64, at time.Time) api.Observati
 	in.Lease = &lease
 	_, rep := reported(t, in)
 	return rep
+}
+
+// provisionalReportPeer is TEST ONLY NetBird state. The real member worker owns
+// authorization read-back, operation capture, compilation and completion.
+type provisionalReportPeer struct{ peer devices.Peer }
+
+func (p *provisionalReportPeer) ObservePeer(_ context.Context, deployment, id string) (devices.Peer, error) {
+	if deployment != p.peer.DeploymentID || id != p.peer.ID {
+		return devices.Peer{}, fmt.Errorf("TEST ONLY peer missing")
+	}
+	return p.peer, nil
+}
+
+func (p *provisionalReportPeer) SetAuthorization(_ context.Context, deployment, id string, allow bool, groups []uuid.UUID) error {
+	if deployment != p.peer.DeploymentID || id != p.peer.ID {
+		return fmt.Errorf("TEST ONLY peer missing")
+	}
+	p.peer.Authorized = allow
+	p.peer.Groups = append([]uuid.UUID(nil), groups...)
+	return nil
 }
