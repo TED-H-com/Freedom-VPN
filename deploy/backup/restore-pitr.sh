@@ -275,12 +275,25 @@ fi
 # volume may be used, but a failed attempt must never remove it or its contents.
 EXISTING_VOLUMES="$(docker volume ls --format '{{.Name}}')"
 CREATED_VOLUME=0
+# Labels disambiguate a concurrent invocation that passed the same refusal
+# checks. Docker may return an existing volume from an idempotent create.
+RESTORE_OWNER="${BASHPID}-${RANDOM}-${RANDOM}"
+OWNER_LABEL=fvpn.backup.restore-owner
 cleanup_isolated_failure() {
-	local status=$?
+	local status=$? candidate identity container_id owner
 	if [[ "$status" -ne 0 ]]; then
-		docker rm -fv "$ISOLATED_CONTAINER" "$RESTORE_HELPER" >/dev/null 2>&1 || true
+		for candidate in "$ISOLATED_CONTAINER" "$RESTORE_HELPER"; do
+			identity="$(docker inspect --format "{{ .Id }} {{ index .Config.Labels \"$OWNER_LABEL\" }}" "$candidate" 2>/dev/null)" || identity=
+			read -r container_id owner <<<"$identity" || true
+			if [[ "$owner" == "$RESTORE_OWNER" ]]; then
+				docker rm -fv "$container_id" >/dev/null 2>&1 || true
+			fi
+		done
 		if [[ "$CREATED_VOLUME" == 1 ]]; then
-			docker volume rm -f "$TARGET_VOLUME" >/dev/null 2>&1 || true
+			owner="$(docker volume inspect --format "{{ index .Labels \"$OWNER_LABEL\" }}" "$TARGET_VOLUME" 2>/dev/null)" || owner=
+			if [[ "$owner" == "$RESTORE_OWNER" ]]; then
+				docker volume rm -f "$TARGET_VOLUME" >/dev/null 2>&1 || true
+			fi
 		fi
 	fi
 }
@@ -288,8 +301,12 @@ trap cleanup_isolated_failure EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 if ! grep -Fxq -- "$TARGET_VOLUME" <<<"$EXISTING_VOLUMES"; then
-	docker volume create "$TARGET_VOLUME" >/dev/null
+	docker volume create --label "$OWNER_LABEL=$RESTORE_OWNER" "$TARGET_VOLUME" >/dev/null
 	CREATED_VOLUME=1
+	if [[ "$(docker volume inspect --format "{{ index .Labels \"$OWNER_LABEL\" }}" "$TARGET_VOLUME")" != "$RESTORE_OWNER" ]]; then
+		echo "restore-pitr.sh: target volume was concurrently created by another invocation; refusing to overwrite" >&2
+		exit 2
+	fi
 fi
 
 # Both containers read a local POSIX copy. Forward only cipher inputs, by name;
@@ -305,6 +322,7 @@ REPO_ARGS=(--repo1-type=posix --repo1-path=/var/lib/pgbackrest)
 # Step 1: Run pgbackrest restore in a one-shot network-none container with the backup repo mounted read-only (:ro).
 docker run --rm \
 	--name "$RESTORE_HELPER" \
+	--label "$OWNER_LABEL=$RESTORE_OWNER" \
 	--network none \
 	--entrypoint /bin/bash \
 	"${REPO_ENV[@]}" \
@@ -337,6 +355,7 @@ docker run --rm \
 # PostgreSQL replays archived WAL from /var/lib/pgbackrest:ro up to the PITR target and promotes.
 docker run -d \
 	--name "$ISOLATED_CONTAINER" \
+	--label "$OWNER_LABEL=$RESTORE_OWNER" \
 	--network none \
 	-e FVPN_PG_ISOLATED_RESTORE=1 \
 	-e FVPN_PGBACKREST_STANZA="$STANZA" \

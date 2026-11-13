@@ -48,7 +48,7 @@ func TestAT30_IsolatedRecoveryRewrite(t *testing.T) {
 }
 
 func TestAT30_IsolatedOwnershipAndForwarding(t *testing.T) {
-	for _, scenario := range []string{"failure", "helper_failure", "preexisting", "refuse_server", "refuse_helper", "refuse_mounted", "success", "compatibility"} {
+	for _, scenario := range []string{"failure", "helper_failure", "preexisting", "refuse_server", "refuse_helper", "refuse_mounted", "raced_volume", "raced_helper", "success", "compatibility"} {
 		t.Run(scenario, func(t *testing.T) {
 			dir := t.TempDir()
 			if scenario == "preexisting" {
@@ -60,6 +60,10 @@ func TestAT30_IsolatedOwnershipAndForwarding(t *testing.T) {
 set -eu
 printf '%s\0' "$@" >> "$STUB_DIR/argv"
 printf '\n' >> "$STUB_DIR/argv"
+owner=
+for arg in "$@"; do
+  case "$arg" in fvpn.backup.restore-owner=*) owner="${arg#*=}" ;; esac
+done
 case "$1" in
 ps)
   case "$SCENARIO:$4" in
@@ -68,26 +72,47 @@ ps)
 volume)
   case "$2" in
     ls) if [[ -f "$STUB_DIR/volume" ]]; then echo unit-data; fi ;;
-    create) touch "$STUB_DIR/volume" ;;
+    create)
+      touch "$STUB_DIR/volume"
+      if [[ "$SCENARIO" == raced_volume ]]; then owner=another-invocation; fi
+      printf '%s' "$owner" > "$STUB_DIR/volume-owner" ;;
+    inspect) cat "$STUB_DIR/volume-owner" ;;
     rm) rm -f "$STUB_DIR/volume" ;;
   esac ;;
 run)
   if [[ "$2" == --rm ]]; then
     touch "$STUB_DIR/helper"
+    if [[ "$SCENARIO" == raced_helper ]]; then
+      echo another-invocation > "$STUB_DIR/helper-owner"
+      exit 125
+    fi
+    printf '%s' "$owner" > "$STUB_DIR/helper-owner"
     if [[ "$SCENARIO" == preexisting || "$SCENARIO" == helper_failure ]]; then exit 2; fi
     rm "$STUB_DIR/helper"
   else
     touch "$STUB_DIR/server"
+    printf '%s' "$owner" > "$STUB_DIR/server-owner"
   fi ;;
 inspect)
   case "$3" in
+    *restore-owner*)
+      case "${@: -1}" in
+        unit-pg) printf 'unit-pg-id '; cat "$STUB_DIR/server-owner" ;;
+        unit-pg-init) printf 'unit-pg-init-id '; cat "$STUB_DIR/helper-owner" ;;
+      esac ;;
     *NetworkMode*) echo none ;;
     *NetworkSettings.Ports*) echo 0 ;;
     *State.Running*) if [[ "$SCENARIO" == failure ]]; then echo false; else echo true; fi ;;
   esac ;;
 logs) echo 'TEST ONLY preparation failed' ;;
 exec) echo promoted ;;
-rm) rm -f "$STUB_DIR/server" "$STUB_DIR/helper" ;;
+rm)
+  for arg in "$@"; do
+    case "$arg" in
+      unit-pg|unit-pg-id) rm -f "$STUB_DIR/server" ;;
+      unit-pg-init|unit-pg-init-id) rm -f "$STUB_DIR/helper" ;;
+    esac
+  done ;;
 *) exit 99 ;;
 esac
 `
@@ -109,7 +134,7 @@ esac
 			}
 			for _, object := range []string{"server", "helper", "volume"} {
 				_, statErr := os.Stat(filepath.Join(dir, object))
-				want := (success && object != "helper") || (scenario == "preexisting" && object == "volume")
+				want := (success && object != "helper") || ((scenario == "preexisting" || scenario == "raced_volume") && object == "volume") || (scenario == "raced_helper" && object == "helper")
 				if (statErr == nil) != want {
 					t.Errorf("cleanup ownership: %s exists=%v want=%v", object, statErr == nil, want)
 				}

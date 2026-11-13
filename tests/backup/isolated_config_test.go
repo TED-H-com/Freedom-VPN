@@ -87,7 +87,8 @@ func TestAT30_IsolatedRecoveryResourceFailure(t *testing.T) {
 			dir := t.TempDir()
 			stub := `#!/bin/bash
 case "$1" in
-ps|volume|run|rm) ;;
+ps|run|rm) ;;
+volume) if [[ "$2" == ls ]]; then echo unused; fi ;;
 inspect)
   case "$3" in
     *NetworkMode*) echo none ;;
