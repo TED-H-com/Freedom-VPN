@@ -439,19 +439,22 @@ func TestD167_T26_DatabaseReceiptClockCountsPostcompileAck(t *testing.T) {
 	w := newD165World(t, 1)
 	op := w.revokeDevice()
 	w.services.Compiler = d167AfterCompile{compiler: w.compiler, after: func(ctx context.Context) error {
-		var databaseNow time.Time
-		if err := w.r.Pool.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&databaseNow); err != nil {
+		var compiledAt, removalCompiledAt time.Time
+		if err := w.r.Pool.QueryRow(ctx, `SELECT t.compiled_at,r.compiled_at FROM node_operation_targets t JOIN node_subject_removals r ON r.node_id=t.node_id AND r.subject_type='device' AND r.subject_id=$2 WHERE t.operation_id=$1`, op, w.device).Scan(&compiledAt, &removalCompiledAt); err != nil {
 			return err
 		}
-		skew := databaseNow.Add(-time.Second)
+		skew := compiledAt.Add(-time.Second)
+		if removalCompiledAt.Before(compiledAt) {
+			skew = removalCompiledAt.Add(-time.Second)
+		}
 		w.r.Nodes = nodes.NewService(w.r.Pool, nodes.WithClock(func() time.Time { return skew }))
 		report := w.report(w.reports[0], "clean")
 		accepted, err := w.r.Nodes.SubmitObservation(ctx, report.NodeId, report.NodeIncarnationId, report)
 		if err != nil {
 			return err
 		}
-		if !accepted.ReceivedAt.Before(databaseNow) {
-			return fmt.Errorf("service clock fixture did not trail database")
+		if !accepted.ReceivedAt.Before(compiledAt) || !accepted.ReceivedAt.Before(removalCompiledAt) {
+			return fmt.Errorf("D170 service receipt must precede persisted target and removal compiled_at")
 		}
 		return nil
 	}}
