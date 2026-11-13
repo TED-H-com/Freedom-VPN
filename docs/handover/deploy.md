@@ -819,7 +819,7 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/enrollments" \
   }'
 ```
 
-The response carries `Cache-Control: no-store` and returns the one-time `token` (`EnrollmentCreated.token`, `§6.1`) on initial `201` creation alongside `token_sha256` (`Enrollment.token_sha256`, `#191`, `#195`, `#200`, the 64-hex SHA-256 digest of the stored token hash `node_enrollments.token_hash`, also returned on idempotent replay, `getEnrollment`, and `revokeEnrollment` and recorded unredacted in `enrollment.created` `changes.after.token_sha256`).
+The response carries `Cache-Control: no-store` and returns the one-time `token` (`EnrollmentCreated.token`, `§6.1`) on initial `201` creation alongside `token_sha256` (`Enrollment.token_sha256`, `#191`, `#195`, `#200`, the 64-character lowercase hex encoding of the stored SHA-256 verifier `node_enrollments.token_hash`, computed once from the plaintext token, also returned on idempotent replay, `getEnrollment`, and `revokeEnrollment` and recorded unredacted in `enrollment.created` `changes.after.token_sha256`).
 
 ### 9.3 Running `fvpn-agent enroll` on the Node
 

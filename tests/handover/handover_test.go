@@ -20117,8 +20117,8 @@ func TestHandover_Followup53Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-53.md", "05c614dd579fdb7179a2af8c50564f2595ccb2957ea4d6e27d3d8665aa998e2e", 9604},
-		{"tests/handover/testdata/followup53-edits.json", "5ea09743b3603f9c8206e834eca67d2034dbfc1331efdba3b422b2fe848f9df9", 105499},
+		{"docs/handover/follow-up-53.md", "dc3c35cdfd0c61cfacf346b60a2a60f8c8e7a7336cfe5851b53ca68afcb5815c", 9872},
+		{"tests/handover/testdata/followup53-edits.json", "f8b4aae71abdb86086ac596fc3c809b8f1f80fb5994db5a800b321de015ebd1d", 107075},
 		{"tests/handover/testdata/followup53-historical.json", "b2dd18e07a686a8ed81969d59ea97faf1703cde410e678c6ff33d68fae73c26a", 9820},
 		{"tests/handover/testdata/followup53-main.json", "e9253434de8398c74eabbbcb35732720afe942db687e9ea5776fa778b2801a52", 2479},
 		{"tests/handover/testdata/followup53-prior-assertions.json", "3b2cc07ef6071ebbc41fa5c5b0b9f2c74b1f2b2d3a2e327f814155e72b9c7463", 2479},
@@ -20203,7 +20203,7 @@ func TestHandover_Followup53Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup53-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 48 {
+		if len(edits) != 51 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
