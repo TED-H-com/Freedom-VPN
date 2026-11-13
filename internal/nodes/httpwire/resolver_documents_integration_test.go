@@ -12,11 +12,16 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type unexpectedDocumentSource struct{ t *testing.T }
 
 func (s unexpectedDocumentSource) LatestPublished(context.Context, uuid.UUID) (nodes.ResolverDocument, error) {
+	s.t.Fatal("unauthorized request consulted publisher")
+	return nodes.ResolverDocument{}, nil
+}
+func (s unexpectedDocumentSource) LatestPublishedTx(context.Context, pgx.Tx, uuid.UUID) (nodes.ResolverDocument, error) {
 	s.t.Fatal("unauthorized request consulted publisher")
 	return nodes.ResolverDocument{}, nil
 }

@@ -25,6 +25,11 @@ func (s resolverDocumentSource) LatestPublished(ctx context.Context, definition 
 	return resolverDocument(doc, err)
 }
 
+func (s resolverDocumentSource) LatestPublishedTx(ctx context.Context, tx pgx.Tx, definition uuid.UUID) (nodes.ResolverDocument, error) {
+	doc, err := s.reader.LatestPublishedTx(ctx, tx, definition)
+	return resolverDocument(doc, err)
+}
+
 func (s resolverDocumentSource) DocumentByID(ctx context.Context, id uuid.UUID) (nodes.ResolverDocument, error) {
 	doc, err := s.reader.GetByID(ctx, id)
 	return resolverDocument(doc, err)

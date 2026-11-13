@@ -6,6 +6,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // ErrDocumentNotFound covers an unknown document or a missing/withdrawn head.
@@ -32,5 +33,6 @@ type PublishedDocument struct {
 // grants a node permission to receive a document.
 type DocumentReader interface {
 	LatestPublished(ctx context.Context, profileDefinitionID uuid.UUID) (PublishedDocument, error)
+	LatestPublishedTx(ctx context.Context, tx pgx.Tx, profileDefinitionID uuid.UUID) (PublishedDocument, error)
 	GetByID(ctx context.Context, documentID uuid.UUID) (PublishedDocument, error)
 }
