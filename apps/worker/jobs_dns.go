@@ -31,7 +31,7 @@ func dns() Domain {
 		if err != nil {
 			return Built{}, err
 		}
-		return Built{Jobs: dnsJobs(publisher, feeds).handlers(), RunnerRegistrations: []Runner{dnsRunner(feeds)}}, nil
+		return (Built{Jobs: dnsJobs(publisher, feeds).handlers()}).withRunners(dnsRunner(feeds)), nil
 	}}
 }
 

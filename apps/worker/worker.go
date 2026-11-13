@@ -267,11 +267,21 @@ type Domain struct {
 type Built struct {
 	Jobs    Registry
 	Context func(context.Context) context.Context
-	// Runners is retained for source compatibility. Open rejects unbudgeted
-	// runners; production builders use RunnerRegistrations.
+	// Runners is the callable compatibility view. Open supervises only the
+	// budgeted RunnerRegistrations and rejects an unmatched legacy view.
 	Runners             []func(context.Context) error
 	RunnerRegistrations []Runner
 }
+
+func (b Built) withRunners(runners ...Runner) Built {
+	b.RunnerRegistrations = runners
+	b.Runners = make([]func(context.Context) error, len(runners))
+	for i, runner := range runners {
+		b.Runners[i] = runner.Run
+	}
+	return b
+}
+
 type Application struct {
 	dispatcher *Dispatcher
 	contexts   []func(context.Context) context.Context
@@ -310,7 +320,7 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 		if e != nil {
 			return nil, fmt.Errorf("worker domain %s: %w", domain.Name, e)
 		}
-		if len(result.Runners) > 0 {
+		if len(result.Runners) > 0 && len(result.Runners) != len(result.RunnerRegistrations) {
 			return nil, fmt.Errorf("worker domain %s: runner connection peaks required", domain.Name)
 		}
 		for name, handler := range result.Jobs {

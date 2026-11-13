@@ -359,13 +359,12 @@ func nodes() Domain {
 			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
 		}
 		compiler := runtime.DesiredStateCompiler()
-		return Built{
+		return (Built{
 			Jobs: nodeJobs(runtime, adapter, fetch, d.Config.WorkerAttempts, compiler).handlers(),
 			// D-026: all decorators run before member/device jobs, independent
 			// of domain build order. Share the configured signer, TTL and DNS.
-			Context:             func(ctx context.Context) context.Context { return membersruntime.WithCompiler(ctx, compiler) },
-			RunnerRegistrations: []Runner{nodeRunner(runtime)},
-		}, nil
+			Context: func(ctx context.Context) context.Context { return membersruntime.WithCompiler(ctx, compiler) },
+		}).withRunners(nodeRunner(runtime)), nil
 	}}
 }
 
