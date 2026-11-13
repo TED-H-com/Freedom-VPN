@@ -5,12 +5,14 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { AppRoutes } from '../../App';
 import {
+  buildAdminOverviewViewModel,
   deriveNodeSummaryPhrase,
   isNodeServiceable,
   type ControlPlaneStatus,
   type DataHealth,
   type LifecycleState,
   type NodeSummaryItem,
+  type NodeSummaryPhraseKey,
   type NodeUpdateSummary,
   type ProvisioningState,
   type PublicationIntent,
@@ -39,6 +41,13 @@ import { assertAccessible } from '../../test/setup';
 const STALE_PUBLISHED_NODE_ID = '11111111-26c2-4ec4-bf5b-0c70df89b001';
 const OFFLINE_ACTIVE_NODE_ID = '22222222-26c2-4ec4-bf5b-0c70df89b002';
 const DEGRADED_PUBLISHED_NODE_ID = '33333333-26c2-4ec4-bf5b-0c70df89b003';
+const REVOKED_NODE_ID = '44444444-26c2-4ec4-bf5b-0c70df89b004';
+const ENROLLING_NODE_ID = '55555555-26c2-4ec4-bf5b-0c70df89b005';
+const SAFETY_EXPIRED_NODE_ID = '66666666-26c2-4ec4-bf5b-0c70df89b006';
+const DISABLED_ONLINE_NODE_ID = '77777777-26c2-4ec4-bf5b-0c70df89b007';
+const READY_UNPUBLISHED_NODE_ID = '88888888-26c2-4ec4-bf5b-0c70df89b008';
+const NOT_READY_UNPUBLISHED_NODE_ID = '99999999-26c2-4ec4-bf5b-0c70df89b009';
+const ROLLED_BACK_SERVING_NODE_ID = 'aaaaaaaa-26c2-4ec4-bf5b-0c70df89b010';
 
 function renderAt(
   initialPath: string,
@@ -141,6 +150,19 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
         expectedEn: 'Machine identity permanently revoked, not serving',
       },
       {
+        name: 'rule 1c: revoked and offline with observed withdrawn',
+        rule: 1,
+        node: makeServiceableNodeSummary({
+          lifecycle_state: 'revoked',
+          control_status: 'offline',
+          publication_observed: 'withdrawn',
+          member_forwarding_observed: false,
+        }),
+        expectedKey: 'revoked_not_serving',
+        expectedZh: '裝置身分已永久撤銷，停止服務',
+        expectedEn: 'Machine identity permanently revoked, not serving',
+      },
+      {
         name: 'rule 2: lifecycle enrolling',
         rule: 2,
         node: makeServiceableNodeSummary({
@@ -148,6 +170,19 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
           provisioning_state: 'pending',
           publication_intent: 'unpublished',
           publication_observed: 'absent',
+          member_forwarding_observed: false,
+        }),
+        expectedKey: 'enrolling_not_serving',
+        expectedZh: '註冊中，未提供服務',
+        expectedEn: 'Enrolling, not serving traffic',
+      },
+      {
+        name: 'rule 2b: enrolling and offline with observed withdrawn',
+        rule: 2,
+        node: makeServiceableNodeSummary({
+          lifecycle_state: 'enrolling',
+          control_status: 'offline',
+          publication_observed: 'withdrawn',
           member_forwarding_observed: false,
         }),
         expectedKey: 'enrolling_not_serving',
@@ -208,6 +243,19 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
         expectedEn: 'Offline, current serving state unconfirmed',
       },
       {
+        name: 'rule 4d: offline with safety expired',
+        rule: 4,
+        node: makeServiceableNodeSummary({
+          control_status: 'offline',
+          publication_observed: 'active',
+          safety_status: 'expired',
+          member_forwarding_observed: false,
+        }),
+        expectedKey: 'offline_unconfirmed',
+        expectedZh: '離線，目前服務狀態未能確認',
+        expectedEn: 'Offline, current serving state unconfirmed',
+      },
+      {
         name: 'rule 5a: published, active node that would be serviceable but is stale',
         rule: 5,
         node: makeServiceableNodeSummary({
@@ -222,6 +270,31 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
         rule: 5,
         node: makeServiceableNodeSummary({
           control_status: 'stale',
+          publication_observed: 'withdrawn',
+          member_forwarding_observed: false,
+        }),
+        expectedKey: 'stale_unconfirmed',
+        expectedZh: '回報延遲，目前服務狀態未能確認',
+        expectedEn: 'Reports late, current serving state unconfirmed',
+      },
+      {
+        name: 'rule 5c: stale with safety failed',
+        rule: 5,
+        node: makeServiceableNodeSummary({
+          control_status: 'stale',
+          safety_status: 'failed',
+          member_forwarding_observed: false,
+        }),
+        expectedKey: 'stale_unconfirmed',
+        expectedZh: '回報延遲，目前服務狀態未能確認',
+        expectedEn: 'Reports late, current serving state unconfirmed',
+      },
+      {
+        name: 'rule 5d: stale with intent disabled',
+        rule: 5,
+        node: makeServiceableNodeSummary({
+          control_status: 'stale',
+          publication_intent: 'disabled',
           publication_observed: 'withdrawn',
           member_forwarding_observed: false,
         }),
@@ -471,12 +544,15 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
                           );
                         }
 
+                        // Each claim below checks what that key's text states; rule order
+                        // across keys is checked by Test 1 and by the exact counts below.
                         let claimHolds = false;
                         switch (key) {
                           case 'revoked_not_serving':
                             claimHolds =
-                              node.lifecycle_state === 'revoked' ||
-                              node.lifecycle_state === 'retired';
+                              (node.lifecycle_state === 'revoked' ||
+                                node.lifecycle_state === 'retired') &&
+                              !serviceable;
                             break;
                           case 'enrolling_not_serving':
                             claimHolds =
@@ -617,6 +693,59 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
       publication_observed: 'active',
       data_health: 'degraded',
     });
+    setMockNodeOverride(REVOKED_NODE_ID, {
+      name: 'Tokyo Revoked',
+      lifecycle_state: 'revoked',
+      publication_intent: 'disabled',
+      publication_observed: 'withdrawn',
+      member_forwarding_observed: false,
+    });
+    setMockNodeOverride(ENROLLING_NODE_ID, {
+      name: 'Tokyo Enrolling',
+      lifecycle_state: 'enrolling',
+      provisioning_state: 'pending',
+      publication_intent: 'unpublished',
+      publication_observed: 'absent',
+      member_forwarding_observed: false,
+    });
+    setMockNodeOverride(SAFETY_EXPIRED_NODE_ID, {
+      name: 'Tokyo Safety Expired',
+      control_status: 'online',
+      safety_status: 'expired',
+      member_forwarding_observed: false,
+    });
+    setMockNodeOverride(DISABLED_ONLINE_NODE_ID, {
+      name: 'Tokyo Disabled Online',
+      control_status: 'online',
+      publication_intent: 'disabled',
+      publication_observed: 'withdrawn',
+      member_forwarding_observed: false,
+    });
+    setMockNodeOverride(READY_UNPUBLISHED_NODE_ID, {
+      name: 'Tokyo Ready Unpublished',
+      control_status: 'online',
+      provisioning_state: 'ready',
+      publication_intent: 'unpublished',
+      publication_observed: 'absent',
+      member_forwarding_observed: false,
+    });
+    setMockNodeOverride(NOT_READY_UNPUBLISHED_NODE_ID, {
+      name: 'Tokyo Applying Unpublished',
+      control_status: 'online',
+      provisioning_state: 'applying',
+      publication_intent: 'unpublished',
+      publication_observed: 'absent',
+      member_forwarding_observed: false,
+    });
+    setMockNodeOverride(ROLLED_BACK_SERVING_NODE_ID, {
+      name: 'Tokyo Rolled Back Serving',
+      releases: {
+        current_release_id: FALLBACK_RELEASE_ID,
+        desired_release_id: PRIMARY_RELEASE_ID,
+        last_good_release_id: FALLBACK_RELEASE_ID,
+      },
+      update: makeUpdateWithState('rolled_back'),
+    });
 
     const { container } = renderAt('/admin/nodes', 'admin', 'zh-TW');
     expect(await screen.findByTestId('nodes-table')).toBeInTheDocument();
@@ -626,53 +755,116 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
 
     const expectedRows: Array<{
       nodeId: string;
+      key: NodeSummaryPhraseKey;
       badgeClass: 'badge-success' | 'badge-warning' | 'badge-danger';
       zh: string;
       en: string;
     }> = [
       {
         nodeId: PRIMARY_NODE_ID,
+        key: 'online_serving',
         badgeClass: 'badge-success',
         zh: '在線，正常提供出口服務',
         en: 'Online, actively serving exit traffic',
       },
       {
         nodeId: SAFETY_FAILED_NODE_ID,
+        key: 'online_safety_failed_not_serving',
         badgeClass: 'badge-danger',
         zh: '在線，隔離檢查失敗，未提供服務',
         en: 'Online, isolation check failed, not serving traffic',
       },
       {
         nodeId: OFFLINE_NODE_ID,
+        key: 'offline_route_withdrawn_unconfirmed',
         badgeClass: 'badge-danger',
         zh: '中央已撤銷路由；設備撤權尚未確認／受租約限制',
         en: 'Central routes withdrawn; device revocation unconfirmed / bounded by lease',
       },
       {
         nodeId: STALE_PUBLISHED_NODE_ID,
+        key: 'stale_unconfirmed',
         badgeClass: 'badge-warning',
         zh: '回報延遲，目前服務狀態未能確認',
         en: 'Reports late, current serving state unconfirmed',
       },
       {
         nodeId: OFFLINE_ACTIVE_NODE_ID,
+        key: 'offline_unconfirmed',
         badgeClass: 'badge-danger',
         zh: '離線，目前服務狀態未能確認',
         en: 'Offline, current serving state unconfirmed',
       },
       {
         nodeId: DEGRADED_PUBLISHED_NODE_ID,
+        key: 'online_published_not_serviceable',
         badgeClass: 'badge-danger',
         zh: '在線，已上架，服務條件未全部符合',
         en: 'Online, published, not all serving conditions met',
       },
+      {
+        nodeId: REVOKED_NODE_ID,
+        key: 'revoked_not_serving',
+        badgeClass: 'badge-danger',
+        zh: '裝置身分已永久撤銷，停止服務',
+        en: 'Machine identity permanently revoked, not serving',
+      },
+      {
+        nodeId: ENROLLING_NODE_ID,
+        key: 'enrolling_not_serving',
+        badgeClass: 'badge-danger',
+        zh: '註冊中，未提供服務',
+        en: 'Enrolling, not serving traffic',
+      },
+      {
+        nodeId: SAFETY_EXPIRED_NODE_ID,
+        key: 'online_safety_expired_not_serviceable',
+        badgeClass: 'badge-danger',
+        zh: '在線，隔離檢查已過期，服務條件未符合',
+        en: 'Online, isolation check expired, serving conditions not met',
+      },
+      {
+        nodeId: DISABLED_ONLINE_NODE_ID,
+        key: 'online_disabled_not_serving',
+        badgeClass: 'badge-danger',
+        zh: '在線，管理員已停用出口，未提供服務',
+        en: 'Online, disabled by admin, not serving traffic',
+      },
+      {
+        nodeId: READY_UNPUBLISHED_NODE_ID,
+        key: 'ready_unpublished_not_serving',
+        badgeClass: 'badge-danger',
+        zh: '已就緒，尚未上架，未提供服務',
+        en: 'Provisioned ready, unpublished, not serving traffic',
+      },
+      {
+        nodeId: NOT_READY_UNPUBLISHED_NODE_ID,
+        key: 'online_unpublished_not_ready_not_serving',
+        badgeClass: 'badge-danger',
+        zh: '在線，本機配置未就緒，尚未上架，未提供服務',
+        en: 'Online, provisioning not ready, unpublished, not serving traffic',
+      },
+      {
+        nodeId: ROLLED_BACK_SERVING_NODE_ID,
+        key: 'rolled_back_serving',
+        badgeClass: 'badge-warning',
+        zh: '在線，上次更新已回復至最後良好版本 (last_good)',
+        en: 'Online, update rolled back to verified last_good release',
+      },
     ];
+
+    expect(expectedRows).toHaveLength(13);
+    expect(new Set(expectedRows.map((r) => r.key)).size).toBe(13);
+
+    const badgeClasses = ['badge-success', 'badge-warning', 'badge-danger'] as const;
 
     for (const row of expectedRows) {
       const badge = screen.getByTestId(`node-summary-${row.nodeId}`);
       expect(badge.textContent).toBe(row.zh);
       expect(badge).toHaveClass('badge', row.badgeClass);
-      for (const other of ['badge-success', 'badge-warning', 'badge-danger'] as const) {
+      const matched = badgeClasses.filter((cls) => badge.classList.contains(cls));
+      expect(matched).toEqual([row.badgeClass]);
+      for (const other of badgeClasses) {
         if (other !== row.badgeClass) {
           expect(badge).not.toHaveClass(other);
         }
@@ -685,6 +877,13 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
       const badge = screen.getByTestId(`node-summary-${row.nodeId}`);
       expect(badge.textContent).toBe(row.en);
       expect(badge).toHaveClass('badge', row.badgeClass);
+      const matched = badgeClasses.filter((cls) => badge.classList.contains(cls));
+      expect(matched).toEqual([row.badgeClass]);
+      for (const other of badgeClasses) {
+        if (other !== row.badgeClass) {
+          expect(badge).not.toHaveClass(other);
+        }
+      }
     }
 
     await assertAccessible(container);
@@ -695,9 +894,20 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
     expect(
       await screen.findByTestId(`node-summary-${PRIMARY_NODE_ID}`),
     ).toHaveTextContent('在線，正常提供出口服務');
-    expect(screen.queryByTestId(`node-summary-${STALE_PUBLISHED_NODE_ID}`)).toBeNull();
-    expect(screen.queryByTestId(`node-summary-${OFFLINE_ACTIVE_NODE_ID}`)).toBeNull();
-    expect(screen.queryByTestId(`node-summary-${DEGRADED_PUBLISHED_NODE_ID}`)).toBeNull();
+    for (const overrideId of [
+      STALE_PUBLISHED_NODE_ID,
+      OFFLINE_ACTIVE_NODE_ID,
+      DEGRADED_PUBLISHED_NODE_ID,
+      REVOKED_NODE_ID,
+      ENROLLING_NODE_ID,
+      SAFETY_EXPIRED_NODE_ID,
+      DISABLED_ONLINE_NODE_ID,
+      READY_UNPUBLISHED_NODE_ID,
+      NOT_READY_UNPUBLISHED_NODE_ID,
+      ROLLED_BACK_SERVING_NODE_ID,
+    ]) {
+      expect(screen.queryByTestId(`node-summary-${overrideId}`)).toBeNull();
+    }
   });
 
   it('Test4_NodeDetailPage_StaleNodeSummaryBadgeBothLocales', async () => {
@@ -757,7 +967,7 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
     setMockNodeOverride(SAFETY_FAILED_NODE_ID, { last_seen_at: null });
     setMockNodeOverride(OFFLINE_NODE_ID, { last_seen_at: null });
 
-    renderAt('/admin', 'admin', 'zh-TW');
+    const { container: containerNone } = renderAt('/admin', 'admin', 'zh-TW');
     const overviewNone = await screen.findByTestId('admin-overview-page');
     const asOfNoneBadge =
       screen.queryByTestId('admin-overview-as-of') ??
@@ -766,5 +976,68 @@ describe('Admin Node Summary & Overview (§5, §5.1, §6.1, §18.1, §18.3)', ()
 
     await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
     expect(asOfNoneBadge!.textContent).toBe('No node report yet');
+
+    await assertAccessible(containerNone);
+  });
+
+  it('Test6_AdminOverview_LatestReportByInstant', async () => {
+    const user = userEvent.setup();
+
+    const asOfFor = (lastSeenValues: Array<string | null>): string | null =>
+      buildAdminOverviewViewModel(
+        {
+          items: lastSeenValues.map((last_seen_at, idx) =>
+            makeServiceableNodeSummary({
+              node_id: `00000000-0000-4000-8000-${String(idx + 1).padStart(12, '0')}`,
+              last_seen_at,
+            }),
+          ),
+          next_cursor: null,
+        },
+        CONTRACT_EXAMPLES_USED_BY_MOCKS.MemberList,
+        null,
+      ).as_of;
+
+    expect(asOfFor(['2026-10-28T14:06:30Z', '2026-10-28T14:07:00Z', null])).toBe(
+      '2026-10-28T14:07:00Z',
+    );
+    expect(asOfFor(['2026-10-28T14:06:30Z', '2026-10-28T14:06:30.5Z'])).toBe(
+      '2026-10-28T14:06:30.5Z',
+    );
+    expect(asOfFor(['2026-10-28T14:06:30.5Z', '2026-10-28T14:06:30Z'])).toBe(
+      '2026-10-28T14:06:30.5Z',
+    );
+    expect(asOfFor(['2026-10-28T14:06:30+08:00', '2026-10-28T10:00:00Z'])).toBe(
+      '2026-10-28T10:00:00Z',
+    );
+    expect(asOfFor(['2026-10-28T20:00:00+08:00', '2026-10-28T10:00:00Z'])).toBe(
+      '2026-10-28T20:00:00+08:00',
+    );
+    expect(asOfFor(['2026-10-28T18:00:00+08:00', '2026-10-28T10:00:00Z'])).toBe(
+      '2026-10-28T18:00:00+08:00',
+    );
+    expect(asOfFor(['not a time', '2026-10-28T14:06:30Z'])).toBe('2026-10-28T14:06:30Z');
+    expect(asOfFor([null, null])).toBeNull();
+
+    setMockNodeOverride(PRIMARY_NODE_ID, { last_seen_at: '2026-10-28T14:06:30Z' });
+    setMockNodeOverride(SAFETY_FAILED_NODE_ID, {
+      last_seen_at: '2026-10-28T14:06:30.5Z',
+    });
+    setMockNodeOverride(OFFLINE_NODE_ID, { last_seen_at: null });
+
+    const { container } = renderAt('/admin', 'admin', 'zh-TW');
+    const overview = await screen.findByTestId('admin-overview-page');
+    const asOfBadge =
+      screen.queryByTestId('admin-overview-as-of') ??
+      overview.querySelector('.page-header .badge');
+    expect(asOfBadge).not.toBeNull();
+    expect(asOfBadge!.textContent).toBe('最近節點回報 (UTC)：2026-10-28T14:06:30.5Z');
+
+    await user.selectOptions(screen.getByTestId('locale-switcher'), 'en');
+    expect(asOfBadge!.textContent).toBe(
+      'Latest node report (UTC): 2026-10-28T14:06:30.5Z',
+    );
+
+    await assertAccessible(container);
   });
 });

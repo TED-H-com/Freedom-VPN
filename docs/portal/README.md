@@ -206,19 +206,24 @@ as listed below.
 | 13 | otherwise (`online`, `published`, not serviceable) | `online_published_not_serviceable` | 在線，已上架，服務條件未全部符合 | Online, published, not all serving conditions met | `badge-danger` |
 
 On the Admin Overview (`AdminOverviewPage.tsx`, `buildAdminOverviewViewModel`),
-`as_of` is the latest `last_seen_at` among the listed nodes with no fixed floor,
-or `null` when no listed node has reported (`admin.overview.asOf`:
-`最近節點回報 (UTC)：{asOf}` / `Latest node report (UTC): {asOf}`;
-`admin.overview.asOfNone`: `尚無節點回報` / `No node report yet`,
-`data-testid="admin-overview-as-of"`). The safety card description
-(`admin.overview.card.safetyFailedDesc`, `data-testid="card-safety-failed-desc"`)
-reads `隔離檢查結果為失敗或已過期的節點` / `Nodes whose isolation check failed or expired`,
-matching `safety_failed_nodes` without claiming that all counted nodes are online.
+`as_of` is the latest `last_seen_at` among the listed nodes compared as instants
+(`Date.parse`, to the millisecond; the first in list order wins a tie; an
+unreadable value is skipped), shown as the string the API returned, with no
+fixed floor, or `null` when no listed node has a readable report
+(`admin.overview.asOf`: `最近節點回報 (UTC)：{asOf}` /
+`Latest node report (UTC): {asOf}`; `admin.overview.asOfNone`: `尚無節點回報` /
+`No node report yet`, `data-testid="admin-overview-as-of"`). The safety card
+description (`admin.overview.card.safetyFailedDesc`,
+`data-testid="card-safety-failed-desc"`) reads `隔離檢查結果為失敗或已過期的節點` /
+`Nodes whose isolation check failed or expired`, matching `safety_failed_nodes`
+without claiming that all counted nodes are online.
 
 `src/pages/__tests__/node_summary.test.tsx` covers the 13-rule table, all
-207,360 state combinations, the list and detail badges, and the overview badge
-and safety card in both languages. What the tests do not cover: the live browser
-suite was not extended, and no real node went stale or offline in a browser run.
+207,360 state combinations, all 13 list badges, the detail badge, the overview
+badge and safety card in both languages, and
+`Test6_AdminOverview_LatestReportByInstant` for instant-based `as_of` selection.
+What the tests do not cover: the live browser suite was not extended, and no
+real node went stale or offline in a browser run.
 
 ## Verification Commands
 

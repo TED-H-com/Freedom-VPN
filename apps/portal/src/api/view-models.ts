@@ -231,9 +231,15 @@ export function buildAdminOverviewViewModel(
   const memberItems = members.items;
 
   let latestSeen: string | null = null;
+  let latestSeenMs: number | null = null;
   for (const n of nodeItems) {
-    if (n.last_seen_at && (latestSeen === null || n.last_seen_at > latestSeen)) {
+    if (!n.last_seen_at) {
+      continue;
+    }
+    const ms = Date.parse(n.last_seen_at);
+    if (!Number.isNaN(ms) && (latestSeenMs === null || ms > latestSeenMs)) {
       latestSeen = n.last_seen_at;
+      latestSeenMs = ms;
     }
   }
 
