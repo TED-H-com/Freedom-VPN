@@ -27,7 +27,7 @@ func TestAT30_DrillRequiredInventory(t *testing.T) {
 			name = "complete"
 		}
 		t.Run(name, func(t *testing.T) {
-			for _, scenario := range []string{"omitted", "skip", "fail", "no_run", "process_failed", "invalid_json"} {
+			for _, scenario := range []string{"omitted", "skip", "fail", "no_run", "process_failed", "invalid_json", "build_failed"} {
 				t.Run(scenario, func(t *testing.T) {
 					var data strings.Builder
 					write := func(action, test string) {
@@ -56,6 +56,11 @@ func TestAT30_DrillRequiredInventory(t *testing.T) {
 					if scenario == "invalid_json" {
 						data.WriteString("not json\n")
 					}
+					if scenario == "build_failed" {
+						// No test is omitted and the producer exits zero: the action
+						// itself must fail, independently of process/package status.
+						data.WriteString("{\"Action\":\"build-fail\",\"ImportPath\":\"example.invalid/build\"}\n")
+					}
 					file := filepath.Join(t.TempDir(), "events")
 					if err := os.WriteFile(file, []byte(data.String()), 0o600); err != nil {
 						t.Fatal(err)
@@ -66,11 +71,18 @@ func TestAT30_DrillRequiredInventory(t *testing.T) {
 					}
 					cmd := exec.Command("python3", "check_drill.py", "--", "bash", "-c", `cat "$1"; exit "$2"`, "_", file, status)
 					out, err := cmd.CombinedOutput()
-					wantFailure := (missing != "" && scenario != "process_failed" && scenario != "invalid_json") || scenario == "process_failed" || scenario == "invalid_json"
+					streamFailure := scenario == "process_failed" || scenario == "invalid_json" || scenario == "build_failed"
+					wantFailure := missing != "" || streamFailure
 					if (err != nil) != wantFailure {
 						t.Fatalf("inventory failure=%v want=%v: %s", err, wantFailure, out)
 					}
-					if wantFailure && scenario != "process_failed" && scenario != "invalid_json" && !strings.Contains(string(out), "required test did not run and pass: "+missing) {
+					if scenario == "build_failed" {
+						if !strings.Contains(string(out), "backup-drill: build-fail event") {
+							t.Fatalf("inventory failure did not name build-fail: %s", out)
+						}
+						t.Logf("complete inventory and producer exit 0 rejected: %s", out)
+					}
+					if wantFailure && !streamFailure && !strings.Contains(string(out), "required test did not run and pass: "+missing) {
 						t.Fatalf("inventory failure did not name %s: %s", missing, out)
 					}
 				})

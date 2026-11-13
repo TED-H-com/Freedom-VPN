@@ -43,8 +43,10 @@ def main(command):
                 continue
             if "Output" in event:
                 print(event["Output"], end="", flush=True)
-            if event.get("Action") == "fail":
+            if event.get("Action") in ("fail", "build-fail"):
                 failed = True
+                if event["Action"] == "build-fail":
+                    print("backup-drill: build-fail event", flush=True)
             if event.get("Package") != PACKAGE:
                 continue
             name = event.get("Test")
