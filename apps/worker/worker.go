@@ -259,13 +259,15 @@ type Dependencies struct {
 	Logger  *slog.Logger
 }
 type Domain struct {
-	Name  string
-	Build func(context.Context, Dependencies) (Built, error)
+	Name string
+	// Describe constructs registrations without configuration, services or a pool.
+	Describe func() registration
+	Build    func(context.Context, Dependencies) (Built, error)
 }
 type Built struct {
 	Jobs    Registry
 	Context func(context.Context) context.Context
-	Runners []func(context.Context) error
+	Runners []Runner
 }
 type Application struct {
 	dispatcher *Dispatcher
@@ -278,6 +280,13 @@ type Application struct {
 // Open validates and merges all domain registrations before any work is claimed.
 // With no explicit domains it uses the production Domains list.
 func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application, error) {
+	catalog, err := productionRegistration()
+	if err != nil {
+		return nil, err
+	}
+	if _, err = catalog.poolSize(d.Config.WorkerConcurrency); err != nil {
+		return nil, err
+	}
 	if d.Metrics == nil {
 		d.Metrics = prometheus.NewRegistry()
 	}
@@ -285,6 +294,7 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 		domains = Domains()
 	}
 	names := map[string]bool{}
+	runnerNames := map[string]bool{}
 	registry := Registry{}
 	app := &Application{shutdown: time.Duration(d.Config.ShutdownSeconds) * time.Second}
 	built := make([]Built, 0, len(domains))
@@ -301,20 +311,32 @@ func Open(ctx context.Context, d Dependencies, domains ...Domain) (*Application,
 			if name == "" || handler == nil {
 				return nil, fmt.Errorf("worker domain %s: invalid handler", domain.Name)
 			}
+			if catalog.Jobs[name].Peak < 1 {
+				return nil, fmt.Errorf("worker event %s: connection peak required", name)
+			}
 			if registry[name] != nil {
 				return nil, fmt.Errorf("duplicate worker event: %s", name)
 			}
 			registry[name] = handler
 		}
 		for _, run := range result.Runners {
-			if run == nil {
-				return nil, fmt.Errorf("worker domain %s: nil runner", domain.Name)
+			if runnerNames[run.Name] {
+				return nil, fmt.Errorf("duplicate worker runner: %s", run.Name)
+			}
+			runnerNames[run.Name] = true
+			if run.Run == nil || run.Name == "" || run.Peak < 1 {
+				return nil, fmt.Errorf("worker domain %s: invalid runner or missing connection peak", domain.Name)
+			}
+			if catalog.runnerPeak(run.Name) != run.Peak {
+				return nil, fmt.Errorf("worker runner %s: unregistered connection peak", run.Name)
 			}
 		}
 		if result.Context != nil {
 			app.contexts = append(app.contexts, result.Context)
 		}
-		app.runners = append(app.runners, result.Runners...)
+		for _, run := range result.Runners {
+			app.runners = append(app.runners, run.Run)
+		}
 		built = append(built, result)
 	}
 	c := d.Config

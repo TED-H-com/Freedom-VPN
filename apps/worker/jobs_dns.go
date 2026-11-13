@@ -15,7 +15,7 @@ import (
 // from Dependencies.Config.DNSConfigFile. There is no production default (D-028).
 // The build only constructs the handler; it does not start work.
 func dns() Domain {
-	return Domain{Name: "dns", Build: func(_ context.Context, d Dependencies) (Built, error) {
+	return Domain{Name: "dns", Describe: func() registration { return registration{Jobs: dnsJobs(nil, nil), Runners: []Runner{dnsRunner(nil)}} }, Build: func(_ context.Context, d Dependencies) (Built, error) {
 		dnsCfg, err := config.LoadDNS(d.Config.DNSConfigFile)
 		if err != nil {
 			return Built{}, &config.SettingError{Name: "dns_config_file", Err: err}
@@ -27,14 +27,11 @@ func dns() Domain {
 		if err != nil {
 			return Built{}, &config.SettingError{Name: "dns_config_file", Err: err}
 		}
-		jobs := Registry{}
-		jobs.Register(dnspublish.EventDNSPublish, publisher.Handle)
 		feeds, err := dnsfeeds.New(d.Pool, dnsfeeds.Options{UpdateCadence: time.Duration(dnsCfg.FeedUpdateCadenceSeconds) * time.Second, MaxRemovalPercent: dnsCfg.FeedMaxRemovalPercent, Metrics: d.Metrics})
 		if err != nil {
 			return Built{}, err
 		}
-		jobs.Register(dnsfeeds.EventRefresh, feeds.Handle)
-		return Built{Jobs: jobs, Runners: []func(context.Context) error{func(ctx context.Context) error { return RunDNSFeedSchedule(ctx, feeds) }}}, nil
+		return Built{Jobs: dnsJobs(publisher, feeds).handlers(), Runners: []Runner{dnsRunner(feeds)}}, nil
 	}}
 }
 
@@ -57,4 +54,16 @@ func RunDNSFeedSchedule(ctx context.Context, feeds *dnsfeeds.Service) error {
 		case <-ticker.C:
 		}
 	}
+}
+
+func dnsJobs(publisher *dnsstore.Publisher, feeds *dnsfeeds.Service) jobRegistrations {
+	jobs := jobRegistrations{}
+	// Publication and feed refresh commit sequential transactions; HTTP fetches
+	// do not retain a database connection.
+	jobs.Register(dnspublish.EventDNSPublish, 1, publisher.Handle)
+	jobs.Register(dnsfeeds.EventRefresh, 1, feeds.Handle)
+	return jobs
+}
+func dnsRunner(feeds *dnsfeeds.Service) Runner {
+	return Runner{Name: "dns.schedule", Peak: 1, Run: func(ctx context.Context) error { return RunDNSFeedSchedule(ctx, feeds) }}
 }

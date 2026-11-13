@@ -130,7 +130,8 @@ func policies() Domain {
 // loaded from Dependencies.Config.PoliciesConfigFile via config.LoadPolicies.
 func NewPoliciesDomain(cfg *config.PoliciesConfig, compiler membersruntime.Compiler) Domain {
 	return Domain{
-		Name: "policies",
+		Name:     "policies",
+		Describe: func() registration { return registration{Jobs: policyJobs()} },
 		Build: func(_ context.Context, d Dependencies) (Built, error) {
 			if err := config.ValidatePoliciesCentralBounds(d.Config); err != nil {
 				return Built{}, err
@@ -168,14 +169,16 @@ func NewPoliciesDomain(cfg *config.PoliciesConfig, compiler membersruntime.Compi
 }
 
 // PolicyJobs returns a fresh registry of policy and Fair-Use outbox handlers.
-func PolicyJobs() Registry {
-	r := Registry{}
+func PolicyJobs() Registry { return policyJobs().handlers() }
+
+func policyJobs() jobRegistrations {
+	r := jobRegistrations{}
 	for _, name := range []string{
 		"policy.activated",
 		"fup.evaluate",
 		"fup.member_generation_changed",
 	} {
-		r.Register(name, policyJob)
+		r.Register(name, 1, policyJob)
 	}
 	return r
 }
