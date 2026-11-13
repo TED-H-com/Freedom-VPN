@@ -29,6 +29,11 @@
         "before": "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
         "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/operator-guide.md\"))",
         "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/calibration.md\")",
+        "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/calibration.md\"))",
+        "count": 1
       }
     ]
   },
@@ -47,6 +52,20 @@
       {
         "before": "readOwnedDoc(t, root, \"docs/handover/calibration.md\")",
         "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/calibration.md\"))",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_Followup14Claims",
+    "source_commit": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
+    "bytes": 21140,
+    "sha256": "b90e10663d86e23b31e88bb21174264d10581dd74b116580ee4a3d5d7e29c37c",
+    "redirects": [
+      {
+        "before": "requireHandoverClaimTokens(t, root, path, tokens...)",
+        "after": "requireHandoverClaimTokens(t, root, followup52InputPath(path), tokens...)",
         "count": 1
       }
     ]

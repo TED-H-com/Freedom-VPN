@@ -1236,7 +1236,7 @@ func TestHandover_Followup8Claims(t *testing.T) {
 		}
 	}
 
-	calibrationGuide := readOwnedDoc(t, root, "docs/handover/calibration.md")
+	calibrationGuide := readOwnedDoc(t, root, followup52InputPath("docs/handover/calibration.md"))
 	for _, token := range []string{
 		"#190", "#192", "#193", "#198", "#200", "#203", "#215",
 		"D-067",
@@ -2132,7 +2132,7 @@ func TestHandover_Followup14Claims(t *testing.T) {
 	root := repoRoot(t)
 	require := func(path string, tokens ...string) {
 		t.Helper()
-		requireHandoverClaimTokens(t, root, path, tokens...)
+		requireHandoverClaimTokens(t, root, followup52InputPath(path), tokens...)
 	}
 	const op = "docs/handover/operator-guide.md"
 	const ops = "docs/ops/README.md"
@@ -19587,7 +19587,7 @@ func followup52InputPath(path string) string {
 // Reverse only this cut's reads inside the earlier claims functions. The
 // historical hash checks still read live source and detect every other byte.
 func restoreFollowup52Inputs(source string) string {
-	for _, name := range []string{"TestHandover_DOC15AndFollowup6Claims", "TestHandover_Followup8Claims", "TestHandover_Followup10Claims"} {
+	for _, name := range []string{"TestHandover_DOC15AndFollowup6Claims", "TestHandover_Followup8Claims", "TestHandover_Followup10Claims", "TestHandover_Followup14Claims"} {
 		header := "func " + name + "(t *testing.T) {"
 		start := strings.Index(source, header)
 		if start < 0 {
@@ -19601,9 +19601,13 @@ func restoreFollowup52Inputs(source string) string {
 		body := source[start:end]
 		paths := []string{"docs/handover/calibration.md"}
 		if name == "TestHandover_Followup8Claims" {
-			paths = []string{"docs/handover/operator-guide.md"}
+			paths = append(paths, "docs/handover/operator-guide.md")
 		} else if name == "TestHandover_Followup10Claims" || name == "TestHandover_DOC15AndFollowup6Claims" {
 			paths = append(paths, "docs/handover/operator-guide.md")
+		}
+		if name == "TestHandover_Followup14Claims" {
+			paths = nil
+			body = strings.Replace(body, `requireHandoverClaimTokens(t, root, followup52InputPath(path), tokens...)`, `requireHandoverClaimTokens(t, root, path, tokens...)`, 1)
 		}
 		for _, path := range paths {
 			body = strings.Replace(body, `readOwnedDoc(t, root, followup52InputPath("`+path+`"))`, `readOwnedDoc(t, root, "`+path+`")`, 1)
@@ -19629,11 +19633,11 @@ func TestHandover_Followup52Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-52.md", "341844c189f2e7d3622334cb07d5da6d428f8241c82726fe5b399d094eacd09f", 10980},
+		{"docs/handover/follow-up-52.md", "c004b234fea51aeb5f852dc1f6ca356fe88d387864cfacfe9580e11c6c00b863", 12026},
 		{"tests/handover/testdata/followup52-main.json", "714db17f0ea0346c47debba55fb8d65e079dee1d8735bce5f5fb037be5112204", 598},
 		{"tests/handover/testdata/followup52-snapshots.json", "e4b88ad998436a49fa9cfec2135fe913891232c8067d956ced873471ff3afa91", 4368},
-		{"tests/handover/testdata/followup52-edits.json", "1c071d05a6ebc79ec6979df762c34fb884798bf4b3a24ddc288bda19252913b0", 114700},
-		{"tests/handover/testdata/followup52-prior-assertions.json", "4f762fd5e6f9e62c21c0b7ed3c83bba28838a17e6057ca6bbce246ba46cba398", 2736},
+		{"tests/handover/testdata/followup52-edits.json", "2a887dfe609b831f00c1aa8a26928ad77ac14d72f6da98e39799827805d3b9e1", 124451},
+		{"tests/handover/testdata/followup52-prior-assertions.json", "71525adea363507fb8f9d834c40c9252f5e0d55dd0180026042a64d783576404", 3448},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
 		if len(s) != p.Bytes || hash(s) != p.SHA256 {
@@ -19707,7 +19711,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup52-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 82 {
+		if len(edits) != 87 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
@@ -19807,7 +19811,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			{"F8_baseline", "**How to interpret `ISOLATION_POLICY_INVALID`", "`e.plane.Baseline`, implemented by `SystemPlane.Baseline` through `enforce.ApplyBaseline`", "`plane.ApplyBaseline`"},
 			{"R3_1_expiry", "**Reading the provisional window", "only when the node is published and registered and either not ready or its mapping is frozen; other grant-less leases keep the ordinary fleet offline expiry", "expires such a grant-less lease after **`60 s`** (`expires_at = issued_at + min(max_offline_seconds, 60s)`)"},
 			{"R3_1_spacing", "**Reading the provisional window", "planned grant-less renewal spacing starts at one heartbeat capped at `60 s` and doubles up to that cap; the renewal lead can shorten it and server `Retry-After` can lengthen it", "renews after **one heartbeat**, then **doubling**, capped at **`60 s`**"},
-			{"R3_2_ack", "**How to interpret `ISOLATION_POLICY_INVALID`", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed`, the agent attempts the baseline and does not acknowledge the generation.", "without acknowledging the generation or renewing the lease"},
+			{"R3_2_ack", "**How to interpret `ISOLATION_POLICY_INVALID`", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed` and the agent does not acknowledge the generation.", "without acknowledging the generation or renewing the lease"},
 			{"R3_3_scope", "Plan downgrades keep the oldest authorizations", "Inspect `device.authorize` denial audits: the `recordDiscoveryDenial` path audits **once per decision transition**. `identity_binding.rejected` is separately deduplicated through `noteDiscoveryDecision`.", "only denials sent through `recordDiscoveryDenial` are audited **once per decision transition**"},
 			{"R3_3_reasons", "Plan downgrades keep the oldest authorizations", "Inspect `device.authorize` denial audits:", "for the bounded reasons `device_limit_reached`, `entitlement_inactive` or `identity_unmapped`"},
 			{"R3_3_relax", "Plan downgrades keep the oldest authorizations", "updates a previously stored decision, if any", "first changes the stored decision hash to admitted"},
@@ -19816,7 +19820,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			{"R4_1_attempt", "**How to interpret `ISOLATION_POLICY_INVALID`", "`fvpn-agent` stops serving and attempts the fail-closed baseline", "fails isolation closed and installs the baseline"},
 			{"R4_2_reasons", "**How to interpret `ISOLATION_POLICY_INVALID`", "`member_forwarding_enabled=false`, `safety_status=failed`, and `forwarding_block_reasons` includes `safety_check_failed`; other reasons can coexist", "forwarding_block_reasons=[\"safety_check_failed\"]"},
 			{"R4_3_missing_baseline", "**How to interpret `ISOLATION_POLICY_INVALID`", "without it, `internet_only` fails with `ISOLATION_BASELINE_MISSING`, meaning isolation is not confirmed", "`METER_PATH_INVALID`, `ISOLATION_BASELINE_MISSING`, `METER_EPOCH_CHANGE`) appears on a failed `source_binding`, `qos`, `lease`, `internet_only`, or `meter_path` check"},
-			{"R4_4_ack", "**How to interpret `ISOLATION_POLICY_INVALID`", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed`, the agent attempts the baseline and does not acknowledge the generation.", "ruleset or QoS verification failed and the agent withdrew to the fail-closed baseline without acknowledging the generation"},
+			{"R4_4_ack", "**How to interpret `ISOLATION_POLICY_INVALID`", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed` and the agent does not acknowledge the generation.", "ruleset or QoS verification failed and the agent withdrew to the fail-closed baseline without acknowledging the generation"},
 			{"R4_5_apply_code", "**How to interpret `ISOLATION_POLICY_INVALID`", "A retained `stage: \"apply\"` error makes `lease`, `qos` and `source_binding` fail with its code: the enforcement check's reason when it is a valid API code, otherwise `HEALTH_CHECK_FAILED`.", "when another revision-8 enforcement verification code"},
 			{"R4_6_dependency", "**How to interpret `ISOLATION_POLICY_INVALID`", "Without a retained Apply error, a missing executable makes those checks fail with `DEPENDENCY_UNAVAILABLE`.", "appears on a failed `source_binding`, `qos`, `lease`, `internet_only`, or `meter_path` check"},
 			{"R4_7_meter", "**How to interpret `ISOLATION_POLICY_INVALID`", "Separately, `METER_PATH_INVALID` on `meter_path` means the backend is not `kernel` or the meter failed; it adds `meter_path_invalid` and by itself does not withhold the generation acknowledgement.", "ruleset or QoS verification failed and the agent withdrew to the fail-closed baseline without acknowledging the generation"},
@@ -19863,6 +19867,35 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			})
 		}
 		t.Logf("Checked 4 scoped deployment statement forms across 3 corrected passages")
+	})
+
+	t.Run("repair_containment_and_provisional_statements", func(t *testing.T) {
+		for _, c := range []struct{ Name, Path, Marker, Current, Old string }{
+			{"retained-error", "docs/handover/operator-guide.md", "**How to interpret `ISOLATION_POLICY_INVALID`", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed` and the agent does not acknowledge the generation. An Apply failure outside the verified conntrack-delete exception, or a live verification failure routed to `rejectServing`, stops serving and attempts the baseline. For an eligible live `GENERATION_MISMATCH`, `repairGeneration` reports the failure before retrying the same generation with the current lease. A successful repair clears the error without a baseline; a failed repair stops serving and attempts the baseline.", "While either failure is retained, `forwarding_block_reasons` includes `safety_check_failed`, the agent attempts the baseline and does not acknowledge the generation."},
+			{"quarantine-attempts", "docs/handover/operator-guide.md", "**D-090 containment boundary", "`enforce.Quarantine(ctx, executor, model)` independently attempts to record recovery intent as an empty owned nft set `quarantine_<interface>` in `inet fvpn`, lower the applied model’s member-facing link, and install and read back the no-probe baseline; it never deletes foreign tc objects. `enforce.Quarantine` does not change the agent’s serving state: `rejectServing` calls the agent’s quarantine wrapper and then `withdraw`. Confirmed containment requires the link to read back down and the baseline to be verified. Any failed step leaves quarantine incomplete and isolation unconfirmed; the agent remains non-serving and reports partial evidence in `ObservationReport.errors` at `stage: \"quarantine\"`, with `\"quarantine_incomplete\"` for a returned quarantine error.", "`enforce.Quarantine(ctx, executor, model)` withdraws serving, installs and verifies the no-probe baseline, sets every member-facing link of the applied model administratively down, never deletes foreign tc objects, and persists recovery intent as an empty owned nft set `quarantine_<interface>` in `inet fvpn`."},
+			{"quarantine-release", "docs/handover/operator-guide.md", "**D-090 containment boundary", "**The agent raises a link recorded by quarantine only after a clean full Apply verification with that link held down**", "**Member links are administratively down until a clean verified Apply**"},
+			{"calibration-health", "docs/handover/calibration.md", "| **Serving Lease Ceiling", "`fvpn-agent` treats it as provisional (the following report assumes an otherwise healthy node with published, verified, unexpired desired state and nonempty desired bindings: `forwarding_block_reasons: [\"awaiting_member_grants\"]`, `safety_status: \"passed\"`, `lease`, `qos`, and `source_binding` checks `failed` with `AWAITING_MEMBER_GRANTS`, one `errors[]` entry at `stage=lease`, `lease` check detail `\"Serving lease has no member grants yet.\"`; independent safety or probe failures retain their own codes)", "`fvpn-agent` treats it as provisional (`forwarding_block_reasons: [\"awaiting_member_grants\"]`, `safety_status: \"passed\"`, `lease`, `qos`, and `source_binding` checks `failed` with `AWAITING_MEMBER_GRANTS`, one `errors[]` entry at `stage=lease`, `lease` check detail `\"Serving lease has no member grants yet.\"`)"},
+			{"calibration-spacing", "docs/handover/calibration.md", "| **Serving Lease Ceiling", "uses planned renewal spacing starting at one heartbeat capped at `60 s` and doubling up to that cap (the renewal lead can shorten it and server `Retry-After` can lengthen it)", "renews after one heartbeat, then doubling, capped at `60 s`"},
+			{"calibration-schedule", "docs/handover/calibration.md", "D-087 (#250): every accepted", "Planned renewal spacing starts at one heartbeat capped at 60 s and doubles up to that cap; the lease renewal lead can shorten it and server `Retry-After` can lengthen it.", "The first request slot is one heartbeat after the empty lease (capped at 60 s), then doubling, never more than 60 s of local waiting between requests; the lease renewal lead can bring a slot forward."},
+			{"operator-schedule", "docs/handover/operator-guide.md", "**D-087 (#250): every accepted", "Planned renewal spacing starts at one heartbeat capped at 60 s and doubles up to that cap; the lease renewal lead can shorten it and server `Retry-After` can lengthen it.", "The first request slot is one heartbeat after the empty lease (capped at 60 s), then doubling, never more than 60 s of local waiting between requests; the lease renewal lead can bring a slot forward."},
+			{"member-provisional", "docs/handover/member-guide.md", "**Measurement status", "after a node restart `fvpn-agent` treats a fresh, in-force same-generation grant-less lease (`members: []`) as provisional when valid desired state has nonempty bindings under `D-067` (`#193`, `#198`, `#200`, reporting `awaiting_member_grants` and using planned renewal spacing starting at one heartbeat capped at `60 s` and doubling up to that cap, which the renewal lead can shorten and server `Retry-After` can lengthen)", "after a node restart `fvpn-agent` treats a same-generation grant-less lease (`members: []`) as provisional under `D-067` (`#193`, `#198`, `#200`, reporting `awaiting_member_grants` and renewing after one heartbeat, then doubling, capped at `60 s`)"},
+		} {
+			t.Run(c.Name, func(t *testing.T) {
+				var places []string
+				for _, line := range strings.Split(readOwnedDoc(t, root, c.Path), "\n") {
+					if strings.Contains(line, c.Marker) {
+						places = append(places, line)
+					}
+				}
+				if len(places) != 1 {
+					t.Fatalf("expected one reviewed place, got %d", len(places))
+				}
+				if !strings.Contains(places[0], c.Current) || strings.Contains(places[0], c.Old) {
+					t.Errorf("reviewed repair, containment or provisional statement regressed: %s", c.Name)
+				}
+			})
+		}
+		t.Logf("Checked 8 scoped repair, containment and provisional statement forms")
 	})
 	checkLinks := func(t *testing.T, sources []struct{ doc, text string }) {
 		t.Helper()
@@ -19936,7 +19969,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			}
 		}
 		readJSON(fixture+"followup52-prior-assertions.json", &manifest)
-		functions := []string{"TestHandover_DOC15AndFollowup6Claims", "TestHandover_Followup8Claims", "TestHandover_Followup10Claims", "TestHandover_Followup51Claims"}
+		functions := []string{"TestHandover_DOC15AndFollowup6Claims", "TestHandover_Followup8Claims", "TestHandover_Followup10Claims", "TestHandover_Followup14Claims", "TestHandover_Followup51Claims"}
 		if len(manifest) != len(functions) {
 			t.Fatal("prior assertion count")
 		}
@@ -19947,7 +19980,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			body := regexp.MustCompile(`(?s)func ` + regexp.QuoteMeta(p.Function) + `\(.*?\n}`).FindString(readOwnedDoc(t, root, p.Source))
 			redirects := 0
 			for _, r := range p.Redirects {
-				if r.Count < 1 || strings.Count(body, r.After) != r.Count || !strings.HasPrefix(r.Before, "readOwnedDoc(t, root, ") || !strings.Contains(r.After, "followup52InputPath(") {
+				if r.Count < 1 || strings.Count(body, r.After) != r.Count || (!strings.HasPrefix(r.Before, "readOwnedDoc(t, root, ") && r.Before != "requireHandoverClaimTokens(t, root, path, tokens...)") || !strings.Contains(r.After, "followup52InputPath(") {
 					t.Fatalf("frozen read redirect changed: %s", p.Function)
 				}
 				body = strings.ReplaceAll(body, r.After, r.Before)
