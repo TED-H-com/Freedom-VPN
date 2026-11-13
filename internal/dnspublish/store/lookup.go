@@ -23,6 +23,13 @@ func NewDocumentReader(pool *pgxpool.Pool) *DocumentReader {
 	return &DocumentReader{pool: pool}
 }
 
+const latestPublishedSQL = `SELECT d.id,d.profile_revision_id,d.policy_generation::text,d.document_sha256,d.canonical_bytes
+ FROM dns_publication_heads h
+ JOIN dns_resolver_documents d ON d.definition_id=h.definition_id AND d.profile_revision_id=h.profile_revision_id
+  AND d.policy_generation=h.policy_generation AND d.document_sha256=h.document_sha256
+ JOIN policy_definitions p ON p.id=h.definition_id AND p.active_revision_id=h.profile_revision_id
+ WHERE h.definition_id=$1 AND h.status='active' AND p.type='dns_profile' AND dns_profile_feeds_eligible(d.profile_revision_id,clock_timestamp())`
+
 // LatestPublished resolves all reference fields and bytes in one database
 // snapshot. A withdrawn head, or one whose revision is no longer active, is
 // unavailable for new desired state even though its immutable bytes remain.
@@ -30,12 +37,16 @@ func (r *DocumentReader) LatestPublished(ctx context.Context, profileDefinitionI
 	if r == nil || r.pool == nil {
 		return dnspublish.PublishedDocument{}, errors.New("resolver document storage required")
 	}
-	return readDocument(r.pool.QueryRow(ctx, `SELECT d.id,d.profile_revision_id,d.policy_generation::text,d.document_sha256,d.canonical_bytes
- FROM dns_publication_heads h
- JOIN dns_resolver_documents d ON d.definition_id=h.definition_id AND d.profile_revision_id=h.profile_revision_id
-  AND d.policy_generation=h.policy_generation AND d.document_sha256=h.document_sha256
- JOIN policy_definitions p ON p.id=h.definition_id AND p.active_revision_id=h.profile_revision_id
- WHERE h.definition_id=$1 AND h.status='active' AND p.type='dns_profile' AND dns_profile_feeds_eligible(d.profile_revision_id,clock_timestamp())`, profileDefinitionID))
+	return readDocument(r.pool.QueryRow(ctx, latestPublishedSQL, profileDefinitionID))
+}
+
+// LatestPublishedTx resolves the active publication head through the caller's
+// open transaction without acquiring another pool connection (D-170).
+func (r *DocumentReader) LatestPublishedTx(ctx context.Context, tx pgx.Tx, profileDefinitionID uuid.UUID) (dnspublish.PublishedDocument, error) {
+	if r == nil || tx == nil {
+		return dnspublish.PublishedDocument{}, errors.New("resolver document storage required")
+	}
+	return readDocument(tx.QueryRow(ctx, latestPublishedSQL, profileDefinitionID))
 }
 
 // GetByID returns the version named by an already authorized issued reference,

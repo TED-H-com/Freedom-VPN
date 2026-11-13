@@ -16,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/fup"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
@@ -235,6 +236,9 @@ func releaseRestoreHold(ctx context.Context, tx pgx.Tx, nodeID, observationID uu
 func (c *Compiler) Compile(ctx context.Context, nodeID uuid.UUID) (CompiledDesiredState, error) {
 	var out CompiledDesiredState
 	err := db.InTx(ctx, c.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := commandtx.SharedCompileFence(ctx, tx); err != nil {
+			return err
+		}
 		var err error
 		out, err = c.CompileTx(ctx, tx, nodeID)
 		return err
@@ -244,6 +248,9 @@ func (c *Compiler) Compile(ctx context.Context, nodeID uuid.UUID) (CompiledDesir
 
 // CompileTx compiles and persists a new desired-state generation inside an existing transaction.
 func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (CompiledDesiredState, error) {
+	if err := commandtx.RequireCompileFence(ctx, tx); err != nil {
+		return CompiledDesiredState{}, err
+	}
 	if c.signer == nil {
 		return CompiledDesiredState{}, errors.New("desiredstate: signer is required")
 	}
@@ -278,6 +285,12 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		if errors.Is(err, pgx.ErrNoRows) {
 			return CompiledDesiredState{}, apierr.Newf(apierr.ResourceNotFound, "node %s not found", nodeID)
 		}
+		return CompiledDesiredState{}, err
+	}
+	// A replacement incarnation may not have an envelope yet. The node's last
+	// configuration still identifies former carriers that this compile removes.
+	var previousEnvelope []byte
+	if err := tx.QueryRow(ctx, `SELECT coalesce((SELECT envelope FROM desired_state_envelopes WHERE node_id=$1 ORDER BY generation DESC LIMIT 1),'{}'::jsonb)`, nodeID).Scan(&previousEnvelope); err != nil {
 		return CompiledDesiredState{}, err
 	}
 	if currentIncarnationID == nil || *currentIncarnationID == uuid.Nil {
@@ -653,6 +666,14 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		return CompiledDesiredState{}, err
 	}
 
+	if err := nodes.RecordSubjectRemovalsTx(ctx, tx, nodeID, incarnationID, strconv.FormatUint(nextGen, 10), previousEnvelope, envJSON); err != nil {
+		return CompiledDesiredState{}, err
+	}
+
+	if err := nodes.RecordOperationTargetsTx(ctx, tx, nodeID, incarnationID, strconv.FormatUint(nextGen, 10), previousEnvelope, envJSON); err != nil {
+		return CompiledDesiredState{}, err
+	}
+
 	afterAudit, _ := json.Marshal(map[string]any{
 		"desired_state_id":          desiredStateRowID.String(),
 		"desired_config_generation": strconv.FormatUint(nextGen, 10),
@@ -704,6 +725,9 @@ func (c *Compiler) ReSign(ctx context.Context, nodeID uuid.UUID) (CompiledDesire
 
 	var out CompiledDesiredState
 	err := db.InTx(ctx, c.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := commandtx.SharedCompileFence(ctx, tx); err != nil {
+			return err
+		}
 		var (
 			lifecycleState string
 			incarnationID  *uuid.UUID
@@ -1059,7 +1083,7 @@ func (c *Compiler) RecompileBatch(ctx context.Context, events []db.ClaimedEvent)
 			// each latest envelope that still grants this member access; the new
 			// entitlement snapshot will remove its bindings and rate policies.
 			if member, err := uuid.Parse(payload.MemberID); err == nil {
-				rows, err := c.pool.Query(ctx, `SELECT e.node_id FROM desired_state_envelopes e JOIN nodes n ON n.id=e.node_id AND n.current_incarnation_id=e.incarnation_id
+				rows, err := c.pool.Query(ctx, `SELECT e.node_id FROM (SELECT DISTINCT ON (node_id) node_id,envelope FROM desired_state_envelopes ORDER BY node_id,generation DESC) e
 				 WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(e.envelope->'signed'->'device_bindings') v WHERE v->>'member_id'=$1)
 				 OR EXISTS(SELECT 1 FROM jsonb_array_elements(e.envelope->'signed'->'member_rate_policies') v WHERE v->>'member_id'=$1)`, member.String())
 				if err != nil {

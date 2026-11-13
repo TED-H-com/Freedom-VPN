@@ -78,7 +78,7 @@ func (r *Runtime) ReconcileResolverDocuments(ctx context.Context) error {
 }
 
 func (r *Runtime) reconcileResolverDocument(ctx context.Context, node uuid.UUID, ref api.ResolverDocumentRef) error {
-	return commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	return commandtx.InCompileTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		var incarnation uuid.UUID
 		var raw []byte
 		err := tx.QueryRow(ctx, `SELECT n.current_incarnation_id,e.envelope->'signed'->'dns'->'resolver_document'

@@ -100,16 +100,23 @@ func TestAT01_AT03_LoginCheckoutWebhookDeviceAuthorizationHTTP(t *testing.T) {
 	w = f.call(member, "GET", "/api/v1/member/operations/"+opID.String(), "", nil)
 	requireStatus(t, w, 200)
 	op := decode[api.Operation](t, w)
-	if op.Status != "running" {
-		t.Fatal("node ACK was fabricated", op.Status)
+	if op.Status != api.OperationStatusSucceeded || op.CompletedAt.IsNull() || len(op.Steps) != 2 {
+		t.Fatal("zero-target authorization steps and completion disagree", op.Status)
 	}
 	for _, step := range op.Steps {
 		if step.Name == "netbird" && (step.Status != "succeeded" || step.ObservedAt.IsNull()) {
 			t.Fatal("missing NetBird evidence")
 		}
-		if step.Name == "nodes" && step.Status != "pending" {
-			t.Fatal("node ACK fabricated")
+		if step.Name == "nodes" && (step.Status != api.OperationStepStatusSucceeded || step.ObservedAt.IsNull()) {
+			t.Fatal("zero-target capture lacks evidence")
 		}
+	}
+	var emptyCapture bool
+	if err := f.pool.QueryRow(t.Context(), `SELECT NOT EXISTS(SELECT 1 FROM exits) AND NOT EXISTS(SELECT 1 FROM node_operation_targets t WHERE t.operation_id=o.id)
+        AND c.outcomes='[]'::jsonb AND c.captured_at IS NOT NULL AND c.completed_at IS NOT NULL
+        AND o.observed_refs->(o.steps->'nodes'->>'observed_ref')->>'reference'='node_operation_capture:'||c.id::text
+        FROM operations o JOIN node_operation_captures c ON c.operation_id=o.id WHERE o.id=$1`, opID).Scan(&emptyCapture); err != nil || !emptyCapture {
+		t.Fatal("authorization lacks its empty capture evidence", emptyCapture, err)
 	}
 	f.netbird.mu.Lock()
 	foreign := f.netbird.objects["groups"]["TEST-foreign"]["peers"]

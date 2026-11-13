@@ -24,6 +24,7 @@ type ResolverDocument struct {
 // one coherent reference and byte snapshot. Missing documents return pgx.ErrNoRows.
 type ResolverDocumentSource interface {
 	LatestPublished(context.Context, uuid.UUID) (ResolverDocument, error)
+	LatestPublishedTx(context.Context, pgx.Tx, uuid.UUID) (ResolverDocument, error)
 	DocumentByID(context.Context, uuid.UUID) (ResolverDocument, error)
 }
 

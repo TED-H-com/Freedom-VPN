@@ -268,8 +268,8 @@ func (f *fixture) assertGrantReadback(admin browserSession, id uuid.UUID) {
 	w := f.call(admin, "GET", "/api/v1/admin/operations/"+id.String(), "", nil)
 	requireStatus(f.t, w, 200)
 	op := decode[api.Operation](f.t, w)
-	if len(op.Steps) != 2 || !op.CompletedAt.IsNull() || op.Status == api.OperationStatusSucceeded {
-		f.t.Fatal("withdrawal completed without node enforcement evidence", op)
+	if len(op.Steps) != 2 || op.CompletedAt.IsNull() || op.Status != api.OperationStatusSucceeded {
+		f.t.Fatal("withdrawal steps and completion disagree", op)
 	}
 	for _, step := range op.Steps {
 		switch step.Name {
@@ -278,12 +278,19 @@ func (f *fixture) assertGrantReadback(admin browserSession, id uuid.UUID) {
 				f.t.Fatal("withdrawal lacks authorization read-back", step)
 			}
 		case "nodes":
-			if step.Status != api.OperationStepStatusPending || !step.ObservedAt.IsNull() {
-				f.t.Fatal("compilation fabricated enforcement evidence", step)
+			if step.Status != api.OperationStepStatusSucceeded || step.ObservedAt.IsNull() {
+				f.t.Fatal("zero-target capture lacks evidence", step)
 			}
 		default:
 			f.t.Fatal("unexpected operation step", step)
 		}
+	}
+	var emptyCapture bool
+	if err := f.pool.QueryRow(f.t.Context(), `SELECT NOT EXISTS(SELECT 1 FROM exits) AND NOT EXISTS(SELECT 1 FROM node_operation_targets t WHERE t.operation_id=o.id)
+        AND c.outcomes='[]'::jsonb AND c.captured_at IS NOT NULL AND c.completed_at IS NOT NULL
+        AND o.observed_refs->(o.steps->'nodes'->>'observed_ref')->>'reference'='node_operation_capture:'||c.id::text
+        FROM operations o JOIN node_operation_captures c ON c.operation_id=o.id WHERE o.id=$1`, id).Scan(&emptyCapture); err != nil || !emptyCapture {
+		f.t.Fatal("withdrawal lacks its empty capture evidence", emptyCapture, err)
 	}
 }
 

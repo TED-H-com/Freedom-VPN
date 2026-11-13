@@ -10,11 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
-	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
-	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -125,6 +122,13 @@ func (s *Service) SubmitObservation(
 		}
 		if currentIncarnationID != nil && *currentIncarnationID != authIncarnationID {
 			return apierr.New(apierr.IncarnationMismatch, "node incarnation has been superseded by a newer incarnation")
+		}
+
+		// D-167: compare compile and ACK boundaries on the database clock.
+		// Keep the service receipt clock for the existing projections/API.
+		var databaseReceivedAt time.Time
+		if err := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&databaseReceivedAt); err != nil {
+			return err
 		}
 
 		var mappingFrozen bool
@@ -412,6 +416,16 @@ func (s *Service) SubmitObservation(
 			}
 		}
 
+		// D-165 acknowledgements are independent of the newest-state projection:
+		// an accepted out-of-order report can still prove an immutable pin.
+		var observationID uuid.UUID
+		if err := tx.QueryRow(ctx, `SELECT id FROM node_observations WHERE node_id=$1 AND incarnation_id=$2 AND report_id=$3`, authNodeID, authIncarnationID, report.ReportId).Scan(&observationID); err != nil {
+			return err
+		}
+		if err := observeOperationTargets(ctx, tx, authNodeID, report, effectiveSafety, effectiveForwarding, receivedAt, databaseReceivedAt, "node_observation:"+observationID.String()); err != nil {
+			return err
+		}
+
 		accepted = api.ObservationAccepted{
 			Accepted:   api.ObservationAcceptedAcceptedTrue,
 			ReportId:   report.ReportId,
@@ -581,21 +595,6 @@ func hasForwardingBlockReason(report api.ObservationReport, target api.Forwardin
 	return false
 }
 
-func isRevokeMemberOperation(kind, memberState string) bool {
-	switch kind {
-	case string(api.OperationKindMemberDeviceRevoke),
-		string(api.OperationKindMemberGrantRevoke),
-		string(api.OperationKindMemberSuspend),
-		"member.revoke",
-		"member_device.revoke":
-		return true
-	case string(api.OperationKindMemberUpdate):
-		return memberState == "closed" || memberState == "suspended"
-	default:
-		return false
-	}
-}
-
 // advanceNodeOperationsOnObservation inspects active node operations and updates
 // observation-driven steps (`agent_policy`, `data_path_probe`) ONLY when the report's
 // concrete evidence satisfies the step criteria (§5.2, §14.4, §15.4).
@@ -653,14 +652,12 @@ func advanceNodeOperationsOnObservation(
 		checkStatus[ch.Name] = ch.Status
 	}
 	_, hasIsoErr := hasIsolationApplyError(report)
-	_, pendingIso := isPendingIsolationApplyError(report, effectiveForwarding)
 
-	var desiredNodeGenStr, dbAppliedNodeGenStr string
-	if err := tx.QueryRow(ctx, `SELECT desired_config_generation::text, applied_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desiredNodeGenStr, &dbAppliedNodeGenStr); err != nil {
+	var desiredNodeGenStr string
+	if err := tx.QueryRow(ctx, `SELECT desired_config_generation::text FROM nodes WHERE id = $1`, nodeID).Scan(&desiredNodeGenStr); err != nil {
 		return err
 	}
 	desiredNodeGen, _ := strconv.ParseUint(desiredNodeGenStr, 10, 64)
-	dbAppliedNodeGen, _ := strconv.ParseUint(dbAppliedNodeGenStr, 10, 64)
 
 	for _, op := range ops {
 		var desiredGen uint64
@@ -849,282 +846,6 @@ func advanceNodeOperationsOnObservation(
 		}
 	}
 
-	// Also advance or hold the "nodes" step on member, entitlement_grant (via entitlement_grants.member_id),
-	// and member_device (via member_devices.member_id) operations (§5.2, §8.1, r13 M-3).
-	reportAcked := report.AppliedConfigGeneration.IsSpecified() &&
-		!report.AppliedConfigGeneration.IsNull() &&
-		appliedGen > 0 &&
-		appliedGen >= desiredNodeGen
-	nodeAcked := desiredNodeGen > 0 && (reportAcked || dbAppliedNodeGen >= desiredNodeGen)
-	cleanReady := reportAcked &&
-		effectiveSafety == api.SafetyStatusPassed &&
-		report.ProvisioningState == api.ProvisioningStateReady &&
-		!hasIsoErr
-	failedClosed := isFailClosedIsolationApplyError(report, effectiveSafety, effectiveForwarding) ||
-		(!effectiveForwarding && !pendingIso && !hasIsoErr && nodeAcked && checkStatus[api.NodeCheckNameInternetOnly] == api.HealthCheckStatusPassed)
-
-	if cleanReady || (reportAcked && pendingIso) || failedClosed {
-		type memberOpCandidate struct {
-			id                  uuid.UUID
-			kind                string
-			resourceType        string
-			resourceID          uuid.UUID
-			requestID           *uuid.UUID
-			memberState         string
-			prevStatus          string
-			prevErrCode         string
-			otherNodePendingIso bool
-		}
-		mRows, err := tx.Query(ctx, `
-			SELECT
-				o.id,
-				o.kind,
-				o.resource_type,
-				o.resource_id,
-				o.request_id,
-				coalesce(m.status, ''),
-				coalesce(o.steps->'nodes'->>'status', ''),
-				coalesce(o.steps->'nodes'->>'error_code', ''),
-				EXISTS (
-					SELECT 1
-					FROM nodes n2
-					JOIN exits ex2 ON ex2.node_id = n2.id
-					WHERE n2.id <> $1
-					  AND n2.lifecycle_state = 'registered'
-					  AND n2.control_status = 'online'
-					  AND n2.last_observed_at IS NOT NULL
-					  AND n2.last_observed_at >= $3::timestamptz - ($4::bigint * interval '1 millisecond')
-					  AND n2.last_seen_at IS NOT NULL
-					  AND n2.last_seen_at >= $2::timestamptz - ($4::bigint * interval '1 millisecond')
-					  AND (coalesce(n2.member_forwarding_observed, false) OR n2.safety_status = 'passed')
-					  AND n2.recent_errors @> '[{"code":"ISOLATION_POLICY_INVALID","stage":"apply"}]'::jsonb
-					  AND EXISTS (
-						SELECT 1
-						FROM exit_groups eg2
-						WHERE eg2.exit_id = ex2.id
-						  AND (
-							(e.projection->'exit_group_ids') ? eg2.group_id::text
-							OR eg2.group_id = ANY(m.member_group_ids)
-							OR (
-								jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
-								AND EXISTS (
-									SELECT 1
-									FROM entitlement_grants eg_m
-									JOIN plan_revisions pr_m ON pr_m.id = eg_m.plan_revision_id
-									WHERE eg_m.member_id = m.id
-									  AND eg_m.revoked_at IS NULL
-									  AND eg2.group_id = ANY(pr_m.exit_group_ids)
-								)
-							)
-						  )
-					  )
-				)
-			FROM operations o
-			LEFT JOIN entitlement_grants g ON o.resource_type = 'entitlement_grant' AND g.id = o.resource_id
-			LEFT JOIN member_devices d ON o.resource_type = 'member_device' AND d.id = o.resource_id
-			LEFT JOIN members m ON m.id = CASE
-				WHEN o.resource_type = 'member' THEN o.resource_id
-				WHEN o.resource_type = 'entitlement_grant' THEN g.member_id
-				WHEN o.resource_type = 'member_device' THEN d.member_id
-			END
-			LEFT JOIN entitlements e ON e.member_id = m.id
-			WHERE o.resource_type IN ('member', 'entitlement_grant', 'member_device')
-			  AND m.id IS NOT NULL
-			  AND o.status IN ('pending', 'running', 'failed', 'partially_succeeded')
-			  AND o.steps->'nodes'->>'status' IN ('pending', 'running', 'failed')
-			  AND (
-				(o.resource_type IN ('member', 'entitlement_grant') AND (o.desired_generation IS NULL OR (e.revision IS NOT NULL AND e.revision >= o.desired_generation)))
-				OR (o.resource_type = 'member_device' AND (o.desired_generation IS NULL OR (d.resource_version IS NOT NULL AND d.resource_version >= o.desired_generation)))
-			  )
-			  AND (
-				o.kind <> 'member.grant'
-				OR NOT EXISTS (
-					SELECT 1 FROM entitlement_grants g2
-					WHERE (g2.operation_id = o.id OR (o.resource_type = 'entitlement_grant' AND g2.id = o.resource_id))
-					  AND g2.valid_from > $2
-				)
-			  )
-			  AND (
-				jsonb_array_length(coalesce(e.projection->'exit_group_ids', '[]'::jsonb)) = 0
-				OR EXISTS (
-					SELECT 1
-					FROM exits ex
-					JOIN exit_groups eg ON eg.exit_id = ex.id
-					WHERE ex.node_id = $1
-					  AND (
-						(e.projection->'exit_group_ids') ? eg.group_id::text
-						OR eg.group_id = ANY(m.member_group_ids)
-					  )
-				)
-			  )
-			ORDER BY o.id ASC
-			FOR UPDATE OF o`, nodeID, now, report.ObservedAt.UTC(), DefaultStaleTimeout.Milliseconds())
-		if err != nil {
-			return err
-		}
-		var memberOps []memberOpCandidate
-		for mRows.Next() {
-			var c memberOpCandidate
-			if err := mRows.Scan(
-				&c.id, &c.kind, &c.resourceType, &c.resourceID, &c.requestID,
-				&c.memberState, &c.prevStatus, &c.prevErrCode, &c.otherNodePendingIso,
-			); err != nil {
-				mRows.Close()
-				return err
-			}
-			if c.requestID != nil && *c.requestID == uuid.Nil {
-				c.requestID = nil
-			}
-			memberOps = append(memberOps, c)
-		}
-		if err := mRows.Err(); err != nil {
-			mRows.Close()
-			return err
-		}
-		mRows.Close()
-
-		for _, op := range memberOps {
-			if reportAcked && pendingIso {
-				// Keep the "nodes" step pending while a conntrack flow delete retry is pending
-				// on the applied generation, surfacing ISOLATION_POLICY_INVALID through the operation read.
-				var stepsBytes, refsBytes []byte
-				if err := tx.QueryRow(ctx, `SELECT steps, coalesce(observed_refs, '{}'::jsonb) FROM operations WHERE id = $1`, op.id).Scan(&stepsBytes, &refsBytes); err != nil {
-					return err
-				}
-				var steps map[string]StoredStep
-				if err := json.Unmarshal(stepsBytes, &steps); err != nil {
-					return err
-				}
-				var refs map[string]any
-				if len(refsBytes) > 0 {
-					_ = json.Unmarshal(refsBytes, &refs)
-				}
-				if refs == nil {
-					refs = map[string]any{}
-				}
-				nodeStep := steps["nodes"]
-				errCode := string(api.ErrorCodeISOLATIONPOLICYINVALID)
-				errMsg := "member_forwarding_unconfirmed"
-				nodeStep.Status = string(api.OperationStepStatusPending)
-				nodeStep.ErrorCode = &errCode
-				nodeStep.ErrorMessage = &errMsg
-				nodeStep.Reason = "conntrack_delete_pending"
-				nodeStep.ObservedAt = &now
-				nodeStep.UpdatedAt = now
-				steps["nodes"] = nodeStep
-				refs["nodes_isolation_pending"] = fmt.Sprintf("report:%s:gen:%d:error:ISOLATION_POLICY_INVALID", report.ReportId, appliedGen)
-
-				newStepsJSON, err := json.Marshal(steps)
-				if err != nil {
-					return err
-				}
-				newRefsJSON, err := json.Marshal(refs)
-				if err != nil {
-					return err
-				}
-				if _, err := tx.Exec(ctx, `
-					UPDATE operations
-					SET steps = $2::jsonb,
-					    observed_refs = $3::jsonb,
-					    updated_at = $4,
-					    resource_version = coalesce(resource_version, 0) + 1
-					WHERE id = $1`, op.id, newStepsJSON, newRefsJSON, now); err != nil {
-					return err
-				}
-				if op.prevErrCode != string(api.ErrorCodeISOLATIONPOLICYINVALID) {
-					opIDCopy := op.id
-					ev, err := audit.NewEvent(audit.Entry{
-						Actor:       audit.Actor{Type: api.AuditEventActorTypeNode, ID: nodeID},
-						Action:      "node.revoke_isolation_pending",
-						Resource:    api.ResourceRef{Type: api.ResourceType(op.resourceType), Id: op.resourceID},
-						Result:      api.AuditEventResultFailed,
-						OperationID: &opIDCopy,
-						RequestID:   op.requestID,
-						Before:      map[string]any{"nodes_step_status": op.prevStatus},
-						After: map[string]any{
-							"nodes_step_status":         string(api.OperationStepStatusPending),
-							"error_code":                string(api.ErrorCodeISOLATIONPOLICYINVALID),
-							"reason":                    "conntrack_delete_pending",
-							"applied_config_generation": strconv.FormatUint(appliedGen, 10),
-							"report_id":                 report.ReportId.String(),
-						},
-						Fields: []string{"nodes_step_status", "error_code", "reason", "applied_config_generation", "report_id"},
-					})
-					if err != nil {
-						return err
-					}
-					if err := audit.AppendEvent(ctx, tx, ev); err != nil {
-						return err
-					}
-				}
-				continue
-			}
-
-			canCompleteOnFailClosed := !cleanReady && failedClosed && (op.prevErrCode == string(api.ErrorCodeISOLATIONPOLICYINVALID) || (nodeAcked && isRevokeMemberOperation(op.kind, op.memberState)))
-			if !cleanReady && !canCompleteOnFailClosed {
-				continue
-			}
-			if op.otherNodePendingIso {
-				continue
-			}
-
-			if op.prevStatus == "failed" {
-				if err := entitlement.TransitionOperation(ctx, tx, op.id, "nodes", api.OperationStepStatusRunning, nil); err != nil {
-					return err
-				}
-			}
-			if _, err := tx.Exec(ctx, `
-				UPDATE operations
-				SET steps = jsonb_set(steps, '{nodes}', (steps->'nodes') - 'error_code' - 'error_message' - 'reason'),
-				    observed_refs = coalesce(observed_refs, '{}'::jsonb) - 'nodes_isolation_pending'
-				WHERE id = $1`, op.id); err != nil {
-				return err
-			}
-			if err := entitlement.TransitionOperation(ctx, tx, op.id, "nodes", api.OperationStepStatusSucceeded, &operations.Evidence{
-				Reference:  "audit_event:" + obsAuditID.String(),
-				ObservedAt: now,
-			}); err != nil {
-				return err
-			}
-			if op.prevErrCode == string(api.ErrorCodeISOLATIONPOLICYINVALID) || canCompleteOnFailClosed {
-				resolution := "conntrack_delete_succeeded"
-				if !cleanReady && canCompleteOnFailClosed {
-					resolution = "node_failed_closed"
-				}
-				genVal := appliedGen
-				if genVal == 0 {
-					genVal = dbAppliedNodeGen
-				}
-				opIDCopy := op.id
-				ev, err := audit.NewEvent(audit.Entry{
-					Actor:       audit.Actor{Type: api.AuditEventActorTypeNode, ID: nodeID},
-					Action:      "node.revoke_isolation_resolved",
-					Resource:    api.ResourceRef{Type: api.ResourceType(op.resourceType), Id: op.resourceID},
-					Result:      api.AuditEventResultSucceeded,
-					OperationID: &opIDCopy,
-					RequestID:   op.requestID,
-					Before: map[string]any{
-						"nodes_step_status": op.prevStatus,
-						"error_code":        op.prevErrCode,
-					},
-					After: map[string]any{
-						"nodes_step_status":         string(api.OperationStepStatusSucceeded),
-						"error_code":                "",
-						"resolution":                resolution,
-						"applied_config_generation": strconv.FormatUint(genVal, 10),
-						"report_id":                 report.ReportId.String(),
-					},
-					Fields: []string{"nodes_step_status", "error_code", "resolution", "applied_config_generation", "report_id"},
-				})
-				if err != nil {
-					return err
-				}
-				if err := audit.AppendEvent(ctx, tx, ev); err != nil {
-					return err
-				}
-			}
-		}
-	}
 	return nil
 }
 
@@ -1158,13 +879,27 @@ func (s *Service) SweepStaleNodes(
 
 	var res StalenessSweepResult
 	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		// Lock the union once in UUID order, then restrict both updates to
+		// that fixed set. Separate ordered updates could still invert the
+		// order between offline and stale subsets or admit new candidates.
+		rows, err := tx.Query(ctx, `SELECT id FROM nodes
+          WHERE control_status IN ('online','stale') AND (last_seen_at IS NULL OR last_seen_at<=$1)
+          ORDER BY id FOR UPDATE`, staleCutoff)
+		if err != nil {
+			return err
+		}
+		lockedNodes, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+		if err != nil {
+			return err
+		}
+
 		// 1. Move online/stale nodes past offlineCutoff to offline.
 		tagOffline, err := tx.Exec(ctx, `
 			UPDATE nodes
 			SET control_status = 'offline',
 			    resource_version = resource_version + 1
-			WHERE control_status IN ('online', 'stale')
-			  AND (last_seen_at IS NULL OR last_seen_at <= $1)`, offlineCutoff)
+			WHERE id=ANY($2) AND control_status IN ('online', 'stale')
+			  AND (last_seen_at IS NULL OR last_seen_at <= $1)`, offlineCutoff, lockedNodes)
 		if err != nil {
 			return err
 		}
@@ -1175,14 +910,14 @@ func (s *Service) SweepStaleNodes(
 			UPDATE nodes
 			SET control_status = 'stale',
 			    resource_version = resource_version + 1
-			WHERE control_status = 'online'
+			WHERE id=ANY($3) AND control_status = 'online'
 			  AND last_seen_at <= $1
-			  AND last_seen_at > $2`, staleCutoff, offlineCutoff)
+			  AND last_seen_at > $2`, staleCutoff, offlineCutoff, lockedNodes)
 		if err != nil {
 			return err
 		}
 		res.MarkedStale = int(tagStale.RowsAffected())
-		return nil
+		return sweepOperationTargets(ctx, tx, now)
 	})
 	return res, err
 }
