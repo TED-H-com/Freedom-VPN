@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -201,70 +202,73 @@ func TestR24_H3_AppliedModelRetainedAcrossWithdrawAndMultiDeviceDeadlineCollapse
 //   - Boot adopts an already-verified serving ruleset on the same boot without
 //     calling Plane.Apply.
 func TestR24_Held_Q1_MonotonicAnchorAndSameBootAdoption(t *testing.T) {
-	r := newRig(t)
-	alignControlClock(r)
-	serveBoundGeneration(t, r)
-	r.manualUsage(t)
+	synctest.Test(t, func(t *testing.T) {
+		r := newRig(t)
+		alignControlClock(r)
+		serveBoundGeneration(t, r)
+		r.manualUsage(t)
+		closeAdoptionControl(t, r)
 
-	in := r.eng.input()
-	in.ProbeRan = true
-	in.ProbeCheck = api.HealthCheckStatusPassed
-	in.ProbeHealth = api.DataHealthHealthy
-	validDec := Decide(in)
-	if !validDec.Serve || len(validDec.Model.Leases) != 1 || validDec.Model.Leases[0].DeadlineMono == nil {
-		t.Fatalf("expected valid Decide to serve with anchored DeadlineMono, got serve=%v reasons=%v errors=%+v", validDec.Serve, validDec.Reasons, validDec.Errors)
-	}
-	window := in.Lease.ExpiresAt.Sub(in.Lease.IssuedAt)
-	if desWindow := in.Desired.ExpiresAt.Sub(in.Lease.IssuedAt); desWindow < window {
-		window = desWindow
-	}
-	if maxOff := time.Duration(in.Lease.MaxOfflineSeconds) * time.Second; maxOff < window {
-		window = maxOff
-	}
-	for _, ml := range in.Lease.Members {
-		if lWindow := ml.LeaseEnd.Sub(in.Lease.IssuedAt); lWindow < window {
-			window = lWindow
+		in := r.eng.input()
+		in.ProbeRan = true
+		in.ProbeCheck = api.HealthCheckStatusPassed
+		in.ProbeHealth = api.DataHealthHealthy
+		validDec := Decide(in)
+		if !validDec.Serve || len(validDec.Model.Leases) != 1 || validDec.Model.Leases[0].DeadlineMono == nil {
+			t.Fatalf("expected valid Decide to serve with anchored DeadlineMono, got serve=%v reasons=%v errors=%+v", validDec.Serve, validDec.Reasons, validDec.Errors)
 		}
-		if mWindow := ml.EffectiveServiceEnd.Sub(in.Lease.IssuedAt); mWindow < window {
-			window = mWindow
+		window := in.Lease.ExpiresAt.Sub(in.Lease.IssuedAt)
+		if desWindow := in.Desired.ExpiresAt.Sub(in.Lease.IssuedAt); desWindow < window {
+			window = desWindow
 		}
-	}
-	for _, db := range in.Desired.DeviceBindings {
-		if dWindow := db.ValidUntil.Sub(in.Lease.IssuedAt); dWindow < window {
-			window = dWindow
+		if maxOff := time.Duration(in.Lease.MaxOfflineSeconds) * time.Second; maxOff < window {
+			window = maxOff
 		}
-	}
-	if want := in.LeaseMonoSent + window; *validDec.Model.Leases[0].DeadlineMono != want {
-		t.Fatalf("DeadlineMono=%s want=%s", *validDec.Model.Leases[0].DeadlineMono, want)
-	}
+		for _, ml := range in.Lease.Members {
+			if lWindow := ml.LeaseEnd.Sub(in.Lease.IssuedAt); lWindow < window {
+				window = lWindow
+			}
+			if mWindow := ml.EffectiveServiceEnd.Sub(in.Lease.IssuedAt); mWindow < window {
+				window = mWindow
+			}
+		}
+		for _, db := range in.Desired.DeviceBindings {
+			if dWindow := db.ValidUntil.Sub(in.Lease.IssuedAt); dWindow < window {
+				window = dWindow
+			}
+		}
+		if want := in.LeaseMonoSent + window; *validDec.Model.Leases[0].DeadlineMono != want {
+			t.Fatalf("DeadlineMono=%s want=%s", *validDec.Model.Leases[0].DeadlineMono, want)
+		}
 
-	in.MonoNow = in.LeaseMonoSent - time.Millisecond
-	dec := Decide(in)
-	if dec.Serve || !hasReason(dec.Reasons, api.ForwardingBlockReasonLeaseExpired) {
-		t.Fatalf("expected ForwardingBlockReasonLeaseExpired when MonoNow < LeaseMonoSent, got serve=%v reasons=%v", dec.Serve, dec.Reasons)
-	}
+		in.MonoNow = in.LeaseMonoSent - time.Millisecond
+		dec := Decide(in)
+		if dec.Serve || !hasReason(dec.Reasons, api.ForwardingBlockReasonLeaseExpired) {
+			t.Fatalf("expected ForwardingBlockReasonLeaseExpired when MonoNow < LeaseMonoSent, got serve=%v reasons=%v", dec.Serve, dec.Reasons)
+		}
 
-	// Same-boot restart adopts without calling Plane.Apply.
-	appliesBefore := r.plane.applies
-	if err := r.eng.Close(); err != nil {
-		t.Fatal(err)
-	}
-	next, err := Start(Options{
-		Config:      r.eng.cfg,
-		Clock:       r.clock,
-		Plane:       r.plane,
-		MeterSource: staticSource{boot: r.eng.bootID.String()},
-		Prober:      passProbe{},
+		// Same-boot restart adopts without calling Plane.Apply.
+		appliesBefore := r.plane.applies
+		if err := r.eng.Close(); err != nil {
+			t.Fatal(err)
+		}
+		next, err := Start(Options{
+			Config:      r.eng.cfg,
+			Clock:       r.clock,
+			Plane:       r.plane,
+			MeterSource: staticSource{boot: r.eng.bootID.String()},
+			Prober:      passProbe{},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = next.Close() }()
+		if err := next.Boot(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		if !next.serving || r.plane.applies != appliesBefore {
+			t.Fatalf("same-boot Boot did not adopt without Apply: serving=%v applies=%d->%d",
+				next.serving, appliesBefore, r.plane.applies)
+		}
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = next.Close() }()
-	if err := next.Boot(context.Background()); err != nil {
-		t.Fatal(err)
-	}
-	if !next.serving || r.plane.applies != appliesBefore {
-		t.Fatalf("same-boot Boot did not adopt without Apply: serving=%v applies=%d->%d",
-			next.serving, appliesBefore, r.plane.applies)
-	}
 }
