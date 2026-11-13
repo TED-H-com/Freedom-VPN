@@ -135,6 +135,14 @@ func backupWriterNeedsReview(writer string, args []backupShellWord) bool {
 				return true
 			}
 		}
+		// A computed format could introduce %n even if its source word does
+		// not contain it. Ordinary printf data arguments are not formats.
+		if len(args) > 0 && args[0].text == "--" {
+			args = args[1:]
+		}
+		if len(args) > 0 && (!args[0].complete || strings.ContainsAny(args[0].raw, "$`")) {
+			return true
+		}
 		return false
 	}
 	if writer == "getopts" {
@@ -384,6 +392,7 @@ func TestAT30_BackupEnvironmentConstructs(t *testing.T) {
 		`while true; do read -r "$name"; done`, `if true; then read -r "$name"; fi`,
 		`read -d '' -a "$name"`, `read -Z destination`, `local "destination"=value`,
 		`read -r <<<C "$name"`, `IFS= read <"$input" "$name"`,
+		`printf "$format" "$name"`,
 	} {
 		t.Run(line, func(t *testing.T) {
 			if !backupNeedsEnvironmentReview(line) {
