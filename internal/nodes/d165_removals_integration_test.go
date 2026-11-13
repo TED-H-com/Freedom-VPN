@@ -337,6 +337,23 @@ func TestD165_T18_RemovalAckCaptureInterleavings(t *testing.T) {
 					t.Fatal("observation", err)
 				}
 			}
+			// db.InTx retries deadlocks. Detect a reversed lock order even when
+			// that retry recovers the operation: flush this isolated database's
+			// idle backends, then read its cumulative deadlock counter.
+			for _, conn := range w.r.Pool.AcquireAllIdle(ctx) {
+				_, flushErr := conn.Exec(ctx, `SELECT pg_stat_force_next_flush()`)
+				conn.Release()
+				if flushErr != nil {
+					t.Fatal(flushErr)
+				}
+			}
+			var deadlocks int
+			if err = w.r.Pool.QueryRow(ctx, `SELECT deadlocks FROM pg_stat_database WHERE datname=current_database()`).Scan(&deadlocks); err != nil {
+				t.Fatal(err)
+			}
+			if deadlocks != 0 {
+				t.Fatalf("D165 removal/capture lock order caused %d database deadlocks", deadlocks)
+			}
 			w.wantStep(op, true)
 			d165RemovalCount(t, w, "device", w.device, 0)
 			if first == "observation" {
