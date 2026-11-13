@@ -271,13 +271,13 @@ func TestReviewR15_AwaitingMemberGrantsReportIsNotAFailure(t *testing.T) {
 	var targetGeneration decstr.U64
 	var targetIncarnation uuid.UUID
 	var present bool
-	var outcome string
+	var outcome, targetReason string
 	readTarget := func(phase string) {
 		t.Helper()
-		if err := r.Pool.QueryRow(ctx, `SELECT incarnation_id,generation::text,subject_present,outcome FROM node_operation_targets WHERE operation_id=$1 AND node_id=$2`, *out.OperationID, nodeID).Scan(&targetIncarnation, &targetGeneration, &present, &outcome); err != nil {
+		if err := r.Pool.QueryRow(ctx, `SELECT incarnation_id,generation::text,subject_present,outcome,coalesce(reason,'') FROM node_operation_targets WHERE operation_id=$1 AND node_id=$2`, *out.OperationID, nodeID).Scan(&targetIncarnation, &targetGeneration, &present, &outcome, &targetReason); err != nil {
 			t.Fatalf("%s revoke target: %v", phase, err)
 		}
-		t.Logf("%s revoke target: operation_id=%s node_id=%s incarnation_id=%s generation=%s subject_present=%v outcome=%s", phase, *out.OperationID, nodeID, targetIncarnation, targetGeneration, present, outcome)
+		t.Logf("%s revoke target: operation_id=%s node_id=%s incarnation_id=%s generation=%s subject_present=%v outcome=%s reason=%s", phase, *out.OperationID, nodeID, targetIncarnation, targetGeneration, present, outcome, targetReason)
 	}
 	readTarget("before report")
 	if targetIncarnation != incID || present || outcome != "pending" {
@@ -294,6 +294,9 @@ func TestReviewR15_AwaitingMemberGrantsReportIsNotAFailure(t *testing.T) {
 	readTarget("after report")
 	if outcome != "acknowledged" {
 		t.Fatalf("provisional report did not acknowledge revoke target: outcome=%s", outcome)
+	}
+	if targetReason != "clean_ready" {
+		t.Fatalf("provisional report revoke target reason=%s, want clean_ready", targetReason)
 	}
 	var reportID uuid.UUID
 	if err = r.Pool.QueryRow(ctx, `SELECT report_id FROM node_operation_targets WHERE operation_id=$1 AND node_id=$2`, *out.OperationID, nodeID).Scan(&reportID); err != nil || reportID != rep.ReportId {
