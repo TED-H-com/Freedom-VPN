@@ -27,6 +27,7 @@ the exact old and new text and its source evidence.
 | Guide | Correction and boundary |
 |---|---|
 | [Deployment](deploy.md) | Enrollment returns `node_incarnation_id`; the serving list is `minimum_serving_version.serving_release_ids`. Two dedicated resolvers remain the specification's recommended starting point for resilience (§12.2); the code accepts one resolver, which has no redundancy. See the [API contract](../../contracts/openapi.yaml), [release-support schema](../../contracts/schemas/policies/release-support-payload.schema.json), [node configuration](../../internal/config/nodes.go) and [resolver applier](../../node/dns/applier.go). |
+| [Deployment](deploy.md) | At the conntrack retry bound or with `conntrack` missing after preflight, the agent stops serving and attempts the baseline. Forwarding reasons include `safety_check_failed`; `ISOLATION_POLICY_INVALID` with the conntrack detail requires the baseline to be in force, otherwise `internet_only` reports `ISOLATION_BASELINE_MISSING`, meaning isolation is not confirmed. A retained Apply failure withholds generation acknowledgement. See [agent enforcement](../../node/agent/engine.go) and [agent checks](../../node/agent/decide.go). |
 | [Calibration](calibration.md) | Fair-use status comes through `GetMemberStatus` / `GetAdminMemberStatus`, with the enforce-mode ack-reader check, and the usage query carries `api.FairUseStatus`. Both guides identify `anonymousLim`, `classify`, the inline request middleware, `walkChecked`, `checkLargeJSON` and `identityFieldMatches`. Bodies up to `canonjson.MaxBytes` pass `canonjson.Canonicalize`; only on the agent mTLS listener do those bodies also pass `walkChecked` with an identity callback. Larger bodies use `checkLargeJSON`, with streamable schema checks in the same walk. See the [FUP engine](../../internal/fup/engine.go), [usage query](../../internal/usage/queries.go), [middleware](../../internal/httpapi/middleware.go) and [JSON walker](../../internal/httpapi/jsondoc.go). |
 | [Restore drill](restore-drill.md) | Step 3.2 keeps its restricted-recovery-startup gap notice once. The gap and the recovery ordering remain unchanged. |
 | [Operator guide](operator-guide.md) | Corrects `meter_path`, token-file selection, the executor call, loopback evidence and datapath fields, `addrID` revocation identity, and combined `verifyServing` read-back. The conntrack bound counts durably reserved serving-Apply delete batches, including slots consumed before deletion; it is not a count of consecutive failed commands. See [token intake](../node/install.md#token-intake-182-enr03), [enforcement](../../node/enforce/apply.go) and [revocation accounting](../../node/agent/revocation.go). |
@@ -58,7 +59,7 @@ acceptance records retain their original scope. This cut supplies no missing
 procedure and closes no product or acceptance gap.
 
 The [pre-cut provenance](../../tests/handover/testdata/followup52-snapshots.json)
-pins exact copies from `6972be03`. The claims check permits 81 named edits across
+pins exact copies from `6972be03`. The claims check permits 82 named edits across
 14 source documents, preserves headings and historical passages, resolves
 relative links and heading anchors, and keeps earlier assertions against frozen
 inputs. [Prior assertion provenance](../../tests/handover/testdata/followup52-prior-assertions.json)

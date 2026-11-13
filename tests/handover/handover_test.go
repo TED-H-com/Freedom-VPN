@@ -19629,10 +19629,10 @@ func TestHandover_Followup52Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-52.md", "53bb9b322de320f92e2b5692ecf13b3921b429594dfd0fe84bae78acb04e3d6b", 10421},
+		{"docs/handover/follow-up-52.md", "341844c189f2e7d3622334cb07d5da6d428f8241c82726fe5b399d094eacd09f", 10980},
 		{"tests/handover/testdata/followup52-main.json", "714db17f0ea0346c47debba55fb8d65e079dee1d8735bce5f5fb037be5112204", 598},
 		{"tests/handover/testdata/followup52-snapshots.json", "e4b88ad998436a49fa9cfec2135fe913891232c8067d956ced873471ff3afa91", 4368},
-		{"tests/handover/testdata/followup52-edits.json", "d2617e28879962f2a8bf8414f8620fa83fef1015d5e2dc0444e0813d2177b55a", 111423},
+		{"tests/handover/testdata/followup52-edits.json", "1c071d05a6ebc79ec6979df762c34fb884798bf4b3a24ddc288bda19252913b0", 114700},
 		{"tests/handover/testdata/followup52-prior-assertions.json", "4f762fd5e6f9e62c21c0b7ed3c83bba28838a17e6057ca6bbce246ba46cba398", 2736},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
@@ -19707,7 +19707,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup52-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 81 {
+		if len(edits) != 82 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
@@ -19838,6 +19838,31 @@ func TestHandover_Followup52Claims(t *testing.T) {
 			})
 		}
 		t.Logf("Checked 29 scoped statement forms covering 14 review findings")
+	})
+	t.Run("reviewed_deployment_statements", func(t *testing.T) {
+		guide := readOwnedDoc(t, root, "docs/handover/deploy.md")
+		var places []string
+		for _, line := range strings.Split(guide, "\n") {
+			if strings.HasPrefix(line, "- **`conntrack`**") {
+				places = append(places, line)
+			}
+		}
+		if len(places) != 1 {
+			t.Fatalf("expected one deployment conntrack paragraph, got %d", len(places))
+		}
+		for _, c := range []struct{ Name, Current, Old string }{
+			{"baseline_attempt", "At **12 reserved batches** (`maxConntrackDeleteAttempts = 12`), including a stored count of 12 after restart, or if `conntrack` is missing after preflight, the agent stops serving and attempts the fail-closed baseline.", "the agent fails isolation closed and installs the baseline"},
+			{"accumulated_reasons", "In this conntrack-blocked state, `member_forwarding_enabled=false`, `safety_status=failed`, and `forwarding_block_reasons` includes `safety_check_failed`.", "forwarding_block_reasons=[\"safety_check_failed\"]"},
+			{"conditional_detail", "With the baseline in force, `internet_only=failed` reports `ISOLATION_POLICY_INVALID` with the conntrack detail (`Conntrack delete exceeded the retry bound.` at the bound); otherwise it reports `ISOLATION_BASELINE_MISSING`, meaning isolation is not confirmed.", "At the bound the check detail is `Conntrack delete exceeded the retry bound.`"},
+			{"retained_apply_ack", "For a retained Apply failure, the agent attempts the fail-closed baseline and does not acknowledge the generation while the failure is retained.", "Any unverified apply error or non-conntrack failure also withdraws to the fail-closed baseline."},
+		} {
+			t.Run(c.Name, func(t *testing.T) {
+				if !strings.Contains(places[0], c.Current) || strings.Contains(places[0], c.Old) {
+					t.Errorf("reviewed deployment statement regressed: %s", c.Name)
+				}
+			})
+		}
+		t.Logf("Checked 4 scoped deployment statement forms across 3 corrected passages")
 	})
 	checkLinks := func(t *testing.T, sources []struct{ doc, text string }) {
 		t.Helper()
