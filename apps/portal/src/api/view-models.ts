@@ -111,13 +111,19 @@ export interface WithEtag<T> {
 }
 
 export type NodeSummaryPhraseKey =
-  | 'online_serving'
+  | 'revoked_not_serving'
+  | 'enrolling_not_serving'
+  | 'offline_route_withdrawn_unconfirmed'
+  | 'offline_unconfirmed'
+  | 'stale_unconfirmed'
   | 'online_safety_failed_not_serving'
+  | 'online_safety_expired_not_serviceable'
   | 'online_disabled_not_serving'
   | 'ready_unpublished_not_serving'
-  | 'offline_route_withdrawn_unconfirmed'
+  | 'online_unpublished_not_ready_not_serving'
   | 'rolled_back_serving'
-  | 'revoked_not_serving';
+  | 'online_serving'
+  | 'online_published_not_serviceable';
 
 export interface NodeHealthDimensionsViewModel {
   control_online: boolean;
@@ -164,36 +170,45 @@ export function deriveNodeSummaryPhrase(
   if (node.lifecycle_state === 'revoked' || node.lifecycle_state === 'retired') {
     return 'revoked_not_serving';
   }
-  if (node.safety_status === 'failed' || node.safety_status === 'expired') {
-    return 'online_safety_failed_not_serving';
+  if (node.lifecycle_state === 'enrolling') {
+    return 'enrolling_not_serving';
   }
   if (node.control_status === 'offline' && node.publication_observed === 'withdrawn') {
     return 'offline_route_withdrawn_unconfirmed';
   }
+  if (node.control_status === 'offline') {
+    return 'offline_unconfirmed';
+  }
+  if (node.control_status === 'stale') {
+    return 'stale_unconfirmed';
+  }
+  if (node.safety_status === 'failed') {
+    return 'online_safety_failed_not_serving';
+  }
+  if (node.safety_status === 'expired') {
+    return 'online_safety_expired_not_serviceable';
+  }
   if (node.publication_intent === 'disabled') {
     return 'online_disabled_not_serving';
   }
-  if (node.publication_intent === 'unpublished') {
+  if (node.publication_intent === 'unpublished' && node.provisioning_state === 'ready') {
     return 'ready_unpublished_not_serving';
   }
+  if (node.publication_intent === 'unpublished') {
+    return 'online_unpublished_not_ready_not_serving';
+  }
   const serviceable = isNodeServiceable(node);
-  if (
-    serviceable &&
-    (node.update?.state === 'rolled_back' ||
-      (node.releases.desired_release_id &&
-        node.releases.current_release_id &&
-        node.releases.desired_release_id !== node.releases.current_release_id))
-  ) {
+  if (serviceable && node.update?.state === 'rolled_back') {
     return 'rolled_back_serving';
   }
   if (serviceable) {
     return 'online_serving';
   }
-  return 'ready_unpublished_not_serving';
+  return 'online_published_not_serviceable';
 }
 
 export interface AdminOverviewViewModel {
-  as_of: string;
+  as_of: string | null;
   available_exits_count: number;
   total_nodes_count: number;
   control_online_count: number;
@@ -215,10 +230,16 @@ export function buildAdminOverviewViewModel(
   const nodeItems = nodes.items;
   const memberItems = members.items;
 
-  let latestSeen = '2026-10-28T15:00:00Z';
+  let latestSeen: string | null = null;
+  let latestSeenMs: number | null = null;
   for (const n of nodeItems) {
-    if (n.last_seen_at && n.last_seen_at > latestSeen) {
+    if (!n.last_seen_at) {
+      continue;
+    }
+    const ms = Date.parse(n.last_seen_at);
+    if (!Number.isNaN(ms) && (latestSeenMs === null || ms > latestSeenMs)) {
       latestSeen = n.last_seen_at;
+      latestSeenMs = ms;
     }
   }
 

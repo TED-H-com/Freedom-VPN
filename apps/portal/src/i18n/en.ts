@@ -120,7 +120,8 @@ export const en: Record<TranslationKey, string> = {
   'admin.overview.title': 'Fleet Operations Overview',
   'admin.overview.subtitle':
     'Displays exit availability, control connectivity, isolation safety, update progress, and member entitlements separately; never uses a single green dot for overall health (§16.5, §18.1).',
-  'admin.overview.asOf': 'Data last updated (UTC): {asOf}',
+  'admin.overview.asOf': 'Latest node report (UTC): {asOf}',
+  'admin.overview.asOfNone': 'No node report yet',
   'admin.overview.card.availableExits': 'Serviceable Exit Nodes',
   'admin.overview.card.availableExitsDesc':
     'Passing identity, publication intent, provisioning, isolation safety, and supported release checks (§5.1)',
@@ -128,8 +129,7 @@ export const en: Record<TranslationKey, string> = {
   'admin.overview.card.controlBreakdown':
     'Online {online} / Stale {stale} / Offline {offline}',
   'admin.overview.card.safetyFailed': 'Isolation or Safety Check Failed',
-  'admin.overview.card.safetyFailedDesc':
-    'Control online, but member forwarding disabled fail-closed',
+  'admin.overview.card.safetyFailedDesc': 'Nodes whose isolation check failed or expired',
   'admin.overview.card.enrollmentsPending': 'Pending Enrollments or Failed Provisioning',
   'admin.overview.card.enrollmentsPendingDesc':
     'Nodes still enrolling or failing local setup',
@@ -166,15 +166,24 @@ export const en: Record<TranslationKey, string> = {
   'node.summary.online_serving': 'Online, actively serving exit traffic',
   'node.summary.online_safety_failed_not_serving':
     'Online, isolation check failed, not serving traffic',
+  'node.summary.online_safety_expired_not_serviceable':
+    'Online, isolation check expired, serving conditions not met',
   'node.summary.online_disabled_not_serving':
     'Online, disabled by admin, not serving traffic',
   'node.summary.ready_unpublished_not_serving':
     'Provisioned ready, unpublished, not serving traffic',
+  'node.summary.online_unpublished_not_ready_not_serving':
+    'Online, provisioning not ready, unpublished, not serving traffic',
+  'node.summary.online_published_not_serviceable':
+    'Online, published, not all serving conditions met',
   'node.summary.offline_route_withdrawn_unconfirmed':
     'Central routes withdrawn; device revocation unconfirmed / bounded by lease',
+  'node.summary.offline_unconfirmed': 'Offline, current serving state unconfirmed',
+  'node.summary.stale_unconfirmed': 'Reports late, current serving state unconfirmed',
   'node.summary.rolled_back_serving':
     'Online, update rolled back to verified last_good release',
   'node.summary.revoked_not_serving': 'Machine identity permanently revoked, not serving',
+  'node.summary.enrolling_not_serving': 'Enrolling, not serving traffic',
 
   // Admin Node Detail (§18.1, §18.3)
   'admin.nodeDetail.back': '← Back to Nodes List',

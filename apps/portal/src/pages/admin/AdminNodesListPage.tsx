@@ -53,9 +53,9 @@ export function AdminNodesListPage(): React.ReactElement {
   const renderSummaryPhrase = (node: NodeSummaryItem) => {
     const phraseCode = deriveNodeSummaryPhrase(node);
     const key = `node.summary.${phraseCode}` as TranslationKey;
-    const isServing =
-      phraseCode === 'online_serving' || phraseCode === 'rolled_back_serving';
-    const isWarning = phraseCode === 'rolled_back_serving';
+    const isServing = phraseCode === 'online_serving';
+    const isWarning =
+      phraseCode === 'rolled_back_serving' || phraseCode === 'stale_unconfirmed';
     return (
       <span
         className={`badge ${
