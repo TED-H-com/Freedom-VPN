@@ -62,7 +62,7 @@ func (r *Runtime) desiredStateCompiler(signer desiredstate.Signer, opts ...desir
 // CompileControlState compiles current DB policy, entitlement and update inputs
 // in one transaction. A valid unchanged envelope retains its generation and ETag.
 func (r *Runtime) CompileControlState(ctx context.Context, node, incarnation uuid.UUID) (out desiredstate.CompiledDesiredState, err error) {
-	err = commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+	err = commandtx.InCompileTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
 		ctx = commandtx.WithTransaction(ctx, tx)
 		var publication api.PublicationIntent
 		var current uuid.UUID

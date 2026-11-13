@@ -124,6 +124,13 @@ func (s *Service) SubmitObservation(
 			return apierr.New(apierr.IncarnationMismatch, "node incarnation has been superseded by a newer incarnation")
 		}
 
+		// D-167: compare compile and ACK boundaries on the database clock.
+		// Keep the service receipt clock for the existing projections/API.
+		var databaseReceivedAt time.Time
+		if err := tx.QueryRow(ctx, `SELECT clock_timestamp()`).Scan(&databaseReceivedAt); err != nil {
+			return err
+		}
+
 		var mappingFrozen bool
 		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM node_identity_endpoints WHERE incarnation_id=$1 AND mapping_frozen)`, authIncarnationID).Scan(&mappingFrozen); err != nil {
 			return err
@@ -415,7 +422,7 @@ func (s *Service) SubmitObservation(
 		if err := tx.QueryRow(ctx, `SELECT id FROM node_observations WHERE node_id=$1 AND incarnation_id=$2 AND report_id=$3`, authNodeID, authIncarnationID, report.ReportId).Scan(&observationID); err != nil {
 			return err
 		}
-		if err := observeOperationTargets(ctx, tx, authNodeID, report, effectiveSafety, effectiveForwarding, receivedAt, "node_observation:"+observationID.String()); err != nil {
+		if err := observeOperationTargets(ctx, tx, authNodeID, report, effectiveSafety, effectiveForwarding, receivedAt, databaseReceivedAt, "node_observation:"+observationID.String()); err != nil {
 			return err
 		}
 
@@ -872,13 +879,27 @@ func (s *Service) SweepStaleNodes(
 
 	var res StalenessSweepResult
 	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		// Lock the union once in UUID order, then restrict both updates to
+		// that fixed set. Separate ordered updates could still invert the
+		// order between offline and stale subsets or admit new candidates.
+		rows, err := tx.Query(ctx, `SELECT id FROM nodes
+          WHERE control_status IN ('online','stale') AND (last_seen_at IS NULL OR last_seen_at<=$1)
+          ORDER BY id FOR UPDATE`, staleCutoff)
+		if err != nil {
+			return err
+		}
+		lockedNodes, err := pgx.CollectRows(rows, pgx.RowTo[uuid.UUID])
+		if err != nil {
+			return err
+		}
+
 		// 1. Move online/stale nodes past offlineCutoff to offline.
 		tagOffline, err := tx.Exec(ctx, `
 			UPDATE nodes
 			SET control_status = 'offline',
 			    resource_version = resource_version + 1
-			WHERE control_status IN ('online', 'stale')
-			  AND (last_seen_at IS NULL OR last_seen_at <= $1)`, offlineCutoff)
+			WHERE id=ANY($2) AND control_status IN ('online', 'stale')
+			  AND (last_seen_at IS NULL OR last_seen_at <= $1)`, offlineCutoff, lockedNodes)
 		if err != nil {
 			return err
 		}
@@ -889,9 +910,9 @@ func (s *Service) SweepStaleNodes(
 			UPDATE nodes
 			SET control_status = 'stale',
 			    resource_version = resource_version + 1
-			WHERE control_status = 'online'
+			WHERE id=ANY($3) AND control_status = 'online'
 			  AND last_seen_at <= $1
-			  AND last_seen_at > $2`, staleCutoff, offlineCutoff)
+			  AND last_seen_at > $2`, staleCutoff, offlineCutoff, lockedNodes)
 		if err != nil {
 			return err
 		}

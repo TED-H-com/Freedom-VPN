@@ -76,14 +76,15 @@ func captureRemovalTargetsTx(ctx context.Context, tx pgx.Tx, ids []uuid.UUID) er
 	return nil
 }
 
-func acknowledgeSubjectRemovals(ctx context.Context, tx pgx.Tx, node uuid.UUID, generation string, now time.Time) error {
+func acknowledgeSubjectRemovals(ctx context.Context, tx pgx.Tx, node, incarnation uuid.UUID, generation string, now time.Time) error {
 	// Lock all qualifying rows in the same order as capture and compilation. The
 	// DELETE and following target read are separate statements (READ COMMITTED).
 	_, err := tx.Exec(ctx, `WITH acknowledged AS MATERIALIZED (
  SELECT node_id,subject_type,subject_id FROM node_subject_removals
  WHERE node_id=$1 AND generation<=$2::numeric AND compiled_at<=$3
+ AND EXISTS(SELECT 1 FROM desired_states WHERE node_id=$1 AND incarnation_id=$4 AND generation=$2::numeric)
  ORDER BY node_id,subject_type,subject_id FOR UPDATE)
  DELETE FROM node_subject_removals r USING acknowledged a
- WHERE r.node_id=a.node_id AND r.subject_type=a.subject_type AND r.subject_id=a.subject_id`, node, generation, now)
+ WHERE r.node_id=a.node_id AND r.subject_type=a.subject_type AND r.subject_id=a.subject_id`, node, generation, now, incarnation)
 	return err
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/audit"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
+	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/internal/operations"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
@@ -58,12 +59,17 @@ func BeginOperationCapture(ctx context.Context, pool *pgxpool.Pool, event db.Cla
 	}
 	var ids []uuid.UUID
 	err = pgx.BeginFunc(ctx, conn, func(tx pgx.Tx) error {
+		// The first statement drains pre-change compiles before linking/selection.
+		if err := commandtx.ExclusiveCompileFence(ctx, tx); err != nil {
+			return err
+		}
 		rows, err := tx.Query(ctx, `SELECT o.id,CASE WHEN o.resource_type='member_device' THEN 'device' ELSE 'member' END,
    CASE WHEN o.resource_type='member_device' THEN o.resource_id ELSE $1 END
    FROM operations o LEFT JOIN entitlement_grants g ON o.resource_type='entitlement_grant' AND g.id=o.resource_id
    WHERE o.kind IN ('member.update','member.suspend','member.unsuspend','member.grant','member.grant_revoke','member.device_authorize','member.device_revoke')
-   AND o.status IN ('pending','running','failed','partially_succeeded')
-   AND ($2::uuid IS NOT NULL OR o.status IN ('pending','running')) AND o.steps->'nodes'->>'status'<>'succeeded'
+   AND (EXISTS(SELECT 1 FROM node_operation_captures c WHERE c.operation_id=o.id AND c.captured_at IS NULL)
+     OR (o.status IN ('pending','running','failed','partially_succeeded')
+      AND ($2::uuid IS NOT NULL OR o.status IN ('pending','running')) AND o.steps->'nodes'->>'status'<>'succeeded'))
    AND (($2::uuid IS NOT NULL AND o.id=$2 AND o.resource_type='member_device' AND o.resource_id=$4) OR
     ($2::uuid IS NULL AND ((o.resource_type='member' AND o.resource_id=$1) OR g.member_id=$1)
      AND o.desired_generation<=$3::numeric AND (o.kind<>'member.grant' OR g.valid_from<=clock_timestamp())))
@@ -131,6 +137,10 @@ func RecordOperationTargetsTx(ctx context.Context, tx pgx.Tx, node, incarnation 
 // FinishOperationCaptureTx is called in the worker's policy receipt transaction.
 // An empty captured set is evidence too; an incomplete capture cannot complete.
 func FinishOperationCaptureTx(ctx context.Context, tx pgx.Tx, now time.Time) error {
+	// Must be the receipt transaction's first statement, before any row lock.
+	if err := commandtx.ExclusiveCompileFence(ctx, tx); err != nil {
+		return err
+	}
 	ids, _ := ctx.Value(operationCaptureKey{}).([]uuid.UUID)
 	if len(ids) == 0 {
 		return nil
@@ -152,7 +162,7 @@ func FinishOperationCaptureTx(ctx context.Context, tx pgx.Tx, now time.Time) err
 	return nil
 }
 
-func observeOperationTargets(ctx context.Context, tx pgx.Tx, node uuid.UUID, report api.ObservationReport, safety api.SafetyStatus, forwarding bool, now time.Time, observationRef string) error {
+func observeOperationTargets(ctx context.Context, tx pgx.Tx, node uuid.UUID, report api.ObservationReport, safety api.SafetyStatus, forwarding bool, now, databaseReceivedAt time.Time, observationRef string) error {
 	generation, _ := report.AppliedConfigGeneration.Get()
 	_, hasIso := hasIsolationApplyError(report)
 	_, pending := isPendingIsolationApplyError(report, forwarding)
@@ -165,12 +175,13 @@ func observeOperationTargets(ctx context.Context, tx pgx.Tx, node uuid.UUID, rep
 	}
 	closed := isFailClosedIsolationApplyError(report, safety, forwarding) || (!forwarding && !pending && !hasIso && internetOnly)
 	if clean || closed {
-		if err := acknowledgeSubjectRemovals(ctx, tx, node, generation.String(), now); err != nil {
+		if err := acknowledgeSubjectRemovals(ctx, tx, node, report.NodeIncarnationId, generation.String(), databaseReceivedAt); err != nil {
 			return err
 		}
 	}
-	rows, err := tx.Query(ctx, `SELECT operation_id,subject_present,coalesce(error_code,''),outcome,generation<=$2::numeric AND compiled_at<=$3 FROM node_operation_targets
-  WHERE node_id=$1 ORDER BY operation_id FOR UPDATE`, node, generation.String(), now)
+	rows, err := tx.Query(ctx, `SELECT operation_id,subject_present,coalesce(error_code,''),outcome,generation<=$2::numeric AND compiled_at<=$3
+ AND EXISTS(SELECT 1 FROM desired_states WHERE node_id=$1 AND incarnation_id=$4 AND generation=$2::numeric) FROM node_operation_targets
+  WHERE node_id=$1 ORDER BY operation_id FOR UPDATE`, node, generation.String(), databaseReceivedAt, report.NodeIncarnationId)
 	if err != nil {
 		return err
 	}
