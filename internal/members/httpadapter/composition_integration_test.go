@@ -83,12 +83,13 @@ func TestAPI01_CompositionRejectsOverlappingAuthorityAndMissingSettings(t *testi
 	if _, e := control.Servers(t.Context(), control.Dependencies{}, handler, second); e == nil || !strings.Contains(e.Error(), "Agents") {
 		t.Fatal("duplicate authority accepted", e)
 	}
+	// Use billing.reconcile, whose production catalog peak is one connection.
 	job := worker.Domain{Name: "one", Build: func(context.Context, worker.Dependencies) (worker.Built, error) {
-		return worker.Built{Jobs: worker.Registry{"TEST.event": func(context.Context, db.ClaimedEvent) (string, error) { return "test", nil }}}, nil
+		return worker.Built{Jobs: worker.Registry{"billing.reconcile": func(context.Context, db.ClaimedEvent) (string, error) { return "test", nil }}}, nil
 	}}
 	other := job
 	other.Name = "two"
-	if _, e := worker.Open(t.Context(), worker.Dependencies{}, job, other); e == nil || !strings.Contains(e.Error(), "duplicate worker event") {
+	if _, e := worker.Open(t.Context(), worker.Dependencies{Config: config.Defaults()}, job, other); e == nil || !strings.Contains(e.Error(), "duplicate worker event") {
 		t.Fatal("duplicate event accepted", e)
 	}
 	for _, path := range []string{"", filepath.Join(t.TempDir(), "missing.json")} {
@@ -170,16 +171,17 @@ func TestAPI01_CompositionWorkerContextAndRunnerSupervision(t *testing.T) {
 	type valueKey struct{}
 	id := uuid.New()
 	if e := db.InTx(t.Context(), f.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		return db.EnqueueOutbox(t.Context(), tx, db.OutboxEvent{ID: id, AggregateID: uuid.New(), AggregateType: "TEST ONLY", AggregateVersion: "1", EventType: "TEST.context", SchemaVersion: 1, Payload: []byte(`{}`)})
+		return db.EnqueueOutbox(t.Context(), tx, db.OutboxEvent{ID: id, AggregateID: uuid.New(), AggregateType: "TEST ONLY", AggregateVersion: "1", EventType: "billing.reconcile", SchemaVersion: 1, Payload: []byte(`{}`)})
 	}); e != nil {
 		t.Fatal(e)
 	}
 	observed := false
+	// Reuse the one-connection billing.reconcile registration for this context probe.
 	jobs := worker.Domain{Name: "TEST-context", Build: func(_ context.Context, d worker.Dependencies) (worker.Built, error) {
 		if d.Metrics == nil || d.Pool != f.pool || d.Config.WorkerAttempts != f.config.WorkerAttempts {
 			return worker.Built{}, errors.New("incomplete worker build dependencies")
 		}
-		return worker.Built{Context: func(ctx context.Context) context.Context { return context.WithValue(ctx, valueKey{}, "TEST ONLY") }, Jobs: worker.Registry{"TEST.context": func(ctx context.Context, e db.ClaimedEvent) (string, error) {
+		return worker.Built{Context: func(ctx context.Context) context.Context { return context.WithValue(ctx, valueKey{}, "TEST ONLY") }, Jobs: worker.Registry{"billing.reconcile": func(ctx context.Context, e db.ClaimedEvent) (string, error) {
 			if ctx.Value(valueKey{}) != "TEST ONLY" || e.ID != id {
 				return "", errors.New("missing worker context")
 			}
@@ -216,7 +218,10 @@ func TestAPI01_CompositionWorkerContextAndRunnerSupervision(t *testing.T) {
 				run = func(ctx context.Context) error { return control.Run(ctx, a) }
 			} else {
 				a, e := worker.Open(t.Context(), worker.Dependencies{Config: f.config, Pool: f.pool}, worker.Domain{Name: "TEST-runners", Build: func(context.Context, worker.Dependencies) (worker.Built, error) {
-					return worker.Built{Runners: runners}, nil
+					return worker.Built{RunnerRegistrations: []worker.Runner{
+						{Name: "members.schedule", Peak: 1, Run: runners[0]},
+						{Name: "dns.schedule", Peak: 1, Run: runners[1]},
+					}}, nil
 				}})
 				if e != nil {
 					t.Fatal(e)
@@ -269,7 +274,7 @@ func TestAPI01_CompositionBoundsRunnerShutdown(t *testing.T) {
 				run = func(ctx context.Context) error { return control.Run(ctx, app) }
 			} else {
 				app, e := worker.Open(t.Context(), worker.Dependencies{Config: c, Pool: f.pool}, worker.Domain{Name: "TEST-timeout", Build: func(context.Context, worker.Dependencies) (worker.Built, error) {
-					return worker.Built{Runners: []func(context.Context) error{runner}}, nil
+					return worker.Built{RunnerRegistrations: []worker.Runner{{Name: "nodes.schedule", Peak: 1, Run: runner}}}, nil
 				}})
 				if e != nil {
 					t.Fatal(e)
