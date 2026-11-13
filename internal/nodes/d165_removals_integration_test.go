@@ -5,12 +5,15 @@ package nodes_test
 import (
 	"context"
 	"encoding/json"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/apps/worker"
 	"github.com/TED-H-com/Freedom-VPN/internal/auth"
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
+	"github.com/TED-H-com/Freedom-VPN/internal/enrollment"
+	"github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest"
 	"github.com/TED-H-com/Freedom-VPN/internal/policies"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases"
 	"github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest"
@@ -287,21 +290,33 @@ func TestD165_T18_RemovalAckCaptureInterleavings(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer func() { _ = blocker.Rollback(context.Background()) }()
-			if first == "observation" {
-				if _, err = w.r.Nodes.SubmitObservationTx(ctx, blocker, report.NodeId, report.NodeIncarnationId, report); err != nil {
-					t.Fatal(err)
-				}
-			} else {
-				if _, err = blocker.Exec(ctx, `SELECT id FROM operations WHERE id=$1 FOR UPDATE`, op); err != nil {
-					t.Fatal(err)
-				}
-			}
+			compiled := make(chan error, 1)
+			var once sync.Once
+			w.services.Compiler = d165AfterCompile{compiler: w.compiler, after: func() {
+				once.Do(func() {
+					var lockErr error
+					if first == "observation" {
+						_, lockErr = blocker.Exec(ctx, `SELECT id FROM nodes WHERE id=$1 FOR UPDATE`, report.NodeId)
+					} else {
+						_, lockErr = blocker.Exec(ctx, `SELECT id FROM operations WHERE id=$1 FOR UPDATE`, op)
+					}
+					compiled <- lockErr
+				})
+			}}
 			done := make(chan error, 1)
 			go func() {
 				_, e := worker.MemberJobs()[event.EventType](worker.WithMembers(ctx, w.services), event)
 				done <- e
 			}()
+			if err = <-compiled; err != nil {
+				t.Fatal(err)
+			}
 			capturePID := d165BlockedBy(t, w, blocker.Conn().PgConn().PID())
+			if first == "observation" {
+				if _, err = w.r.Nodes.SubmitObservationTx(ctx, blocker, report.NodeId, report.NodeIncarnationId, report); err != nil {
+					t.Fatal(err)
+				}
+			}
 			var observed chan error
 			if first == "capture" {
 				observed = make(chan error, 1)
@@ -331,4 +346,91 @@ func TestD165_T18_RemovalAckCaptureInterleavings(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestD165_RemovalRetirementAndReplacement(t *testing.T) {
+	for _, mode := range []string{"failed_closed", "retired", "replacement"} {
+		t.Run(mode, func(t *testing.T) {
+			w := newD165RemovalWorld(t)
+			op := w.revokeDevice()
+			gen := d165ControlCompile(t, w, false)
+			d165RemovalCount(t, w, "device", w.device, 1)
+			if mode == "failed_closed" {
+				w.observe(d165ReportAt(w, gen, "pending"))
+				d165RemovalCount(t, w, "device", w.device, 1)
+				w.observe(d165ReportAt(w, gen, "closed"))
+			} else {
+				r := w.reports[0]
+				detail, _, err := w.r.Nodes.GetNode(t.Context(), r.NodeId)
+				if err != nil {
+					t.Fatal(err)
+				}
+				cmd := enrollment.Command{Principal: "admin:" + w.admin.String(), Key: uuid.New()}
+				if mode == "retired" {
+					_, err = w.r.Enrollment.RetireNode(t.Context(), cmd, r.NodeId, &detail.ResourceVersion, "TEST ONLY removal retirement")
+				} else {
+					_, err = w.r.Enrollment.RevokeNode(t.Context(), cmd, r.NodeId, &detail.ResourceVersion, "TEST ONLY replacement")
+				}
+				if err != nil {
+					t.Fatal(err)
+				}
+				if _, err = w.r.Nodes.SweepStaleNodes(t.Context(), 0, 0); err != nil {
+					t.Fatal(err)
+				}
+				if mode == "replacement" {
+					d165RemovalCount(t, w, "device", w.device, 1)
+					created, err := w.r.Enrollment.CreateEnrollment(t.Context(), enrollment.Command{Principal: cmd.Principal, Key: uuid.New()}, api.EnrollmentCreateRequest{Delivery: api.EnrollmentDeliveryInstaller, NodeId: &r.NodeId})
+					if err != nil {
+						t.Fatal(err)
+					}
+					token, _ := created.Token.Get()
+					request, _ := pkitest.Request(t)
+					replacement, err := w.r.Enrollment.Enroll(t.Context(), token, request)
+					if err != nil {
+						t.Fatal(err)
+					}
+					fresh := cloneReport(r, r.NodeId, replacement.Response.NodeIncarnationId)
+					fresh, _ = w.prepare(fresh, false, false)
+					w.observe(fresh)
+				}
+			}
+			d165RemovalCount(t, w, "device", w.device, 0)
+			d165RunEvent(t, w, d165RemovalEvent(t, w, "device.revoked", w.device))
+			d165EmptyCapture(t, w, op)
+		})
+	}
+}
+
+func TestD165_FirstReplacementCompileRecordsPriorCarrierRemoval(t *testing.T) {
+	w := newD165RemovalWorld(t)
+	op := w.revokeDevice()
+	old := w.reports[0]
+	detail, _, err := w.r.Nodes.GetNode(t.Context(), old.NodeId)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := enrollment.Command{Principal: "admin:" + w.admin.String(), Key: uuid.New()}
+	if _, err = w.r.Enrollment.RevokeNode(t.Context(), cmd, old.NodeId, &detail.ResourceVersion, "TEST ONLY replacement before removal compile"); err != nil {
+		t.Fatal(err)
+	}
+	created, err := w.r.Enrollment.CreateEnrollment(t.Context(), enrollment.Command{Principal: cmd.Principal, Key: uuid.New()}, api.EnrollmentCreateRequest{Delivery: api.EnrollmentDeliveryInstaller, NodeId: &old.NodeId})
+	if err != nil {
+		t.Fatal(err)
+	}
+	token, _ := created.Token.Get()
+	request, _ := pkitest.Request(t)
+	replacement, err := w.r.Enrollment.Enroll(t.Context(), token, request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fresh := cloneReport(old, old.NodeId, replacement.Response.NodeIncarnationId)
+	fresh, _ = w.prepare(fresh, false, false)
+	d165RemovalCount(t, w, "device", w.device, 1)
+	d165RunEvent(t, w, d165RemovalEvent(t, w, "device.revoked", w.device))
+	gen, _ := fresh.AppliedConfigGeneration.Get()
+	d165Pin(t, w, op, gen, false)
+	w.wantStep(op, false)
+	w.observe(fresh)
+	w.wantStep(op, true)
+	d165RemovalCount(t, w, "device", w.device, 0)
 }

@@ -135,6 +135,9 @@ func FinishOperationCaptureTx(ctx context.Context, tx pgx.Tx, now time.Time) err
 	if len(ids) == 0 {
 		return nil
 	}
+	if err := captureRemovalTargetsTx(ctx, tx, ids); err != nil {
+		return err
+	}
 	if _, err := tx.Exec(ctx, `UPDATE node_operation_captures SET captured_at=$2 WHERE operation_id=ANY($1) AND captured_at IS NULL`, ids, now); err != nil {
 		return err
 	}
@@ -161,6 +164,11 @@ func observeOperationTargets(ctx context.Context, tx pgx.Tx, node uuid.UUID, rep
 		}
 	}
 	closed := isFailClosedIsolationApplyError(report, safety, forwarding) || (!forwarding && !pending && !hasIso && internetOnly)
+	if clean || closed {
+		if err := acknowledgeSubjectRemovals(ctx, tx, node, generation.String(), now); err != nil {
+			return err
+		}
+	}
 	rows, err := tx.Query(ctx, `SELECT operation_id,subject_present,coalesce(error_code,''),outcome,generation<=$2::numeric AND compiled_at<=$3 FROM node_operation_targets
   WHERE node_id=$1 ORDER BY operation_id FOR UPDATE`, node, generation.String(), now)
 	if err != nil {
@@ -331,6 +339,11 @@ func completeTargetOperation(ctx context.Context, tx pgx.Tx, id uuid.UUID, now t
 }
 
 func sweepOperationTargets(ctx context.Context, tx pgx.Tx, now time.Time) error {
+	// Retirement is permanent. Revoked nodes may re-enroll, so retain their
+	// outstanding removals for the replacement incarnation to acknowledge.
+	if _, err := tx.Exec(ctx, `DELETE FROM node_subject_removals r USING nodes n WHERE n.id=r.node_id AND n.lifecycle_state='retired'`); err != nil {
+		return err
+	}
 	rows, err := tx.Query(ctx, `SELECT c.operation_id FROM node_operation_captures c JOIN operations o ON o.id=c.operation_id WHERE c.captured_at IS NOT NULL AND o.steps->'nodes'->>'status'<>'succeeded' AND o.status<>'superseded' ORDER BY c.operation_id`)
 	if err != nil {
 		return err

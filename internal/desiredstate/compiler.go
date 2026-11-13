@@ -280,8 +280,10 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		}
 		return CompiledDesiredState{}, err
 	}
+	// A replacement incarnation may not have an envelope yet. The node's last
+	// configuration still identifies former carriers that this compile removes.
 	var previousEnvelope []byte
-	if err := tx.QueryRow(ctx, `SELECT coalesce((SELECT envelope FROM desired_state_envelopes WHERE node_id=$1 AND incarnation_id=$2),'{}'::jsonb)`, nodeID, currentIncarnationID).Scan(&previousEnvelope); err != nil {
+	if err := tx.QueryRow(ctx, `SELECT coalesce((SELECT envelope FROM desired_state_envelopes WHERE node_id=$1 ORDER BY generation DESC LIMIT 1),'{}'::jsonb)`, nodeID).Scan(&previousEnvelope); err != nil {
 		return CompiledDesiredState{}, err
 	}
 	if currentIncarnationID == nil || *currentIncarnationID == uuid.Nil {
@@ -654,6 +656,10 @@ func (c *Compiler) CompileTx(ctx context.Context, tx pgx.Tx, nodeID uuid.UUID) (
 		SET desired_config_generation = $2::numeric,
 		    resource_version = resource_version + 1
 		WHERE id = $1`, nodeID, strconv.FormatUint(nextGen, 10)); err != nil {
+		return CompiledDesiredState{}, err
+	}
+
+	if err := nodes.RecordSubjectRemovalsTx(ctx, tx, nodeID, incarnationID, strconv.FormatUint(nextGen, 10), previousEnvelope, envJSON); err != nil {
 		return CompiledDesiredState{}, err
 	}
 

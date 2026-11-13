@@ -32,6 +32,19 @@ CREATE TABLE node_operation_targets (
 );
 CREATE INDEX node_operation_targets_node_idx ON node_operation_targets(node_id,operation_id);
 
+-- Pending removals are coalesced, not an unbounded envelope history.
+CREATE TABLE node_subject_removals (
+    node_id uuid NOT NULL REFERENCES nodes(id),
+    subject_type text NOT NULL CHECK (subject_type IN ('member','device')),
+    subject_id uuid NOT NULL,
+    incarnation_id uuid NOT NULL REFERENCES node_incarnations(id),
+    generation numeric(20,0) NOT NULL CHECK (generation>0 AND generation<=18446744073709551615),
+    compiled_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+    PRIMARY KEY (node_id,subject_type,subject_id)
+);
+CREATE INDEX node_subject_removals_subject_idx ON node_subject_removals(subject_type,subject_id,node_id);
+
 -- +goose Down
+DROP TABLE node_subject_removals;
 DROP TABLE node_operation_targets;
 DROP TABLE node_operation_captures;
