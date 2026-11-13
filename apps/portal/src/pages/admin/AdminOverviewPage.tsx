@@ -68,8 +68,10 @@ export function AdminOverviewPage(): React.ReactElement {
           <h1>{t('admin.overview.title')}</h1>
           <p className="page-subtitle">{t('admin.overview.subtitle')}</p>
         </div>
-        <span className="badge badge-neutral mono">
-          {t('admin.overview.asOf', { asOf: d.as_of })}
+        <span className="badge badge-neutral mono" data-testid="admin-overview-as-of">
+          {d.as_of
+            ? t('admin.overview.asOf', { asOf: d.as_of })
+            : t('admin.overview.asOfNone')}
         </span>
       </div>
 
@@ -112,7 +114,7 @@ export function AdminOverviewPage(): React.ReactElement {
           >
             {d.safety_failed_nodes}
           </span>
-          <span className="stat-subtext">
+          <span className="stat-subtext" data-testid="card-safety-failed-desc">
             {t('admin.overview.card.safetyFailedDesc')}
           </span>
         </div>

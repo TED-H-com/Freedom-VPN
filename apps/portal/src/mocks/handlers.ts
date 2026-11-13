@@ -36,6 +36,7 @@ import {
   createInitialMockState,
   PRIMARY_DEVICE_ID,
   PRIMARY_MEMBER_ID,
+  PRIMARY_NODE_ID,
   type MockPersona,
   type MockState,
 } from './data';
@@ -91,6 +92,18 @@ export function setMockNodeServingRead(
   } else {
     detail.serving_read = servingRead;
   }
+}
+
+export function setMockNodeOverride(
+  nodeId: string,
+  overrides: Partial<NodeDetail>,
+): NodeDetail {
+  const base =
+    state.nodes[nodeId] ??
+    structuredClone(createInitialMockState('admin').nodes[PRIMARY_NODE_ID]!);
+  const updated = Object.assign(base, overrides, { node_id: nodeId });
+  state.nodes[nodeId] = updated;
+  return updated;
 }
 
 export const FENCED_PENDING_DEVICE_ID = '33333333-e7e8-4bd4-9f2c-a5836dd0d8eb';

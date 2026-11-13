@@ -110,7 +110,8 @@ export const zhTW = {
   'admin.overview.title': '系統營運總覽',
   'admin.overview.subtitle':
     '分別呈現出口可用性、控制連線、隔離安全、更新狀態與會員資格；不以單一綠點代表所有功能正常（§16.5, §18.1）。',
-  'admin.overview.asOf': '資料最後更新時間 (UTC)：{asOf}',
+  'admin.overview.asOf': '最近節點回報 (UTC)：{asOf}',
+  'admin.overview.asOfNone': '尚無節點回報',
   'admin.overview.card.availableExits': '可提供服務出口數',
   'admin.overview.card.availableExitsDesc':
     '通過身分、上架意圖、配置、隔離安全與支援版本檢查（§5.1）',
@@ -118,7 +119,7 @@ export const zhTW = {
   'admin.overview.card.controlBreakdown':
     '在線 {online} ／ 延遲 {stale} ／ 離線 {offline}',
   'admin.overview.card.safetyFailed': '隔離或安全基線異常節點',
-  'admin.overview.card.safetyFailedDesc': '在線但安全檢查失敗，已自動停止會員轉送',
+  'admin.overview.card.safetyFailedDesc': '隔離檢查結果為失敗或已過期的節點',
   'admin.overview.card.enrollmentsPending': '待處理註冊或配置失敗',
   'admin.overview.card.enrollmentsPendingDesc': '尚在註冊或本機配置異常的設備',
   'admin.overview.card.updateAttention': '需留意的節點更新結果',
@@ -153,12 +154,20 @@ export const zhTW = {
 
   'node.summary.online_serving': '在線，正常提供出口服務',
   'node.summary.online_safety_failed_not_serving': '在線，隔離檢查失敗，未提供服務',
+  'node.summary.online_safety_expired_not_serviceable':
+    '在線，隔離檢查已過期，服務條件未符合',
   'node.summary.online_disabled_not_serving': '在線，管理員已停用出口，未提供服務',
   'node.summary.ready_unpublished_not_serving': '已就緒，尚未上架，未提供服務',
+  'node.summary.online_unpublished_not_ready_not_serving':
+    '在線，本機配置未就緒，尚未上架，未提供服務',
+  'node.summary.online_published_not_serviceable': '在線，已上架，服務條件未全部符合',
   'node.summary.offline_route_withdrawn_unconfirmed':
     '中央已撤銷路由；設備撤權尚未確認／受租約限制',
+  'node.summary.offline_unconfirmed': '離線，目前服務狀態未能確認',
+  'node.summary.stale_unconfirmed': '回報延遲，目前服務狀態未能確認',
   'node.summary.rolled_back_serving': '在線，上次更新已回復至最後良好版本 (last_good)',
   'node.summary.revoked_not_serving': '裝置身分已永久撤銷，停止服務',
+  'node.summary.enrolling_not_serving': '註冊中，未提供服務',
 
   // Admin Node Detail (§18.1, §18.3)
   'admin.nodeDetail.back': '← 返回節點列表',

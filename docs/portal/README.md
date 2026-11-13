@@ -179,6 +179,47 @@ the assembled Docker stack, real client apps, traffic withdrawal or a production
 deployment (§19.1). The members acceptance record retains its own **F4-04** entry
 until its owner reruns that acceptance; these portal checks do not close it.
 
+### 10. Node summary (§18.1)
+
+`deriveNodeSummaryPhrase` (`src/api/view-models.ts`) evaluates these 13 rules in
+order and returns the first matching key. From rule 6 on, `control_status` is
+`online`. A release mismatch (`current_release_id !== desired_release_id`) alone
+never produces `rolled_back_serving` (§5.1). `AdminNodeDetailPage.tsx` renders
+the summary in a `badge-info` badge (`node-detail-summary-badge`);
+`AdminNodesListPage.tsx` uses `badge-success`, `badge-warning` or `badge-danger`
+as listed below.
+
+| # | Condition | Key | zh-TW | English | List badge |
+|---|---|---|---|---|---|
+| 1 | `lifecycle_state` is `revoked` or `retired` | `revoked_not_serving` | 裝置身分已永久撤銷，停止服務 | Machine identity permanently revoked, not serving | `badge-danger` |
+| 2 | `lifecycle_state` is `enrolling` | `enrolling_not_serving` | 註冊中，未提供服務 | Enrolling, not serving traffic | `badge-danger` |
+| 3 | `control_status` is `offline` and `publication_observed` is `withdrawn` | `offline_route_withdrawn_unconfirmed` | 中央已撤銷路由；設備撤權尚未確認／受租約限制 | Central routes withdrawn; device revocation unconfirmed / bounded by lease | `badge-danger` |
+| 4 | `control_status` is `offline` | `offline_unconfirmed` | 離線，目前服務狀態未能確認 | Offline, current serving state unconfirmed | `badge-danger` |
+| 5 | `control_status` is `stale` | `stale_unconfirmed` | 回報延遲，目前服務狀態未能確認 | Reports late, current serving state unconfirmed | `badge-warning` |
+| 6 | `safety_status` is `failed` | `online_safety_failed_not_serving` | 在線，隔離檢查失敗，未提供服務 | Online, isolation check failed, not serving traffic | `badge-danger` |
+| 7 | `safety_status` is `expired` | `online_safety_expired_not_serviceable` | 在線，隔離檢查已過期，服務條件未符合 | Online, isolation check expired, serving conditions not met | `badge-danger` |
+| 8 | `publication_intent` is `disabled` | `online_disabled_not_serving` | 在線，管理員已停用出口，未提供服務 | Online, disabled by admin, not serving traffic | `badge-danger` |
+| 9 | `publication_intent` is `unpublished` and `provisioning_state` is `ready` | `ready_unpublished_not_serving` | 已就緒，尚未上架，未提供服務 | Provisioned ready, unpublished, not serving traffic | `badge-danger` |
+| 10 | `publication_intent` is `unpublished` | `online_unpublished_not_ready_not_serving` | 在線，本機配置未就緒，尚未上架，未提供服務 | Online, provisioning not ready, unpublished, not serving traffic | `badge-danger` |
+| 11 | `isNodeServiceable(node)` and `update?.state === 'rolled_back'` | `rolled_back_serving` | 在線，上次更新已回復至最後良好版本 (last_good) | Online, update rolled back to verified last_good release | `badge-warning` |
+| 12 | `isNodeServiceable(node)` | `online_serving` | 在線，正常提供出口服務 | Online, actively serving exit traffic | `badge-success` |
+| 13 | otherwise (`online`, `published`, not serviceable) | `online_published_not_serviceable` | 在線，已上架，服務條件未全部符合 | Online, published, not all serving conditions met | `badge-danger` |
+
+On the Admin Overview (`AdminOverviewPage.tsx`, `buildAdminOverviewViewModel`),
+`as_of` is the latest `last_seen_at` among the listed nodes with no fixed floor,
+or `null` when no listed node has reported (`admin.overview.asOf`:
+`最近節點回報 (UTC)：{asOf}` / `Latest node report (UTC): {asOf}`;
+`admin.overview.asOfNone`: `尚無節點回報` / `No node report yet`,
+`data-testid="admin-overview-as-of"`). The safety card description
+(`admin.overview.card.safetyFailedDesc`, `data-testid="card-safety-failed-desc"`)
+reads `隔離檢查結果為失敗或已過期的節點` / `Nodes whose isolation check failed or expired`,
+matching `safety_failed_nodes` without claiming that all counted nodes are online.
+
+`src/pages/__tests__/node_summary.test.tsx` covers the 13-rule table, all
+207,360 state combinations, the list and detail badges, and the overview badge
+and safety card in both languages. What the tests do not cover: the live browser
+suite was not extended, and no real node went stale or offline in a browser run.
+
 ## Verification Commands
 
 From `apps/portal`:
