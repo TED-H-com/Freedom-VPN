@@ -62,6 +62,18 @@ func d170Pool(t *testing.T, w *d165World, size int32) *pgxpool.Pool {
 	return p
 }
 
+func d170Runtime(t *testing.T, w *d165World, pool *pgxpool.Pool) *httpwire.Runtime {
+	t.Helper()
+	r, err := httpwire.Open(t.Context(), pool, w.r.Config, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Releases.Validator = w.r.Releases.Validator
+	r.Releases.VerifyArtifacts = w.r.Releases.VerifyArtifacts
+	r.Nodes = nodes.NewService(pool, nodes.WithClock(func() time.Time { return w.now }))
+	return r
+}
+
 func TestD170_T28_SingleConnectionCompileEntrypoints(t *testing.T) {
 	for _, entry := range []string{"Compile", "ReSign", "ReSign_fallback", "CompileControlState", "resolver_reconcile"} {
 		t.Run(entry, func(t *testing.T) {
@@ -78,8 +90,7 @@ func TestD170_T28_SingleConnectionCompileEntrypoints(t *testing.T) {
 				}
 			}
 			pool := d170Pool(t, w, 1)
-			runtime := *w.r
-			runtime.Pool, runtime.ResolverDocuments = pool, httpwire.NewResolverDocumentSource(pool)
+			runtime := d170Runtime(t, w, pool)
 			ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 			defer cancel()
 			var err error
@@ -144,9 +155,9 @@ func TestD170_T29_FullPoolCompileCaptureCompletes(t *testing.T) {
 	pool := d170Pool(t, w, 10)
 	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Second)
 	defer cancel()
-	source := &d170ResolverPause{ResolverDocumentSource: httpwire.NewResolverDocumentSource(pool), entered: make(chan struct{}), resume: make(chan struct{})}
-	runtime := *w.r
-	runtime.Pool, runtime.ResolverDocuments = pool, source
+	runtime := d170Runtime(t, w, pool)
+	source := &d170ResolverPause{ResolverDocumentSource: runtime.ResolverDocuments, entered: make(chan struct{}), resume: make(chan struct{})}
+	runtime.ResolverDocuments = source
 	compiler := runtime.DesiredStateCompiler()
 	first := make(chan error, 1)
 	go func() { _, err := compiler.Compile(ctx, w.reports[0].NodeId); first <- err }()
@@ -164,7 +175,13 @@ func TestD170_T29_FullPoolCompileCaptureCompletes(t *testing.T) {
 	services := *w.services
 	members := *services.HTTP.Members
 	members.Pool = pool
+	devices := *services.HTTP.Devices
+	devices.Pool = pool
+	billing := *services.HTTP.Billing
+	billing.Pool = pool
 	services.HTTP.Members = &members
+	services.HTTP.Devices = &devices
+	services.HTTP.Billing = &billing
 	services.Compiler = compiler
 	w.services = &services
 	capture := d167Worker(ctx, w, event)
