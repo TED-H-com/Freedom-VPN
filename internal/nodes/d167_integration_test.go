@@ -92,12 +92,16 @@ func d167Worker(ctx context.Context, w *d165World, event db.ClaimedEvent) <-chan
 	}()
 	return done
 }
-func d167WaitBlock(ctx context.Context, w *d165World, pid uint32) (uint32, error) {
+func d167WaitBlock(ctx context.Context, w *d165World, pid uint32, exclude ...uint32) (uint32, error) {
+	var excluded uint32
+	if len(exclude) > 0 {
+		excluded = exclude[0]
+	}
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	for {
 		var waiter uint32
-		err := w.r.Pool.QueryRow(ctx, `SELECT pid FROM pg_stat_activity WHERE datname=current_database() AND $1::int=ANY(pg_blocking_pids(pid)) ORDER BY pid LIMIT 1`, pid).Scan(&waiter)
+		err := w.r.Pool.QueryRow(ctx, `SELECT pid FROM pg_stat_activity WHERE datname=current_database() AND $1::int=ANY(pg_blocking_pids(pid)) AND pid<>$2::int ORDER BY pid LIMIT 1`, pid, excluded).Scan(&waiter)
 		if err == nil {
 			return waiter, nil
 		}
@@ -306,6 +310,11 @@ func TestD167_T21_CompileWaitsOutsideCaptureAndObservation(t *testing.T) {
 		_, e := w.r.Nodes.SubmitObservation(ctx, report.NodeId, report.NodeIncarnationId, report)
 		observed <- e
 	}()
+	// The compiler is already waiting on the fence. Also require a distinct
+	// observer to reach the capture's node lock before releasing the capture.
+	if _, err = d167WaitBlock(ctx, w, capturePID, writer.Conn().PgConn().PID()); err != nil {
+		t.Fatal("observation did not wait on capture's node", err)
+	}
 	if err = blocker.Commit(ctx); err != nil {
 		t.Fatal(err)
 	}
