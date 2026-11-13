@@ -8,18 +8,18 @@ import (
 	"testing"
 )
 
-// Inventory code loading and environment/name writes, including helper text.
-// Fail closed on writer arguments whose destinations cannot be classified.
-// This is not a Bash parser; unusual spellings remain the reviewer's job.
+// Literal physical-line patterns fail closed against reviewed lines, without parsing:
+// locale patterns include comments; construct patterns skip full-line comments.
+// Computed destinations are best effort in recognized layouts; others need exact-source review.
 var backupEnvironmentConstructs = []*regexp.Regexp{
-	regexp.MustCompile(`(?:^|[\s;&|()])["']?(?:source|eval|export)["']?(?:[\s;&|()]|$)`),
-	regexp.MustCompile(`(?:^|[\s;&|()])["']?\.["']?(?:\s|$)`),
+	regexp.MustCompile(`(?:^|[\s;&|()])["']?(?:source|eval|export)["']?(?:[\s;&|()<>]|$)`),
+	regexp.MustCompile(`(?:^|[\s;&|()])["']?\.["']?(?:[\s<>]|$)`),
 	regexp.MustCompile(`\$\{!`),
 	// Startup-file selectors load code even without a source/eval command.
 	regexp.MustCompile(`\b(?:BASH_ENV|ENV)\b|--(?:rcfile|init-file)\b`),
 	// env accepts both literal assignments and computed assignment words.
 	regexp.MustCompile(`(?:^|[\s;&|()])["']?(?:/[^\s;&|()]*/)?env["']?\s`),
-	regexp.MustCompile(`(?:^|[\s;&|()])["']?let["']?(?:\s|$)`),
+	regexp.MustCompile(`(?:^|[\s;&|()])["']?let["']?(?:[\s<>]|$)`),
 	// wait -p writes a process identifier into its supplied variable name.
 	regexp.MustCompile(`\bwait\s+(?:-[a-zA-Z]+\s+)*-p`),
 	// Loadable builtins and readline command bindings introduce executable code.
@@ -393,6 +393,10 @@ func TestAT30_BackupEnvironmentConstructs(t *testing.T) {
 		`read -d '' -a "$name"`, `read -Z destination`, `local "destination"=value`,
 		`read -r <<<C "$name"`, `IFS= read <"$input" "$name"`,
 		`printf "$format" "$name"`,
+		`export>/dev/null NAME=1`,
+		`source< /dev/null "$FVPN_BACKUP_SETTINGS"`,
+		`.< /dev/null "$FVPN_BACKUP_SETTINGS"`,
+		`eval< /dev/null 'R6_VALUE=C'`,
 	} {
 		t.Run(line, func(t *testing.T) {
 			if !backupNeedsEnvironmentReview(line) {
