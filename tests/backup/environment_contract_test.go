@@ -11,23 +11,30 @@ import (
 // Literal physical-line patterns fail closed against reviewed lines, without parsing:
 // locale patterns include comments; construct patterns skip full-line comments.
 // Computed destinations are best effort in recognized layouts; others need exact-source review.
+// Command words match as written; quotes or a backslash inside a word, or $'…', are left to review.
+func backupCommandWord(word string) *regexp.Regexp {
+	const before = "(?:^|[\\s;&|()`])[\"'\\\\]?"
+	const after = "[\"']?(?:[\\s;&|()<>$`]|$)"
+	return regexp.MustCompile(before + "(?:" + word + ")" + after)
+}
+
 var backupEnvironmentConstructs = []*regexp.Regexp{
-	regexp.MustCompile(`(?:^|[\s;&|()])["']?(?:source|eval|export)["']?(?:[\s;&|()<>]|$)`),
-	regexp.MustCompile(`(?:^|[\s;&|()])["']?\.["']?(?:[\s<>]|$)`),
+	backupCommandWord(`source|eval|export`),
+	backupCommandWord(`\.`),
 	regexp.MustCompile(`\$\{!`),
 	// Startup-file selectors load code even without a source/eval command.
 	regexp.MustCompile(`\b(?:BASH_ENV|ENV)\b|--(?:rcfile|init-file)\b`),
 	// env accepts both literal assignments and computed assignment words.
-	regexp.MustCompile(`(?:^|[\s;&|()])["']?(?:/[^\s;&|()]*/)?env["']?\s`),
-	regexp.MustCompile(`(?:^|[\s;&|()])["']?let["']?(?:[\s<>]|$)`),
-	// wait -p writes a process identifier into its supplied variable name.
-	regexp.MustCompile(`\bwait\s+(?:-[a-zA-Z]+\s+)*-p`),
+	backupCommandWord(`(?:/[^\s;&|()]*/)?env`),
+	backupCommandWord(`let`),
+	// wait can assign a process identifier to a supplied variable name.
+	backupCommandWord(`wait`),
 	// Loadable builtins and readline command bindings introduce executable code.
-	regexp.MustCompile(`\benable\s`),
-	regexp.MustCompile(`\bbind\s+(?:-[a-zA-Z]+\s+)*-x`),
+	backupCommandWord(`enable`),
+	backupCommandWord(`bind`),
 	// A computed trap or builtin name can execute an indirect assignment.
 	regexp.MustCompile(`\btrap\s+[^;\n]*[$` + "`" + `]`),
-	regexp.MustCompile(`\bbuiltin\s`),
+	backupCommandWord(`builtin`),
 	regexp.MustCompile(`\bcommand\s+(?:-[a-zA-Z]+\s+)*["']?[$` + "`" + `]`),
 	// Expanded arithmetic can supply an assignment's destination or expression.
 	regexp.MustCompile(`\(\([^\n)]*[$` + "`" + `]`),
@@ -397,6 +404,11 @@ func TestAT30_BackupEnvironmentConstructs(t *testing.T) {
 		`source< /dev/null "$FVPN_BACKUP_SETTINGS"`,
 		`.< /dev/null "$FVPN_BACKUP_SETTINGS"`,
 		`eval< /dev/null 'R6_VALUE=C'`,
+		`wait > /dev/null -n -p R7_PID`, `wait -n > /dev/null -p R7_PID`, `wait -np R7_PID`,
+		`bind -m emacs -x '"\C-x\C-r":R7_VALUE=C'`, `bind >/dev/null -x '"\C-x\C-r":R7_VALUE=C'`,
+		`env>/dev/null R7_VALUE=C true`, `enable>/dev/null -n echo`, `builtin>/dev/null true`,
+		"x=`source \"$FVPN_BACKUP_SETTINGS\"`", `\source "$FVPN_BACKUP_SETTINGS"`,
+		`eval${IFS}R7_VALUE=C`,
 	} {
 		t.Run(line, func(t *testing.T) {
 			if !backupNeedsEnvironmentReview(line) {
