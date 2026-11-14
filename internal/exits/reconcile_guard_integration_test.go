@@ -5,6 +5,7 @@ package exits
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"errors"
 	"testing"
 	"time"
@@ -81,18 +82,40 @@ func bindingRowText(ctx context.Context, tx pgx.Tx, exitID uuid.UUID, deployment
 	return text, err
 }
 
+// seedUnbound inserts a node, an incarnation with no peer binding, and an exit.
+// deployment_id and peer_id stay NULL together. It returns both new ids.
+func (f *reconcileFixture) seedUnbound(exitID uuid.UUID, intent string) (uuid.UUID, uuid.UUID) {
+	f.t.Helper()
+	nodeID, incID := uuid.New(), uuid.New()
+	fp := sha256.Sum256([]byte("fp-" + exitID.String()))
+	f.exec(`INSERT INTO nodes(id,lifecycle_state,provisioning_state,control_status,data_health,safety_status) VALUES($1,'registered','ready','online','healthy','passed')`, nodeID)
+	f.exec(`INSERT INTO node_incarnations(id,node_id,public_key_fingerprint,deployment_id,peer_id,os,arch) VALUES($1,$2,$3,$4,$5,'ubuntu','amd64')`, incID, nodeID, fp[:], nil, nil)
+	f.exec(`UPDATE nodes SET current_incarnation_id=$2, resource_version=resource_version+1 WHERE id=$1`, nodeID, incID)
+	f.exec(`INSERT INTO exits(id,node_id,display_name,region,publication_intent,publication_observed) VALUES($1,$2,'TEST ONLY exit','TEST ONLY',$3,'absent')`, exitID, nodeID, intent)
+	return nodeID, incID
+}
+
 func TestReconcileNetBird_SkipsDeploymentChangedDuringNodeLock(t *testing.T) {
 	f := newReconcileFixture(t)
 	exitID := uuid.MustParse("00000000-0000-4000-8000-0000000000d1")
-	const fromDeployment = "nb-main"
 	const toDeployment = "nb-other"
-	nodeID, version := f.seedPublishedDrift(exitID, fromDeployment)
+	nodeID, incID := f.seedUnbound(exitID, string(api.PublicationIntentPublished))
+	f.setDrift(nodeID, []api.StateDrift{{
+		Field:    "capacity_report",
+		Desired:  presence.NewNullableWithValue("stay"),
+		Observed: presence.NewNullableWithValue("stay"),
+	}})
+	version, _ := f.nodeState(nodeID)
+	state := withdrawRoute(exitID)
+	state.ObservedHash = bytes.Repeat([]byte{0x44}, 32)
+	f.nb.InjectRouteState(exitID, state)
 	const externalID = "nb-twin"
-	f.seedCheckedBinding(exitID, fromDeployment, externalID)
+	peerID := "peer-" + exitID.String()
+	f.seedCheckedBinding(exitID, DefaultDeploymentID, externalID)
 	f.seedCheckedBinding(exitID, toDeployment, externalID)
 	before := map[string]string{
-		fromDeployment: f.bindingTextFor(exitID, fromDeployment),
-		toDeployment:   f.bindingTextFor(exitID, toDeployment),
+		DefaultDeploymentID: f.bindingTextFor(exitID, DefaultDeploymentID),
+		toDeployment:        f.bindingTextFor(exitID, toDeployment),
 	}
 	ctx, cancel := context.WithTimeout(f.ctx, 45*time.Second)
 	defer cancel()
@@ -101,18 +124,10 @@ func TestReconcileNetBird_SkipsDeploymentChangedDuringNodeLock(t *testing.T) {
 		if err := tx.QueryRow(ctx, `SELECT true FROM nodes n WHERE n.id = $1 FOR UPDATE OF n`, nodeID).Scan(&locked); err != nil {
 			return err
 		}
-		// The peer binding cannot be reassigned once set. This exit is already
-		// in nb-main, so triggers are suspended for this transaction and the
-		// worker's deployment update can move it to nb-other.
-		if _, err := tx.Exec(ctx, `SET LOCAL session_replication_role = replica`); err != nil {
-			return err
-		}
-		var incID uuid.UUID
-		var peerID string
-		if err := tx.QueryRow(ctx, `SELECT i.id, i.peer_id FROM node_incarnations i JOIN nodes n ON n.current_incarnation_id = i.id WHERE n.id = $1`, nodeID).Scan(&incID, &peerID); err != nil {
-			return err
-		}
-		tag, err := tx.Exec(ctx, `UPDATE node_incarnations SET deployment_id = $2, peer_id = $3 WHERE id = $1 AND revoked_at IS NULL`, incID, toDeployment, peerID)
+		// The page read sees DefaultDeploymentID while both binding columns are
+		// NULL. This is the worker's peer binding write: it sets the deployment
+		// and the peer together, which is the change the re-read can observe.
+		tag, err := tx.Exec(ctx, `UPDATE node_incarnations SET deployment_id=$2,peer_id=$3 WHERE id=$1 AND revoked_at IS NULL`, incID, toDeployment, peerID)
 		if err != nil {
 			return err
 		}
@@ -129,14 +144,14 @@ func TestReconcileNetBird_SkipsDeploymentChangedDuringNodeLock(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertReconcileSkipped(t, f, nodeID, version, *items)
-	for _, deployment := range []string{fromDeployment, toDeployment} {
+	for _, deployment := range []string{DefaultDeploymentID, toDeployment} {
 		if got := f.bindingTextFor(exitID, deployment); got != before[deployment] {
 			t.Fatalf("binding %s changed\nbefore %s\nafter  %s", deployment, before[deployment], got)
 		}
 	}
-	var deployment string
-	if err := f.pool.QueryRow(ctx, `SELECT i.deployment_id FROM node_incarnations i JOIN nodes n ON n.current_incarnation_id = i.id WHERE n.id = $1`, nodeID).Scan(&deployment); err != nil || deployment != toDeployment {
-		t.Fatalf("deployment %q: %v", deployment, err)
+	var deployment, peer string
+	if err := f.pool.QueryRow(ctx, `SELECT i.deployment_id, i.peer_id FROM node_incarnations i JOIN nodes n ON n.current_incarnation_id = i.id WHERE n.id = $1`, nodeID).Scan(&deployment, &peer); err != nil || deployment != toDeployment || peer != peerID {
+		t.Fatalf("deployment %q peer %q: %v", deployment, peer, err)
 	}
 }
 

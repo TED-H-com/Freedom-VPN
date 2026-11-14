@@ -302,7 +302,7 @@ func samePageRead(page, current reconcileExit) bool {
 }
 
 // lockAndFilterPage locks every node of the page in id order, then reads
-// publication intent, deployment, binding external id and desired hash.
+// publication intent, the deployment and every binding value.
 // Items whose values still match the page read are returned in node id
 // order. A changed or missing node is omitted. Neither statement locks
 // exits or external_bindings.
