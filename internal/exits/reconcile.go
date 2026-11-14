@@ -96,15 +96,24 @@ func (s *Service) ReconcileNetBird(ctx context.Context) ([]ReconcileItem, error)
 			if err != nil {
 				return err
 			}
+			pageWritten := make([]reconcileWrite, 0, len(kept))
 			for _, item := range kept {
+				updated, err := updateExitBinding(ctx, tx, item, now)
+				if err != nil {
+					return err
+				}
+				// The binding update runs before drift. A publisher can commit
+				// a new binding while this update waits; the guarded UPDATE
+				// then matches no row. Leave that item for the next run.
+				if item.externalID != "" && !updated {
+					continue
+				}
 				if err := mergeExitDrift(ctx, tx, item); err != nil {
 					return err
 				}
-				if err := updateExitBinding(ctx, tx, item, now); err != nil {
-					return err
-				}
+				pageWritten = append(pageWritten, item)
 			}
-			written = kept
+			written = pageWritten
 			return nil
 		}); err != nil {
 			return results, err
@@ -367,25 +376,36 @@ func mergeExitDrift(ctx context.Context, tx pgx.Tx, item reconcileWrite) error {
 	return err
 }
 
-func updateExitBinding(ctx context.Context, tx pgx.Tx, item reconcileWrite, now time.Time) error {
+// updateExitBinding writes the binding this item was checked with. It reports
+// whether a row was updated. An exit with no binding is unchanged and reports
+// false. Both statements require the checked external id and desired hash.
+// desired_hash uses IS NOT DISTINCT FROM because it can be NULL. An UPDATE
+// that waits for the binding row rechecks WHERE on the newest version, so a
+// binding the publisher changed is not overwritten.
+func updateExitBinding(ctx context.Context, tx pgx.Tx, item reconcileWrite, now time.Time) (bool, error) {
 	if item.externalID == "" {
-		return nil
+		return false, nil
 	}
 	if item.evidence {
 		cause, err := item.drift[0].Observed.Get()
 		if err != nil {
-			return err
+			return false, err
 		}
-		_, err = tx.Exec(ctx, `
+		tag, err := tx.Exec(ctx, `
 			UPDATE external_bindings
 			SET sync_state = 'error',
 			    last_error = $4
 			WHERE resource_type = 'exit'
 			  AND resource_id = $1
 			  AND provider = $2
-			  AND deployment_id = $3`,
-			item.exitID, ProviderNetBird, item.deploymentID, "evidence: "+cause)
-		return err
+			  AND deployment_id = $3
+			  AND external_id = $5
+			  AND desired_hash IS NOT DISTINCT FROM $6`,
+			item.exitID, ProviderNetBird, item.deploymentID, "evidence: "+cause, item.externalID, item.desiredHash)
+		if err != nil {
+			return false, err
+		}
+		return tag.RowsAffected() == 1, nil
 	}
 	syncState := "synced"
 	var lastErr *string
@@ -394,7 +414,7 @@ func updateExitBinding(ctx context.Context, tx pgx.Tx, item reconcileWrite, now 
 		msg := fmt.Sprintf("drift on %s", item.drift[0].Field)
 		lastErr = &msg
 	}
-	_, err := tx.Exec(ctx, `
+	tag, err := tx.Exec(ctx, `
 		UPDATE external_bindings
 		SET sync_state = $4,
 		    observed_hash = coalesce($5, observed_hash),
@@ -403,7 +423,12 @@ func updateExitBinding(ctx context.Context, tx pgx.Tx, item reconcileWrite, now 
 		WHERE resource_type = 'exit'
 		  AND resource_id = $1
 		  AND provider = $2
-		  AND deployment_id = $3`,
-		item.exitID, ProviderNetBird, item.deploymentID, syncState, item.observed.ObservedHash, now, lastErr)
-	return err
+		  AND deployment_id = $3
+		  AND external_id = $8
+		  AND desired_hash IS NOT DISTINCT FROM $9`,
+		item.exitID, ProviderNetBird, item.deploymentID, syncState, item.observed.ObservedHash, now, lastErr, item.externalID, item.desiredHash)
+	if err != nil {
+		return false, err
+	}
+	return tag.RowsAffected() == 1, nil
 }

@@ -509,3 +509,84 @@ func TestReconcileNetBird_SkipsIntentChangedDuringNodeLock(t *testing.T) {
 		t.Fatalf("stored drift=%+v", drift)
 	}
 }
+
+func TestReconcileNetBird_SkipsBindingChangedDuringWrite(t *testing.T) {
+	f := newReconcileFixture(t)
+	exitID := uuid.MustParse("00000000-0000-4000-8000-0000000000b9")
+	const deployment = "nb-main"
+	nodeID := f.seedOrdered(exitID, deployment, string(api.PublicationIntentPublished))
+	f.setDrift(nodeID, []api.StateDrift{{
+		Field:    "capacity_report",
+		Desired:  presence.NewNullableWithValue("stay"),
+		Observed: presence.NewNullableWithValue("stay"),
+	}})
+	version, _ := f.nodeState(nodeID)
+	seedDesired := bytes.Repeat([]byte{0x11}, 32)
+	seedObserved := bytes.Repeat([]byte{0x21}, 32)
+	seedVerified := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	const seedErr = "seed-last-error"
+	f.seedExitBinding(exitID, deployment, "nb-bind", seedDesired)
+	f.exec(`UPDATE external_bindings SET observed_hash=$2, last_verified_at=$3, last_error=$4 WHERE resource_type='exit' AND resource_id=$1`, exitID, seedObserved, seedVerified, seedErr)
+	heldDesired := bytes.Repeat([]byte{0x31}, 32)
+	heldObserved := bytes.Repeat([]byte{0x32}, 32)
+	const heldSync = "synced"
+	observed := withdrawRoute(exitID)
+	observed.ExternalID = "nb-bind"
+	observed.ObservedHash = bytes.Repeat([]byte{0x44}, 32)
+	f.nb.InjectRouteState(exitID, observed)
+	ctx, cancel := context.WithTimeout(f.ctx, 45*time.Second)
+	defer cancel()
+	items, done, holder := f.reconcileBlockedByHook(ctx, func(tx pgx.Tx) error {
+		tag, err := tx.Exec(ctx, `
+			UPDATE external_bindings
+			SET desired_hash = $2,
+			    observed_hash = $3,
+			    sync_state = $4
+			WHERE resource_type = 'exit'
+			  AND resource_id = $1
+			  AND provider = $5
+			  AND deployment_id = $6`,
+			exitID, heldDesired, heldObserved, heldSync, ProviderNetBird, deployment)
+		if err != nil {
+			return err
+		}
+		if tag.RowsAffected() != 1 {
+			return errors.New("binding update matched no row")
+		}
+		return nil
+	})
+	defer holder.Rollback(context.Background())
+	if err := holder.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	var (
+		desired      []byte
+		observedHash []byte
+		syncState    string
+		verified     *time.Time
+		lastErr      *string
+	)
+	if err := f.pool.QueryRow(ctx, `
+		SELECT desired_hash, observed_hash, sync_state, last_verified_at, last_error
+		FROM external_bindings
+		WHERE resource_type = 'exit' AND resource_id = $1 AND provider = $2 AND deployment_id = $3`,
+		exitID, ProviderNetBird, deployment).Scan(&desired, &observedHash, &syncState, &verified, &lastErr); err != nil {
+		t.Fatal(err)
+	}
+	verifiedOK := verified != nil && verified.Equal(seedVerified)
+	errOK := lastErr != nil && *lastErr == seedErr
+	if !bytes.Equal(desired, heldDesired) || !bytes.Equal(observedHash, heldObserved) || syncState != heldSync || !verifiedOK || !errOK {
+		t.Fatalf("binding desired=%x observed=%x sync=%s verified=%v last_error=%v", desired, observedHash, syncState, verified, lastErr)
+	}
+	after, drift := f.nodeState(nodeID)
+	if len(routeElements(drift)) != 0 || len(drift) != 1 || drift[0].Field != "capacity_report" {
+		t.Fatalf("drift=%+v", drift)
+	}
+	versionPlus(t, version, after, 0)
+	if len(*items) != 0 {
+		t.Fatalf("results=%+v", *items)
+	}
+}
