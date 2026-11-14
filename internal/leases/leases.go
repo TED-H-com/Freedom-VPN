@@ -15,6 +15,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
+	"github.com/TED-H-com/Freedom-VPN/internal/usage"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
@@ -28,9 +29,8 @@ import (
 const DefaultMaxOfflineLeaseSeconds = 86400
 
 // ProvisionalGrantlessLeaseSeconds is the central expiry backstop (60s, D-067)
-// when RenewTx issues a grant-less lease for a published exit whose
-// provisioning_state is not yet ready. A ready node keeps the configured
-// max_offline_lease_seconds window (D-065).
+// when RenewTx issues a grant-less lease for a published exit that is not
+// ready or while the usage ledger is in recovery.
 const ProvisionalGrantlessLeaseSeconds = 60
 
 // Signer signs a canonical JSON payload for a given key purpose (`lease`).
@@ -291,7 +291,7 @@ func (s *Service) Renew(
 }
 
 // RenewTx processes `POST /agent/lease-renewals` inside the caller's transaction,
-// holding FOR SHARE row locks on nodes, members, and entitlements until commit (§14.4, §16.3).
+// holding FOR SHARE row locks on the ledger, nodes, members, and entitlements until commit (§14.4, §16.3).
 func (s *Service) RenewTx(
 	ctx context.Context,
 	tx pgx.Tx,
@@ -324,6 +324,13 @@ func (s *Service) RenewTx(
 	}
 	maxOfflineDur := time.Duration(maxOfflineSec) * time.Second
 
+	// Freeze and recovery lock the ledger before nodes. Hold the same order and
+	// keep the mode stable until this renewal commits.
+	ledgerMode, err := lockUsageLedgerMode(ctx, tx)
+	if err != nil {
+		return api.ServingLeaseEnvelope{}, err
+	}
+
 	// 1. Verify node and incarnation identity and revocation status.
 	var (
 		lifecycleState       string
@@ -331,7 +338,7 @@ func (s *Service) RenewTx(
 		currentIncarnationID *uuid.UUID
 		desiredGenStr        string
 	)
-	err := tx.QueryRow(ctx, `
+	err = tx.QueryRow(ctx, `
 		SELECT lifecycle_state, provisioning_state, current_incarnation_id, desired_config_generation::text
 		FROM nodes
 		WHERE id = $1
@@ -388,6 +395,9 @@ func (s *Service) RenewTx(
 		if err := json.Unmarshal(existingEnvBytes, &outEnv); err != nil {
 			return api.ServingLeaseEnvelope{}, err
 		}
+		if err := allowLeaseReplay(ledgerMode, outEnv); err != nil {
+			return api.ServingLeaseEnvelope{}, err
+		}
 		return outEnv, nil
 	} else if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return api.ServingLeaseEnvelope{}, err
@@ -438,13 +448,11 @@ func (s *Service) RenewTx(
 	publishedAndRegistered := pubIntentStr == string(api.PublicationIntentPublished) &&
 		lifecycleState == string(api.LifecycleStateRegistered)
 	nodeReady := provisioningState == string(api.ProvisioningStateReady) && !mappingFrozen
-	includeMembers := publishedAndRegistered && nodeReady && len(groupIDs) > 0
+	includeMembers := ledgerMode == usage.LedgerModeNormal && publishedAndRegistered && nodeReady && len(groupIDs) > 0
 
-	// D-067 central backstop: when includeMembers is false on a published exit because
-	// provisioning_state is not ready or mapping is frozen (D-084), issue the grant-less lease with ExpiresAt 60s
-	// after issued_at so an agent that waits for the renewal lead still renews promptly.
-	// Never shorten the lease of a ready node.
-	if publishedAndRegistered && !nodeReady {
+	// Published exits without grants due to readiness or ledger recovery renew
+	// promptly, bounded by the configured maximum even if it is less than 60s.
+	if publishedAndRegistered && (!nodeReady || ledgerMode != usage.LedgerModeNormal) {
 		provisionalDur := time.Duration(ProvisionalGrantlessLeaseSeconds) * time.Second
 		if provisionalDur < maxOfflineDur {
 			nodeLeaseEnd = issuedAt.Add(provisionalDur)
