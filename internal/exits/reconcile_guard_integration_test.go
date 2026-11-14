@@ -325,6 +325,70 @@ func TestReconcileNetBird_EvidenceSkipsBindingRepublishedDuringWrite(t *testing.
 	}
 }
 
+// TestReconcileNetBird_EvidenceSkipsBindingValueChangedDuringWrite changes
+// one binding value at a time while the evidence update waits. The last_error
+// case is a publication retry that fails for another reason with the same
+// desired hash.
+func TestReconcileNetBird_EvidenceSkipsBindingValueChangedDuringWrite(t *testing.T) {
+	changedAt := time.Date(2026, 11, 14, 12, 30, 0, 0, time.UTC)
+	cases := []struct {
+		name   string
+		column string
+		value  any
+	}{
+		{name: "observed_hash", column: "observed_hash", value: bytes.Repeat([]byte{0x32}, 32)},
+		{name: "sync_state", column: "sync_state", value: "synced"},
+		{name: "last_error", column: "last_error", value: "publish: second failure"},
+		{name: "last_observed_at", column: "last_observed_at", value: changedAt},
+		{name: "last_verified_at", column: "last_verified_at", value: changedAt},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			holdEvidenceBindingDuringWrite(t, tc.column, tc.value)
+		})
+	}
+}
+
+func holdEvidenceBindingDuringWrite(t *testing.T, column string, value any) {
+	t.Helper()
+	f := newReconcileFixture(t)
+	exitID := uuid.MustParse("00000000-0000-4000-8000-0000000000d5")
+	const deployment = "nb-main"
+	nodeID := f.seedOrdered(exitID, deployment, string(api.PublicationIntentPublished))
+	f.setDrift(nodeID, []api.StateDrift{{
+		Field:    "capacity_report",
+		Desired:  presence.NewNullableWithValue("stay"),
+		Observed: presence.NewNullableWithValue("stay"),
+	}})
+	version, _ := f.nodeState(nodeID)
+	f.seedCheckedBinding(exitID, deployment, "nb-bind")
+	f.nb.SetExitEvidence(exitID, PublicationEvidenceError("route_ambiguous"))
+	f.exec(`UPDATE external_bindings SET sync_state = 'error', last_error = $4 WHERE resource_type = 'exit' AND resource_id = $1 AND provider = $2 AND deployment_id = $3`,
+		exitID, ProviderNetBird, deployment, "publish: first failure")
+	ctx, cancel := context.WithTimeout(f.ctx, 45*time.Second)
+	defer cancel()
+	var left string
+	items, done, holder := f.reconcileBlockedByHook(ctx, func(tx pgx.Tx) error {
+		if err := setBindingColumn(ctx, tx, exitID, deployment, column, value); err != nil {
+			return err
+		}
+		var err error
+		left, err = bindingRowText(ctx, tx, exitID, deployment)
+		return err
+	})
+	defer holder.Rollback(context.Background())
+	if err := holder.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	assertReconcileSkipped(t, f, nodeID, version, *items)
+	if got := f.bindingText(exitID); got != left {
+		t.Fatalf("binding changed\nleft %s\nafter %s", left, got)
+	}
+}
+
 func TestReconcileNetBird_SkipsBindingValueChangedDuringWrite(t *testing.T) {
 	republishedAt := time.Date(2026, 11, 14, 12, 30, 0, 0, time.UTC)
 	cases := []struct {
