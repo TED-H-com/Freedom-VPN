@@ -29,12 +29,12 @@ import (
 // NodeJobs is injectable for composition and tests. External calls all go through
 // the NetBird adapter; it verifies remote state before returning success.
 func NodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, publicationAdapter ...exits.NetBirdAdapter) Registry {
-	return nodeJobs(r, nb, fetch, attempts, r.DesiredStateCompiler(), publicationAdapter...)
+	return nodeJobs(r, nb, fetch, attempts, r.DesiredStateCompiler(), publicationAdapter...).handlers()
 }
 
-func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) Registry {
-	jobs := Registry{}
-	jobs.Register("node.staleness.sweep", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, attempts int, compiler *desiredstate.Compiler, publicationAdapter ...exits.NetBirdAdapter) jobRegistrations {
+	jobs := jobRegistrations{}
+	jobs.Register("node.staleness.sweep", 1, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		ctx = commandtx.WithClaim(ctx, event)
 		offlineAfter := time.Duration(r.Config.OnlineSeconds) * time.Second
 		staleAfter := min(nodelib.DefaultStaleTimeout, offlineAfter)
@@ -46,14 +46,14 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		})
 		return "staleness-sweep:" + event.ID.String(), err
 	})
-	jobs.Register(nodelib.EventGenerationHoldCheck, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+	jobs.Register(nodelib.EventGenerationHoldCheck, 1, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		if err := nodelib.ValidateGenerationHoldEvent(event); err != nil {
 			return "", err
 		}
 		err := r.Nodes.ReconcileGenerationHolds(commandtx.WithClaim(ctx, event), event.AggregateID)
 		return "generation-hold:" + event.AggregateID.String(), err
 	})
-	jobs.Register("node.resolver_documents.reconcile", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+	jobs.Register("node.resolver_documents.reconcile", 1, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		ctx = commandtx.WithClaim(ctx, event)
 		if err := r.ReconcileResolverDocuments(ctx); err != nil {
 			return "", err
@@ -63,7 +63,7 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		})
 		return "resolver-reconciliation:" + event.ID.String(), err
 	})
-	jobs.Register("node.peer.discover", nodePeerDiscovery(r, nb, attempts))
+	jobs.Register("node.peer.discover", 2, nodePeerDiscovery(r, nb, attempts))
 	var publication exits.NetBirdAdapter = httpwire.NewPublicationAdapter(r, nb)
 	if len(publicationAdapter) > 1 {
 		panic("at most one publication adapter")
@@ -72,7 +72,7 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		publication = publicationAdapter[0]
 	}
 	pub := exits.NewService(r.Pool, compiler, publication)
-	jobs.Register(desiredstate.EventNodePublicationChanged, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+	jobs.Register(desiredstate.EventNodePublicationChanged, 3, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		var payload struct {
 			OperationID uuid.UUID `json:"operation_id"`
 		}
@@ -134,14 +134,14 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		}
 		return op.OperationId.String(), nil
 	})
-	jobs.Register("release.verify", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+	jobs.Register("release.verify", 1, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		ctx = commandtx.WithClaim(ctx, event)
 		if e := r.Releases.VerifyRelease(ctx, event.AggregateID, fetch); e != nil {
 			return "", e
 		}
 		return "release_verification:" + event.AggregateID.String(), nil
 	})
-	jobs.Register("node.provision.requested", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+	jobs.Register("node.provision.requested", 2, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		var p enrollment.ProvisionEvent
 		if e := json.Unmarshal(event.Payload, &p); e != nil {
 			return "", e
@@ -191,7 +191,7 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		})
 		return "bootstrap:" + p.IncarnationID.String(), e
 	})
-	jobs.Register("node.peer.observe", func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+	jobs.Register("node.peer.observe", 2, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		var payload struct {
 			ReportID uuid.UUID `json:"report_id"`
 		}
@@ -292,7 +292,7 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		return "reconciliation:" + event.ID.String(), e
 	}
 	for _, name := range []string{"node.reconcile", "fleet.update_created", "fleet.first_sync_created", "fleet.update_retry", "fleet.release_support_changed", "node.updated"} {
-		jobs.Register(name, reconcile)
+		jobs.Register(name, 1, reconcile)
 	}
 	return jobs
 }
@@ -339,7 +339,9 @@ func resolverReconcilePeriod(seconds int) time.Duration {
 // nodes builds once from the process-owned pool/configuration (D-026). The
 // dispatcher is the only outbox claimant; the runner only seeds durable work.
 func nodes() Domain {
-	return Domain{Name: "nodes", Build: func(ctx context.Context, d Dependencies) (Built, error) {
+	return Domain{Name: "nodes", Describe: func() registration {
+		return registration{Jobs: nodeJobs(&httpwire.Runtime{}, nil, nil, 1, nil), Runners: []Runner{nodeRunner(nil)}}
+	}, Build: func(ctx context.Context, d Dependencies) (Built, error) {
 		cfg, err := config.LoadNodes(d.Config.NodesConfigFile)
 		if err != nil {
 			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
@@ -357,13 +359,12 @@ func nodes() Domain {
 			return Built{}, &config.SettingError{Name: "nodes_config_file", Err: err}
 		}
 		compiler := runtime.DesiredStateCompiler()
-		return Built{
-			Jobs: nodeJobs(runtime, adapter, fetch, d.Config.WorkerAttempts, compiler),
+		return (Built{
+			Jobs: nodeJobs(runtime, adapter, fetch, d.Config.WorkerAttempts, compiler).handlers(),
 			// D-026: all decorators run before member/device jobs, independent
 			// of domain build order. Share the configured signer, TTL and DNS.
 			Context: func(ctx context.Context) context.Context { return membersruntime.WithCompiler(ctx, compiler) },
-			Runners: []func(context.Context) error{func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }},
-		}, nil
+		}).withRunners(nodeRunner(runtime)), nil
 	}}
 }
 
@@ -374,21 +375,10 @@ func RunNodeSchedule(ctx context.Context, runtime *httpwire.Runtime) error {
 	if runtime == nil || runtime.Pool == nil || runtime.Config.ReconcileSeconds < 1 {
 		return errors.New("node schedule configuration required")
 	}
-	seed := func() error {
-		return commandtx.InTx(ctx, runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
-			if err := enqueueNodeReconcile(ctx, tx, uuid.Nil, time.Now()); err != nil {
-				return err
-			}
-			if err := enqueueScheduledNodeJob(ctx, tx, "node.resolver_documents.reconcile", uuid.Nil, time.Now()); err != nil {
-				return err
-			}
-			return enqueueScheduledNodeJob(ctx, tx, "node.staleness.sweep", uuid.Nil, time.Now())
-		})
-	}
 	ticker := time.NewTicker(resolverReconcilePeriod(runtime.Config.ReconcileSeconds))
 	defer ticker.Stop()
 	for {
-		if err := seed(); err != nil {
+		if err := nodeScheduleCycle(ctx, runtime); err != nil {
 			if ctx.Err() != nil {
 				return nil
 			}
@@ -557,4 +547,21 @@ func recordDiscoveryFailure(ctx context.Context, tx pgx.Tx, p nodeDiscovery, cau
 		return err
 	}
 	return audit.Append(ctx, tx, db.AuditEvent{ID: uuid.Must(uuid.NewV7()), Actor: nodelib.SystemActorUUID.String(), ActorType: "system", Action: "node.peer_discovery_failed", Resource: "node:" + p.NodeID.String(), OperationID: &p.OperationID, Result: "failed"}, nil, map[string]any{"incarnation_id": p.IncarnationID, "reason": reason}, "incarnation_id", "reason")
+}
+
+func nodeRunner(runtime *httpwire.Runtime) Runner {
+	// One fleet-locked transaction enqueues all three scheduled events.
+	return Runner{Name: "nodes.schedule", Peak: 1, Run: func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }}
+}
+
+func nodeScheduleCycle(ctx context.Context, runtime *httpwire.Runtime) error {
+	return commandtx.InTx(ctx, runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := enqueueNodeReconcile(ctx, tx, uuid.Nil, time.Now()); err != nil {
+			return err
+		}
+		if err := enqueueScheduledNodeJob(ctx, tx, "node.resolver_documents.reconcile", uuid.Nil, time.Now()); err != nil {
+			return err
+		}
+		return enqueueScheduledNodeJob(ctx, tx, "node.staleness.sweep", uuid.Nil, time.Now())
+	})
 }

@@ -21,6 +21,10 @@ func main() {
 		if errors.As(err, &setting) {
 			log.Error("invalid startup setting", "setting", setting.Setting())
 		}
+		var budget *worker.PoolBudgetError
+		if errors.As(err, &budget) {
+			log.Error(budget.Error())
+		}
 		log.Error("worker stopped", "error_code", "STARTUP_OR_RUNTIME_FAILURE")
 		os.Exit(1)
 	}
@@ -35,11 +39,15 @@ func run(log *slog.Logger) error {
 	log.Info("effective configuration", "config", c.Effective())
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	maxConns, e := worker.PoolSize(c.WorkerConcurrency)
+	if e != nil {
+		return e
+	}
 	dsn, e := config.ReadSecret(c.DatabaseURLFile)
 	if e != nil {
 		return e
 	}
-	pool, e := db.Open(ctx, dsn, db.OpenOptions{})
+	pool, e := db.Open(ctx, dsn, db.OpenOptions{MaxConns: maxConns})
 	if e != nil {
 		return e
 	}

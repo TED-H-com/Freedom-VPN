@@ -28,7 +28,7 @@ func WithMembers(ctx context.Context, s *membersruntime.Services) context.Contex
 	return context.WithValue(ctx, membersContextKey{}, s)
 }
 func members() Domain {
-	return Domain{Name: "members", Build: func(_ context.Context, d Dependencies) (Built, error) {
+	return Domain{Name: "members", Describe: func() registration { return registration{Jobs: memberJobs(), Runners: []Runner{memberRunner(nil)}} }, Build: func(_ context.Context, d Dependencies) (Built, error) {
 		cfg, e := config.LoadMembersForIssuer(d.Config.MembersConfigFile, d.Config.OIDCIssuer)
 		if e != nil {
 			return Built{}, e
@@ -49,17 +49,30 @@ func members() Domain {
 				return Built{}, e
 			}
 		}
-		return Built{Jobs: MemberJobs(), Context: func(ctx context.Context) context.Context { return WithMembers(ctx, services) }, Runners: []func(context.Context) error{func(ctx context.Context) error { return RunMemberSchedule(ctx, services) }}}, nil
+		return (Built{Jobs: MemberJobs(), Context: func(ctx context.Context) context.Context { return WithMembers(ctx, services) }}).withRunners(memberRunner(services)), nil
 	}}
 }
 
 // MemberJobs returns a fresh registry; Open merges it and rejects overlap.
 // D-031 makes checkout synchronous. D-038 leaves legacy session events in
 // disposable development databases to the observable unknown-event path.
-func MemberJobs() Registry {
-	r := Registry{}
-	for _, name := range []string{"member.entitlement_changed", "member.grant_revoked", "member.suspended", "device.authorized", "device.revoked", "netbird.device_sync", "billing.inbox_received", "billing.reconcile", "members.reconcile", "devices.discover"} {
-		r.Register(name, memberJob)
+func MemberJobs() Registry { return memberJobs().handlers() }
+
+func memberJobs() jobRegistrations {
+	r := jobRegistrations{}
+	// Capture + member lock + device lock + deployment lock + binding query.
+	for _, name := range []string{"member.entitlement_changed", "member.grant_revoked", "member.suspended"} {
+		r.Register(name, 5, memberJob)
+	}
+	// Device events omit the member lock; observations also omit capture.
+	for _, name := range []string{"device.authorized", "device.revoked"} {
+		r.Register(name, 4, memberJob)
+	}
+	r.Register("netbird.device_sync", 3, memberJob)
+	r.Register("members.reconcile", 4, memberJob)
+	// Discovery and billing use sequential transactions, without session locks.
+	for _, name := range []string{"billing.inbox_received", "billing.reconcile", "devices.discover"} {
+		r.Register(name, 1, memberJob)
 	}
 	return r
 }
@@ -360,27 +373,8 @@ func RunMemberSchedule(ctx context.Context, s *membersruntime.Services) error {
 	if s == nil || s.HTTP.Members == nil || s.ReconcileInterval < time.Second || s.DeviceInterval < time.Second {
 		return errors.New("member schedule configuration required")
 	}
-	schedule := func(name string, interval time.Duration) error {
-		raw, e := canonjson.Marshal([]string{name, time.Now().UTC().Truncate(interval).Format(time.RFC3339)})
-		if e != nil {
-			return e
-		}
-		hash, e := canonjson.Hash(raw)
-		if e != nil {
-			return e
-		}
-		id, _ := uuid.FromBytes(hash[:16])
-		id[6] = id[6]&15 | 0x80
-		id[8] = id[8]&63 | 0x80
-		return enqueueMemberWork(ctx, s, name, scheduledPage{Run: id})
-	}
-	for _, v := range []struct {
-		name     string
-		interval time.Duration
-	}{{"billing.reconcile", s.ReconcileInterval}, {"members.reconcile", s.DeviceInterval}, {"devices.discover", s.DeviceInterval}} {
-		if e := schedule(v.name, v.interval); e != nil {
-			return e
-		}
+	if err := memberScheduleCycle(ctx, s); err != nil {
+		return err
 	}
 	billingTick := time.NewTicker(s.ReconcileInterval)
 	defer billingTick.Stop()
@@ -391,15 +385,47 @@ func RunMemberSchedule(ctx context.Context, s *membersruntime.Services) error {
 		case <-ctx.Done():
 			return nil
 		case <-billingTick.C:
-			if e := schedule("billing.reconcile", s.ReconcileInterval); e != nil {
+			if e := scheduleMemberWork(ctx, s, "billing.reconcile", s.ReconcileInterval); e != nil {
 				return e
 			}
 		case <-devicesTick.C:
 			for _, name := range []string{"members.reconcile", "devices.discover"} {
-				if e := schedule(name, s.DeviceInterval); e != nil {
+				if e := scheduleMemberWork(ctx, s, name, s.DeviceInterval); e != nil {
 					return fmt.Errorf("schedule member work: %w", e)
 				}
 			}
 		}
 	}
+}
+
+func memberRunner(services *membersruntime.Services) Runner {
+	// Schedule inserts run in sequential transactions.
+	return Runner{Name: "members.schedule", Peak: 1, Run: func(ctx context.Context) error { return RunMemberSchedule(ctx, services) }}
+}
+
+func scheduleMemberWork(ctx context.Context, s *membersruntime.Services, name string, interval time.Duration) error {
+	raw, e := canonjson.Marshal([]string{name, time.Now().UTC().Truncate(interval).Format(time.RFC3339)})
+	if e != nil {
+		return e
+	}
+	hash, e := canonjson.Hash(raw)
+	if e != nil {
+		return e
+	}
+	id, _ := uuid.FromBytes(hash[:16])
+	id[6] = id[6]&15 | 0x80
+	id[8] = id[8]&63 | 0x80
+	return enqueueMemberWork(ctx, s, name, scheduledPage{Run: id})
+}
+
+func memberScheduleCycle(ctx context.Context, s *membersruntime.Services) error {
+	for _, v := range []struct {
+		name     string
+		interval time.Duration
+	}{{"billing.reconcile", s.ReconcileInterval}, {"members.reconcile", s.DeviceInterval}, {"devices.discover", s.DeviceInterval}} {
+		if e := scheduleMemberWork(ctx, s, v.name, v.interval); e != nil {
+			return e
+		}
+	}
+	return nil
 }

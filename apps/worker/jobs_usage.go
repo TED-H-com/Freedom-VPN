@@ -45,7 +45,8 @@ func usage() Domain {
 // loaded from Dependencies.Config.UsageConfigFile via config.LoadUsage.
 func NewUsageDomain(cfg *config.UsageConfig) Domain {
 	return Domain{
-		Name: "usage",
+		Name:     "usage",
+		Describe: func() registration { return registration{Jobs: usageJobs()} },
 		Build: func(_ context.Context, d Dependencies) (Built, error) {
 			if err := config.ValidateUsageCentralBounds(d.Config); err != nil {
 				return Built{}, err
@@ -93,10 +94,12 @@ func NewUsageDomain(cfg *config.UsageConfig) Domain {
 }
 
 // UsageJobs returns a fresh registry of usage projection and retention outbox handlers.
-func UsageJobs() Registry {
-	r := Registry{}
+func UsageJobs() Registry { return usageJobs().handlers() }
+
+func usageJobs() jobRegistrations {
+	r := jobRegistrations{}
 	for _, name := range []string{"usage.projection_rebuild", "usage.retention_purge"} {
-		r.Register(name, usageJob)
+		r.Register(name, 1, usageJob)
 	}
 	return r
 }
