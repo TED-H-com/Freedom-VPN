@@ -59,8 +59,8 @@ func TestBILL01_MemberDurationIntegerBounds(t *testing.T) {
 					if duration != 366*24*time.Hour {
 						t.Fatalf("duration = %v", duration)
 					}
-				} else if !errors.Is(err, entitlement.ErrInvalid) {
-					t.Fatalf("Entitlements error = %v, want invalid input", err)
+				} else if !errors.Is(err, entitlement.ErrInvalid) || out != (entitlement.Config{}) {
+					t.Fatalf("Entitlements = %+v, %v; want zero config and invalid input", out, err)
 				}
 				data, err := json.Marshal(c)
 				if err != nil {
@@ -81,8 +81,9 @@ func TestBILL01_MemberDurationIntegerBounds(t *testing.T) {
 		c := validMemberSettings()
 		trial := c.GrantMaxSeconds + 1
 		c.TrialMaxSeconds = &trial
-		if _, err := c.Entitlements(); !errors.Is(err, entitlement.ErrInvalid) {
-			t.Fatalf("Entitlements error = %v", err)
+		out, err := c.Entitlements()
+		if !errors.Is(err, entitlement.ErrInvalid) || out != (entitlement.Config{}) {
+			t.Fatalf("Entitlements = %+v, %v; want zero config and invalid input", out, err)
 		}
 	})
 }
