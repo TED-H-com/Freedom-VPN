@@ -20771,7 +20771,7 @@ func TestHandover_Followup55Claims(t *testing.T) {
 			Bytes        int
 		}{
 			{cutDoc, "52925a4def1dfdb5ffa95bdb9cf958e55a872dbd189e4da4879a4d82cd3114a4", 9297},
-			{"tests/handover/testdata/followup55-edits.json", "5006d1f2a99c1d6b99c8afcf6fb0881829b618a0de6689adbe638a2a675d85f4", 122727},
+			{"tests/handover/testdata/followup55-edits.json", "175de7a25db6fbeb06e48a6325b3c6a2a5d2aa4a6f3a84967dffa7186fd0aaa7", 122955},
 			{"tests/handover/testdata/followup55-historical.json", "beb01076abecccbab6697de0d5cd0c476e5bff97f2f9b8614f7d95969935104b", 9152},
 			{"tests/handover/testdata/followup55-main.json", "4dc8815ecdb7a1fd6e24ebe517a241674aa078c9ae64facba77c0e4724d2f99b", 1024},
 			{"tests/handover/testdata/followup55-prior-assertions.json", "ad91edfe01fa04e622190742ebbf5e3305cdb7bffe343bf633357449a7c96ce4", 613},
