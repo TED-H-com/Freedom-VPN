@@ -656,12 +656,15 @@ func (s *Service) ExecuteOperation(ctx context.Context, opID uuid.UUID) (api.Ope
 		return op, nil
 	}
 
-	superseded, err := s.supersedeContradictoryPublication(ctx, opID, op.Resource.Id)
-	if err != nil {
-		return api.Operation{}, err
-	}
-	if superseded {
-		return nodes.GetOperation(ctx, s.pool, opID)
+	switch string(op.Kind) {
+	case nodes.OpKindPublish, nodes.OpKindUnpublish, nodes.OpKindDisable:
+		superseded, err := s.supersedeContradictoryPublication(ctx, opID, op.Resource.Id)
+		if err != nil {
+			return api.Operation{}, err
+		}
+		if superseded {
+			return nodes.GetOperation(ctx, s.pool, opID)
+		}
 	}
 
 	nodeID := op.Resource.Id
