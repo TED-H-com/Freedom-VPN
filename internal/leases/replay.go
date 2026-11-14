@@ -27,6 +27,13 @@ func lockUsageLedgerMode(ctx context.Context, tx pgx.Tx) (usage.LedgerMode, erro
 	}
 }
 
+// LockUsageLedgerMode validates and share-locks the ledger until tx completes.
+// Callers that lock a node before RenewTx must take this fence first.
+func LockUsageLedgerMode(ctx context.Context, tx pgx.Tx) error {
+	_, err := lockUsageLedgerMode(ctx, tx)
+	return err
+}
+
 func allowLeaseReplay(mode usage.LedgerMode, stored api.ServingLeaseEnvelope) error {
 	if mode != usage.LedgerModeNormal && len(stored.Signed.Members) != 0 {
 		return apierr.New(apierr.DependencyUnavailable, "usage ledger recovery in progress")
