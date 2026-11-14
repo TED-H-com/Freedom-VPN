@@ -63,7 +63,7 @@ func ValidateUsageCentralBounds(c Config) error {
 	if c.UsageBodyBytes <= 0 || c.UsageBodyBytes > 1<<30 {
 		return &SettingError{Name: "usage_body_bytes", Err: errors.New("invalid positive bound: usage_body_bytes")}
 	}
-	if c.UsageRate.PerSecond <= 0 || c.UsageRate.PerSecond > 100000 || c.UsageRate.Burst < 1 || c.UsageRate.Burst > 100000 {
+	if !(c.UsageRate.PerSecond >= MinRatePerSecond && c.UsageRate.PerSecond <= MaxRatePerSecond) || c.UsageRate.Burst < 1 || c.UsageRate.Burst > 100000 {
 		return &SettingError{Name: "usage_rate", Err: errors.New("invalid usage_rate bucket")}
 	}
 	if c.IdempotencySeconds <= 0 || c.IdempotencySeconds > 1<<30 {
