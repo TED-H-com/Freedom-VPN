@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
@@ -89,8 +90,13 @@ func (s *Service) ReconcileNetBird(ctx context.Context) ([]ReconcileItem, error)
 			}
 			continue
 		}
+		var written []reconcileWrite
 		if err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-			for _, item := range writes {
+			kept, err := lockAndFilterPage(ctx, tx, writes)
+			if err != nil {
+				return err
+			}
+			for _, item := range kept {
 				if err := mergeExitDrift(ctx, tx, item); err != nil {
 					return err
 				}
@@ -98,11 +104,12 @@ func (s *Service) ReconcileNetBird(ctx context.Context) ([]ReconcileItem, error)
 					return err
 				}
 			}
+			written = kept
 			return nil
 		}); err != nil {
 			return results, err
 		}
-		for _, item := range writes {
+		for _, item := range written {
 			results = append(results, ReconcileItem{NodeID: item.nodeID, ExitID: item.exitID, Drift: item.drift})
 		}
 		if len(page) < pageSize {
@@ -244,6 +251,76 @@ func routeDrift(item reconcileExit, obs ObservedExitState) []api.StateDrift {
 	return []api.StateDrift{}
 }
 
+// lockAndFilterPage locks every node of the page in id order and returns the
+// items whose publication intent, deployment, binding external id and desired
+// hash still match the page read. A changed or missing node is omitted. The
+// statement does not lock exits or external_bindings.
+func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) ([]reconcileWrite, error) {
+	if len(writes) == 0 {
+		return nil, nil
+	}
+	ids := make([]uuid.UUID, len(writes))
+	for i, item := range writes {
+		ids[i] = item.nodeID
+	}
+	rows, err := tx.Query(ctx, `
+		SELECT
+			n.id,
+			e.publication_intent,
+			coalesce(inc.deployment_id, $1),
+			coalesce(eb.external_id, ''),
+			eb.desired_hash
+		FROM exits e
+		JOIN nodes n ON n.id = e.node_id
+		LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
+		LEFT JOIN external_bindings eb
+		  ON eb.resource_type = 'exit'
+		 AND eb.resource_id = e.id
+		 AND eb.provider = $2
+		 AND eb.deployment_id = coalesce(inc.deployment_id, $1)
+		WHERE n.id = ANY($3::uuid[])
+		ORDER BY n.id
+		FOR UPDATE OF n`, DefaultDeploymentID, ProviderNetBird, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	current := make(map[uuid.UUID]reconcileExit, len(writes))
+	for rows.Next() {
+		var item reconcileExit
+		if err := rows.Scan(&item.nodeID, &item.intent, &item.deploymentID, &item.externalID, &item.desiredHash); err != nil {
+			return nil, err
+		}
+		current[item.nodeID] = item
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	kept := make([]reconcileWrite, 0, len(writes))
+	for _, item := range writes {
+		got, ok := current[item.nodeID]
+		if !ok || got.intent != item.intent || got.deploymentID != item.deploymentID || got.externalID != item.externalID || !bytes.Equal(got.desiredHash, item.desiredHash) {
+			continue
+		}
+		kept = append(kept, item)
+	}
+	sort.Slice(kept, func(i, j int) bool {
+		return bytes.Compare(kept[i].nodeID[:], kept[j].nodeID[:]) < 0
+	})
+	return kept, nil
+}
+
+// mergedDriftSQL is the new drift array: foreign elements of this row, in order,
+// then the route elements. It is one expression so the guard and the write
+// cannot diverge. It reads n.drift on the row being updated. A second scan of
+// nodes would keep the snapshot from before this statement waited for the row lock.
+const mergedDriftSQL = `COALESCE((
+			SELECT jsonb_agg(elem ORDER BY ord)
+			FROM jsonb_array_elements(n.drift) WITH ORDINALITY AS t(elem, ord)
+			WHERE COALESCE(elem->>'field', '') NOT IN (
+				'netbird_route', 'netbird_route_config', 'netbird_route_evidence')
+		), '[]'::jsonb) || $2::jsonb`
+
 func mergeExitDrift(ctx context.Context, tx pgx.Tx, item reconcileWrite) error {
 	raw, err := json.Marshal(item.drift)
 	if err != nil {
@@ -251,21 +328,10 @@ func mergeExitDrift(ctx context.Context, tx pgx.Tx, item reconcileWrite) error {
 	}
 	_, err = tx.Exec(ctx, `
 		UPDATE nodes AS n
-		SET drift = calc.new_drift,
+		SET drift = `+mergedDriftSQL+`,
 		    resource_version = n.resource_version + 1
-		FROM (
-			SELECT d.id,
-			       COALESCE((
-			           SELECT jsonb_agg(elem ORDER BY ord)
-			           FROM jsonb_array_elements(d.drift) WITH ORDINALITY AS t(elem, ord)
-			           WHERE COALESCE(elem->>'field', '') NOT IN (
-			               'netbird_route', 'netbird_route_config', 'netbird_route_evidence')
-			       ), '[]'::jsonb) || $2::jsonb AS new_drift
-			FROM nodes d
-			WHERE d.id = $1
-		) AS calc
-		WHERE n.id = calc.id
-		  AND n.drift IS DISTINCT FROM calc.new_drift`, item.nodeID, raw)
+		WHERE n.id = $1
+		  AND n.drift IS DISTINCT FROM `+mergedDriftSQL, item.nodeID, raw)
 	return err
 }
 

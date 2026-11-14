@@ -110,6 +110,7 @@ type FakeNetBirdAdapter struct {
 	pageCalls     int
 	pageExits     [][]uuid.UUID
 	pageErr       error
+	pageReadHook  func(deploymentID string, page []ExitPageRef)
 	unserved      map[string]struct{}
 	exitEvidence  map[uuid.UUID]error
 }
@@ -161,6 +162,14 @@ func (f *FakeNetBirdAdapter) SetUnservedDeployment(deploymentID string) {
 		f.unserved = map[string]struct{}{}
 	}
 	f.unserved[deploymentID] = struct{}{}
+}
+
+// SetPageReadHook runs fn from a served ReadExitPage after the call is recorded
+// and before it returns. fn runs without the adapter lock. A nil fn clears it.
+func (f *FakeNetBirdAdapter) SetPageReadHook(fn func(deploymentID string, page []ExitPageRef)) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.pageReadHook = fn
 }
 
 // SetExitEvidence makes ReadExitPage return err as that exit's evidence.
@@ -314,8 +323,8 @@ func (f *FakeNetBirdAdapter) ReadExitState(_ context.Context, _ string, exitID u
 // the call is counted once, even when pageErr fails the whole call.
 func (f *FakeNetBirdAdapter) ReadExitPage(_ context.Context, deploymentID string, page []ExitPageRef) ([]ExitPageResult, error) {
 	f.mu.Lock()
-	defer f.mu.Unlock()
 	if _, skip := f.unserved[deploymentID]; skip {
+		f.mu.Unlock()
 		return nil, ErrDeploymentNotServed
 	}
 	f.pageCalls++
@@ -325,7 +334,9 @@ func (f *FakeNetBirdAdapter) ReadExitPage(_ context.Context, deploymentID string
 	}
 	f.pageExits = append(f.pageExits, ids)
 	if f.pageErr != nil {
-		return nil, f.pageErr
+		err := f.pageErr
+		f.mu.Unlock()
+		return nil, err
 	}
 	out := make([]ExitPageResult, len(page))
 	for i, item := range page {
@@ -334,6 +345,11 @@ func (f *FakeNetBirdAdapter) ReadExitPage(_ context.Context, deploymentID string
 			continue
 		}
 		out[i].State = f.routeLocked(item.ExitID, item.ExternalID)
+	}
+	hook := f.pageReadHook
+	f.mu.Unlock()
+	if hook != nil {
+		hook(deploymentID, page)
 	}
 	return out, nil
 }
