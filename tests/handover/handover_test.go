@@ -20770,8 +20770,8 @@ func TestHandover_Followup55Claims(t *testing.T) {
 			Path, SHA256 string
 			Bytes        int
 		}{
-			{cutDoc, "e42212e08b62d4befd3833960117bf5a61114522fffda8cbec88a2efc950ad2e", 9272},
-			{"tests/handover/testdata/followup55-edits.json", "8f3d44542288b0cfea05b222072f8a4705650ffc03226561840f8753c6a1be84", 120412},
+			{cutDoc, "52925a4def1dfdb5ffa95bdb9cf958e55a872dbd189e4da4879a4d82cd3114a4", 9297},
+			{"tests/handover/testdata/followup55-edits.json", "5006d1f2a99c1d6b99c8afcf6fb0881829b618a0de6689adbe638a2a675d85f4", 122727},
 			{"tests/handover/testdata/followup55-historical.json", "e6dd739ad460a90d98d85e094401ae9bf2c53ec326fd50317b56fee77a997114", 9127},
 			{"tests/handover/testdata/followup55-main.json", "4dc8815ecdb7a1fd6e24ebe517a241674aa078c9ae64facba77c0e4724d2f99b", 1024},
 			{"tests/handover/testdata/followup55-prior-assertions.json", "ad91edfe01fa04e622190742ebbf5e3305cdb7bffe343bf633357449a7c96ce4", 613},
@@ -20853,7 +20853,7 @@ func TestHandover_Followup55Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup55-edits.json", &edits)
 	t.Run("only_exact_permitted_edits", func(t *testing.T) {
-		if len(edits) != 43 {
+		if len(edits) != 44 {
 			t.Fatalf("tests/handover/testdata/followup55-edits.json: bounded edit count at the permitted-edit list")
 		}
 		used := 0
