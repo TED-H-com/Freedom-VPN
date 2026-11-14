@@ -12,8 +12,8 @@ The admin view's “Retained verification result” is `NodeDetail.serving_read`
 
 欄位語意 / Field semantics: [API contract](../contracts/README.md#revision-15)。已記錄的隔離驗證與剩餘限制 / Recorded isolation evidence and remaining limits: [D164 acceptance](../e2e/at/isolation/d164-acceptance.md)。
 
-**Archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 54](follow-up-54.md), #533, #534, #535 and #536 at `2f5159f3`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
 
 <a id="observation-records"></a>
 

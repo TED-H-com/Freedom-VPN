@@ -42,9 +42,9 @@ Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節
 
 ## 驗證範圍與已知限制
 
-[合併紀錄](ROADMAP.md) 追蹤目前實作；[follow-up 53](handover/follow-up-53.md)
-保存 `e055143e` 的 #529、#528、#530、#531 與 #532 交付切點；較早的
-[follow-up 52](handover/follow-up-52.md) 保留 #527。後續成果以各項驗收紀錄為準。
+[合併紀錄](ROADMAP.md) 追蹤目前實作；[follow-up 54](handover/follow-up-54.md)
+保存 `2f5159f3` 的 #533、#534、#535 與 #536 交付切點；較早的
+[follow-up 53](handover/follow-up-53.md) 保留 `e055143e` 的 #529、#528、#530、#531 與 #532。後續成果以各項驗收紀錄為準。
 單元／整合測試、Linux 實驗環境、真實 App 裝置和正式部署各有不同的驗證範圍。
 本導覽不宣告正式發行，也不以文件整理替代尚未完成的驗收。
 

@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 54](follow-up-54.md), #533, #534, #535 and #536 at `2f5159f3`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated

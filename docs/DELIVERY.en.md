@@ -53,9 +53,9 @@ Living guides can receive scoped corrections. Each cut freezes its pre-revision 
 ## Verification scope and known limits
 
 The [merge record](ROADMAP.md) tracks current implementation;
-[follow-up 53](handover/follow-up-53.md) preserves #529, #528, #530, #531 and #532
-at `e055143e`. The earlier [follow-up 52](handover/follow-up-52.md)
-retains #527. Later results have their own acceptance records.
+[follow-up 54](handover/follow-up-54.md) preserves #533, #534, #535 and #536
+at `2f5159f3`. The earlier [follow-up 53](handover/follow-up-53.md)
+retains #529, #528, #530, #531 and #532 at `e055143e`. Later results have their own acceptance records.
 Unit and integration tests, Linux lab
 tests, actual app devices and production deployments each establish different
 evidence. This guide does not announce a production release or replace unfinished

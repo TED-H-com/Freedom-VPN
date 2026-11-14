@@ -132,8 +132,8 @@ Ubuntu 24.04 LTS 的 amd64 與 arm64。
 <details>
 <summary>工程交付紀錄</summary>
 
-**最近封存的交付切點：**[follow-up 53](docs/handover/follow-up-53.md)，#529, #528, #530, #531 與 #532，版本 e055143e。
-**前次封存的交付切點：**[follow-up 52](docs/handover/follow-up-52.md)，#527，版本 6972be03。
+**最近封存的交付切點：**[follow-up 54](docs/handover/follow-up-54.md)，#533、#534、#535 與 #536，版本 2f5159f3。
+**前次封存的交付切點：**[follow-up 53](docs/handover/follow-up-53.md)，#529、#528、#530、#531 與 #532，版本 e055143e。
 
 </details>
 
