@@ -39,12 +39,17 @@ type ReconcileItem struct {
 }
 
 type reconcileExit struct {
-	exitID       uuid.UUID
-	nodeID       uuid.UUID
-	intent       string
-	deploymentID string
-	externalID   string
-	desiredHash  []byte
+	exitID         uuid.UUID
+	nodeID         uuid.UUID
+	intent         string
+	deploymentID   string
+	externalID     string
+	desiredHash    []byte
+	observedHash   []byte
+	syncState      *string
+	lastError      *string
+	lastObservedAt *time.Time
+	lastVerifiedAt *time.Time
 }
 
 type reconcileWrite struct {
@@ -135,7 +140,12 @@ func (s *Service) queryExitPage(ctx context.Context, cursor uuid.UUID, limit int
 			e.publication_intent,
 			coalesce(inc.deployment_id, $1),
 			coalesce(eb.external_id, ''),
-			eb.desired_hash
+			eb.desired_hash,
+			eb.observed_hash,
+			eb.sync_state,
+			eb.last_error,
+			eb.last_observed_at,
+			eb.last_verified_at
 		FROM exits e
 		JOIN nodes n ON n.id = e.node_id
 		LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
@@ -154,7 +164,10 @@ func (s *Service) queryExitPage(ctx context.Context, cursor uuid.UUID, limit int
 	var items []reconcileExit
 	for rows.Next() {
 		var item reconcileExit
-		if err := rows.Scan(&item.exitID, &item.nodeID, &item.intent, &item.deploymentID, &item.externalID, &item.desiredHash); err != nil {
+		if err := rows.Scan(
+			&item.exitID, &item.nodeID, &item.intent, &item.deploymentID, &item.externalID, &item.desiredHash,
+			&item.observedHash, &item.syncState, &item.lastError, &item.lastObservedAt, &item.lastVerifiedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, item)
@@ -260,6 +273,34 @@ func routeDrift(item reconcileExit, obs ObservedExitState) []api.StateDrift {
 	return []api.StateDrift{}
 }
 
+// samePageRead reports whether publication intent, the deployment and every
+// binding value still equal the page read. Timestamps match as instants.
+// A NULL binding value equals only NULL.
+func samePageRead(page, current reconcileExit) bool {
+	if page.intent != current.intent || page.deploymentID != current.deploymentID || page.externalID != current.externalID {
+		return false
+	}
+	if (page.desiredHash == nil) != (current.desiredHash == nil) || !bytes.Equal(page.desiredHash, current.desiredHash) {
+		return false
+	}
+	if (page.observedHash == nil) != (current.observedHash == nil) || !bytes.Equal(page.observedHash, current.observedHash) {
+		return false
+	}
+	if (page.syncState == nil) != (current.syncState == nil) || (page.syncState != nil && *page.syncState != *current.syncState) {
+		return false
+	}
+	if (page.lastError == nil) != (current.lastError == nil) || (page.lastError != nil && *page.lastError != *current.lastError) {
+		return false
+	}
+	if (page.lastObservedAt == nil) != (current.lastObservedAt == nil) || (page.lastObservedAt != nil && !page.lastObservedAt.Equal(*current.lastObservedAt)) {
+		return false
+	}
+	if (page.lastVerifiedAt == nil) != (current.lastVerifiedAt == nil) || (page.lastVerifiedAt != nil && !page.lastVerifiedAt.Equal(*current.lastVerifiedAt)) {
+		return false
+	}
+	return true
+}
+
 // lockAndFilterPage locks every node of the page in id order, then reads
 // publication intent, deployment, binding external id and desired hash.
 // Items whose values still match the page read are returned in node id
@@ -274,8 +315,11 @@ func routeDrift(item reconcileExit, obs ObservedExitState) []api.StateDrift {
 // READ COMMITTED only the locked row is current; joined rows keep the
 // snapshot taken before the wait. The read is a separate statement, run
 // only after every locked id has been read, so its snapshot is taken
-// after every node lock is held. No writer of those values can commit
-// before this transaction does.
+// after every node lock is held. The node locks keep publication_intent
+// and the deployment unchanged until this transaction commits, because
+// their writers lock the node row first; binding values are written
+// without a node lock, so updateExitBinding repeats every binding value
+// in its WHERE.
 func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) ([]reconcileWrite, error) {
 	if len(writes) == 0 {
 		return nil, nil
@@ -311,7 +355,12 @@ func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) 
 			e.publication_intent,
 			coalesce(inc.deployment_id, $1),
 			coalesce(eb.external_id, ''),
-			eb.desired_hash
+			eb.desired_hash,
+			eb.observed_hash,
+			eb.sync_state,
+			eb.last_error,
+			eb.last_observed_at,
+			eb.last_verified_at
 		FROM exits e
 		JOIN nodes n ON n.id = e.node_id
 		LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
@@ -329,7 +378,10 @@ func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) 
 	current := make(map[uuid.UUID]reconcileExit, len(writes))
 	for rows.Next() {
 		var item reconcileExit
-		if err := rows.Scan(&item.nodeID, &item.intent, &item.deploymentID, &item.externalID, &item.desiredHash); err != nil {
+		if err := rows.Scan(
+			&item.nodeID, &item.intent, &item.deploymentID, &item.externalID, &item.desiredHash,
+			&item.observedHash, &item.syncState, &item.lastError, &item.lastObservedAt, &item.lastVerifiedAt,
+		); err != nil {
 			return nil, err
 		}
 		current[item.nodeID] = item
@@ -340,7 +392,7 @@ func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) 
 	kept := make([]reconcileWrite, 0, len(writes))
 	for _, item := range writes {
 		got, ok := current[item.nodeID]
-		if !ok || got.intent != item.intent || got.deploymentID != item.deploymentID || got.externalID != item.externalID || !bytes.Equal(got.desiredHash, item.desiredHash) {
+		if !ok || !samePageRead(item.reconcileExit, got) {
 			continue
 		}
 		kept = append(kept, item)
@@ -378,7 +430,8 @@ func mergeExitDrift(ctx context.Context, tx pgx.Tx, item reconcileWrite) error {
 
 // updateExitBinding writes the binding this item was checked with. It reports
 // whether a row was updated. An exit with no binding is unchanged and reports
-// false. Both statements require the checked external id and desired hash.
+// false. Both statements require every binding value the page read saw,
+// not only the external id and desired hash.
 // desired_hash uses IS NOT DISTINCT FROM because it can be NULL. An UPDATE
 // that waits for the binding row rechecks WHERE on the newest version, so a
 // binding the publisher changed is not overwritten.
@@ -400,8 +453,14 @@ func updateExitBinding(ctx context.Context, tx pgx.Tx, item reconcileWrite, now 
 			  AND provider = $2
 			  AND deployment_id = $3
 			  AND external_id = $5
-			  AND desired_hash IS NOT DISTINCT FROM $6`,
-			item.exitID, ProviderNetBird, item.deploymentID, "evidence: "+cause, item.externalID, item.desiredHash)
+			  AND desired_hash IS NOT DISTINCT FROM $6
+			  AND observed_hash IS NOT DISTINCT FROM $7
+			  AND sync_state IS NOT DISTINCT FROM $8
+			  AND last_error IS NOT DISTINCT FROM $9
+			  AND last_observed_at IS NOT DISTINCT FROM $10
+			  AND last_verified_at IS NOT DISTINCT FROM $11`,
+			item.exitID, ProviderNetBird, item.deploymentID, "evidence: "+cause, item.externalID, item.desiredHash,
+			item.observedHash, item.syncState, item.lastError, item.lastObservedAt, item.lastVerifiedAt)
 		if err != nil {
 			return false, err
 		}
@@ -425,8 +484,14 @@ func updateExitBinding(ctx context.Context, tx pgx.Tx, item reconcileWrite, now 
 		  AND provider = $2
 		  AND deployment_id = $3
 		  AND external_id = $8
-		  AND desired_hash IS NOT DISTINCT FROM $9`,
-		item.exitID, ProviderNetBird, item.deploymentID, syncState, item.observed.ObservedHash, now, lastErr, item.externalID, item.desiredHash)
+		  AND desired_hash IS NOT DISTINCT FROM $9
+		  AND observed_hash IS NOT DISTINCT FROM $10
+		  AND sync_state IS NOT DISTINCT FROM $11
+		  AND last_error IS NOT DISTINCT FROM $12
+		  AND last_observed_at IS NOT DISTINCT FROM $13
+		  AND last_verified_at IS NOT DISTINCT FROM $14`,
+		item.exitID, ProviderNetBird, item.deploymentID, syncState, item.observed.ObservedHash, now, lastErr, item.externalID, item.desiredHash,
+		item.observedHash, item.syncState, item.lastError, item.lastObservedAt, item.lastVerifiedAt)
 	if err != nil {
 		return false, err
 	}
