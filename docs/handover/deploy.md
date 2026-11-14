@@ -78,7 +78,7 @@ By engineering contract (`D-026`, `D-039`, `D-045`), no production binary compil
 | `docs/members/config.example.json` | `live_mode` | `false` | `true` (enforces the Stripe live-mode event check in `Stripe.ParseEvent`) |
 | `docs/members/config.example.json` | `price_ids` | `["price_test_monthly"]` | Approved live Stripe Price IDs (must match active `plan` policy payload [`price.provider_price_ref`](../../contracts/schemas/policies/plan-payload.schema.json)) |
 | `docs/members/config.example.json` | `vault_active_key`, `vault_key_files` | `"v1-test"`, `/etc/fvpn/secrets/billing-vault-v1.key` | Production key ID (e.g., `"vault-prod-2026-01"`) pointing to a `0600` file containing 32 bytes of CSPRNG output |
-| `docs/members/config.example.json` | `grace_seconds`, `trial_max_seconds`, `grant_max_seconds` | `0`, `0`, `86400` | Explicit business-approved durations (see [`calibration.md`](calibration.md)) |
+| `docs/members/config.example.json` | `grace_seconds`, `trial_max_seconds`, `grant_max_seconds` | `259200`, `604800`, `31622400` | Explicit business-approved durations (see [`calibration.md`](calibration.md)) |
 | `internal/nodes/nodestest/config.go` | `netbird_deployment`, `netbird_token_file` | `"TEST ONLY"`, `"TEST ONLY synthetic token"` | Production deployment identifier (e.g., `"prod-main"`) and restricted NetBird service-user PAT file (`0600`) |
 | `internal/nodes/nodestest/config.go` | `certificate_seconds`, `renewal_overlap_seconds`, `bootstrap_seconds`, `online_seconds`, `stuck_seconds` | `86400`, `300`, `60`, `180`, `600` | `online_seconds` is both the fleet online window and the central receipt-age offline threshold; calibrate production PKI and liveness windows (e.g., 7–30 day node certs with 24–72h overlap; see [`calibration.md`](calibration.md)) |
 | `internal/nodes/nodestest/config.go` | `release_origins` | `["https://releases.example.invalid"]` | Exact HTTPS origin(s) of the immutable production release bucket (`["https://releases.example.com"]`) |
@@ -473,6 +473,8 @@ Carried gap: production payment-provider/webhook setup and provisioning of the A
 }
 ```
 
+`full_refund_policy`, `grace_seconds`, `trial_max_seconds` and `billing_lease_seconds` in this example are owner decisions, not compiled defaults. [Prices, plans, and billing entitlements](calibration.md#11-prices-plans-and-billing-entitlements-51-9-21) names each one. `full_refund_policy` is `revoke_original_period` or `keep_original_period`; this example keeps `revoke_original_period`. Calibration's `test only` status means the repository example is not a silent default, and it leaves this choice in place. `grace_seconds` `259200` is Ted's `待決策` choice, the same duration as `72 * time.Hour` in `entitlement.TestConfig`; the accepted range is `0..31622400` seconds and `0` disables grace. `trial_max_seconds` `0` disables trials and is Ted's `待決策` choice for this production example. The [repository inventory](#2-repository-test-only-inventory-and-production-replacements-1-agentsmd-1-3-8) lists the TEST ONLY durations in `docs/members/config.example.json`, which are a different set from this choice. `billing_lease_seconds` `120` is the core team's choice within `1..600`. Calibration marks that setting `test only` because the repository fixture is a placeholder; this example's `120` is the chosen value.
+
 ### 6.3 `/etc/fvpn/nodes.json` (`nodes_config_file`)
 
 Carried gap: create the central configuration/secret directories and service account with the access required in §7.2 before installing this file; that provisioning procedure remains absent.
@@ -512,7 +514,7 @@ Carried gap: this example uses the staging FileProvider authority from §5.3; pr
 }
 ```
 
-`online_seconds` also controls central receipt-age classification: stale at `min(90 seconds, online_seconds)`, offline at `online_seconds`. The `180`-second example therefore becomes stale at 90 seconds and offline at 180 seconds, visible only after a successful `node.staleness.sweep`. The sweep is scheduled at `min(reconcile_seconds, 60 seconds)` for valid positive configuration; dispatch and retries can delay it. See [liveness calibration](calibration.md#14-lease-durations-max_offline_seconds-node-lifetimes-and-health-attestation-61-64-13-163-165-d-053-d-058-d-074).
+`online_seconds` also controls central receipt-age classification: stale at `min(90 seconds, online_seconds)`, offline at `online_seconds`. The `180`-second example therefore becomes stale at 90 seconds and offline at 180 seconds, visible only after a successful `node.staleness.sweep`. The sweep is scheduled at `min(reconcile_seconds, 60 seconds)` for valid positive configuration; dispatch and retries can delay it. See [liveness calibration](calibration.md#14-lease-durations-max_offline_seconds-node-lifetimes-and-health-attestation-61-64-13-163-165-d-053-d-058-d-074). The `180` in this example is the core team's owner decision. That calibration entry marks `online_seconds` `proposed`. The `180` in the [repository inventory](#2-repository-test-only-inventory-and-production-replacements-1-agentsmd-1-3-8) is the `internal/nodes/nodestest` TEST ONLY fixture.
 
 ### 6.4 `/etc/fvpn/dns.json` (`dns_config_file`, `D-028`, `D-054`, `D-058d`)
 
