@@ -17,9 +17,13 @@ func TestAT13_MonotonicDurationIntegerBounds(t *testing.T) {
 	}{
 		{"maximum", 9223372036, 854775807, 1<<63 - 1, true},
 		{"above_maximum", 9223372036, 854775808, 0, false},
+		{"minimum", -9223372036, -854775808, -1 << 63, true},
+		{"below_minimum", -9223372036, -854775809, 0, false},
 		{"seconds_above_maximum", 9223372037, 0, 0, false},
 		{"positive_wrap", 18446744074, 0, 0, false},
-		{"invalid_nanoseconds", 1, 1000000000, 0, false},
+		{"negative_wrap", -18446744073, 0, 0, false},
+		{"representable_extra_nanoseconds", 1, 1000000000, 2 * time.Second, true},
+		{"representable_negative", -1, 0, -time.Second, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got, ok := MonotonicDuration(tc.seconds, tc.nano)

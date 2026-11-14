@@ -41,11 +41,18 @@ func Mono() (time.Duration, error) {
 	return d, nil
 }
 
-// MonotonicDuration converts a normalized Linux monotonic sample without
-// allowing either the seconds multiplication or the nanoseconds sum to wrap.
+// MonotonicDuration converts a Linux monotonic sample without allowing either
+// the seconds multiplication or the nanoseconds sum to wrap.
 func MonotonicDuration(seconds, nanoseconds int64) (time.Duration, bool) {
-	if seconds < 0 || nanoseconds < 0 || nanoseconds >= int64(time.Second) || seconds > (1<<63-1-nanoseconds)/int64(time.Second) {
+	const maxInt64 = int64(1<<63 - 1)
+	const minInt64 = -maxInt64 - 1
+	const unit = int64(time.Second)
+	if seconds > maxInt64/unit || seconds < minInt64/unit {
 		return 0, false
 	}
-	return time.Duration(seconds)*time.Second + time.Duration(nanoseconds), true
+	scaled := seconds * unit
+	if nanoseconds > 0 && scaled > maxInt64-nanoseconds || nanoseconds < 0 && scaled < minInt64-nanoseconds {
+		return 0, false
+	}
+	return time.Duration(scaled) + time.Duration(nanoseconds), true
 }
