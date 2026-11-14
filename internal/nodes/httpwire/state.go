@@ -185,6 +185,9 @@ func (h *Handlers) RenewServingLease(ctx context.Context, r gen.RenewServingLeas
 	// Use the observation path's fleet-before-node lock order, including
 	// when the HTTP command middleware already owns the transaction.
 	e := commandtx.InTx(ctx, h.Runtime.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if err := leases.LockUsageLedgerMode(ctx, tx); err != nil {
+			return err
+		}
 		if err := h.observeAgentEndpointTx(ctx, tx); err != nil {
 			return err
 		}
