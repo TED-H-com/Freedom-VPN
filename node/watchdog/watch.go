@@ -90,8 +90,11 @@ func LoadConfig(path string) (Config, error) {
 		}
 	}
 	const maxSeconds = int64((1<<63 - 1) / int64(time.Second))
-	if int64(c.WatchdogStaleSeconds) > maxSeconds || int64(c.WatchdogIntervalSeconds) > maxSeconds {
-		return Config{}, errors.New("watchdog: invalid duration")
+	if int64(c.WatchdogStaleSeconds) > maxSeconds {
+		return Config{}, errors.New("watchdog: watchdog_stale_seconds is out of range")
+	}
+	if int64(c.WatchdogIntervalSeconds) > maxSeconds {
+		return Config{}, errors.New("watchdog: watchdog_interval_seconds is out of range")
 	}
 	if c.Datapath.MemberIngress == "" || c.Datapath.Uplink == "" || c.Datapath.SNAT == "" {
 		return Config{}, errors.New("watchdog: datapath is incomplete")

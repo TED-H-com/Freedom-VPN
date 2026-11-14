@@ -47,13 +47,25 @@ func TestAT13_AgentTimingDurationIntegerBounds(t *testing.T) {
 					t.Fatalf("validateTiming error = %v", err)
 				}
 				if !tc.ok {
-					if _, err := Start(Options{Config: c}); err == nil || err.Error() != "agent: invalid duration" {
+					want := "agent: " + field.name + "_seconds is out of range"
+					if err.Error() != want {
+						t.Fatalf("validateTiming error = %v, want %q", err, want)
+					}
+					if _, err := Start(Options{Config: c}); err == nil || err.Error() != want {
 						t.Fatalf("Start error = %v", err)
 					}
 				}
 			})
 		}
 	}
+	t.Run("first_invalid_wins", func(t *testing.T) {
+		n64 := int64(9223372037)
+		n := int(n64)
+		c := Config{RenewLeadSeconds: n, HeartbeatSeconds: n, WatchdogStaleSeconds: n, PollSeconds: n, ObservationSeconds: n}
+		if err := validateTiming(c); err == nil || err.Error() != "agent: renew_lead_seconds is out of range" {
+			t.Fatalf("validateTiming error = %v", err)
+		}
+	})
 }
 
 func TestAT13_LeaseDurationIntegerBounds(t *testing.T) {

@@ -331,9 +331,18 @@ func Start(opt Options) (*Engine, error) {
 
 func validateTiming(c Config) error {
 	const maxSeconds = int64((1<<63 - 1) / int64(time.Second))
-	for _, seconds := range []int{c.RenewLeadSeconds, c.HeartbeatSeconds, c.WatchdogStaleSeconds, c.PollSeconds, c.ObservationSeconds} {
-		if int64(seconds) < -maxSeconds || int64(seconds) > maxSeconds {
-			return errors.New("agent: invalid duration")
+	for _, setting := range []struct {
+		key     string
+		seconds int
+	}{
+		{"renew_lead_seconds", c.RenewLeadSeconds},
+		{"heartbeat_seconds", c.HeartbeatSeconds},
+		{"watchdog_stale_seconds", c.WatchdogStaleSeconds},
+		{"poll_seconds", c.PollSeconds},
+		{"observation_seconds", c.ObservationSeconds},
+	} {
+		if int64(setting.seconds) < -maxSeconds || int64(setting.seconds) > maxSeconds {
+			return fmt.Errorf("agent: %s is out of range", setting.key)
 		}
 	}
 	return nil

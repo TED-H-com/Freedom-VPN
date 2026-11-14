@@ -13,11 +13,11 @@ func TestAT13_WatchdogTimingDurationIntegerBounds(t *testing.T) {
 		t.Skip("overflow examples require 64-bit int")
 	}
 	fields := []struct {
-		name string
-		set  func(*Config, int)
+		name, key string
+		set       func(*Config, int)
 	}{
-		{"stale", func(c *Config, n int) { c.WatchdogStaleSeconds = n }},
-		{"interval", func(c *Config, n int) { c.WatchdogIntervalSeconds = n }},
+		{"stale", "watchdog_stale_seconds", func(c *Config, n int) { c.WatchdogStaleSeconds = n }},
+		{"interval", "watchdog_interval_seconds", func(c *Config, n int) { c.WatchdogIntervalSeconds = n }},
 	}
 	// 18446744074 * 10^9 = 2^64 + 290448384 ns.
 	for _, field := range fields {
@@ -45,10 +45,19 @@ func TestAT13_WatchdogTimingDurationIntegerBounds(t *testing.T) {
 				if (err == nil) != tc.ok {
 					t.Fatalf("LoadConfig error = %v", err)
 				}
-				if !tc.ok && err.Error() != "watchdog: invalid duration" {
-					t.Fatalf("LoadConfig error = %v", err)
+				if want := "watchdog: " + field.key + " is out of range"; !tc.ok && err.Error() != want {
+					t.Fatalf("LoadConfig error = %v, want %q", err, want)
 				}
 			})
 		}
 	}
+	t.Run("first_invalid_wins", func(t *testing.T) {
+		path := filepath.Join(t.TempDir(), "agent.json")
+		if err := os.WriteFile(path, []byte(`{"watchdog_stale_seconds":9223372037,"watchdog_interval_seconds":9223372037}`), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := LoadConfig(path); err == nil || err.Error() != "watchdog: watchdog_stale_seconds is out of range" {
+			t.Fatalf("LoadConfig error = %v", err)
+		}
+	})
 }
