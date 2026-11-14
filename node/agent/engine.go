@@ -245,6 +245,9 @@ type Engine struct {
 
 // Start opens the store, the trust bundle and the control client.
 func Start(opt Options) (*Engine, error) {
+	if err := validateTiming(opt.Config); err != nil {
+		return nil, err
+	}
 	if opt.Clock == nil {
 		opt.Clock = systemClock{}
 	}
@@ -324,6 +327,25 @@ func Start(opt Options) (*Engine, error) {
 		e.reloadResolvers()
 	}
 	return e, nil
+}
+
+func validateTiming(c Config) error {
+	const maxSeconds = int64((1<<63 - 1) / int64(time.Second))
+	for _, setting := range []struct {
+		key     string
+		seconds int
+	}{
+		{"renew_lead_seconds", c.RenewLeadSeconds},
+		{"heartbeat_seconds", c.HeartbeatSeconds},
+		{"watchdog_stale_seconds", c.WatchdogStaleSeconds},
+		{"poll_seconds", c.PollSeconds},
+		{"observation_seconds", c.ObservationSeconds},
+	} {
+		if int64(setting.seconds) < -maxSeconds || int64(setting.seconds) > maxSeconds {
+			return fmt.Errorf("agent: %s is out of range", setting.key)
+		}
+	}
+	return nil
 }
 
 // Close checkpoints a healthy same-boot restart or finishes the withdrawal

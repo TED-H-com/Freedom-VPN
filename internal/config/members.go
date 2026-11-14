@@ -47,6 +47,10 @@ func (c Members) Entitlements() (entitlement.Config, error) {
 	if c.GraceSeconds == nil || c.TrialMaxSeconds == nil {
 		return entitlement.Config{}, errors.New("grace_seconds and trial_max_seconds required")
 	}
+	const maxSeconds = int((366 * 24 * time.Hour) / time.Second)
+	if *c.GraceSeconds < 0 || *c.GraceSeconds > maxSeconds || c.GrantMaxSeconds <= 0 || c.GrantMaxSeconds > maxSeconds || *c.TrialMaxSeconds < 0 || *c.TrialMaxSeconds > c.GrantMaxSeconds {
+		return entitlement.Config{}, entitlement.ErrInvalid
+	}
 	out := entitlement.Config{GraceDuration: time.Duration(*c.GraceSeconds) * time.Second, GraceReason: c.GraceReason, MaxTrialDuration: time.Duration(*c.TrialMaxSeconds) * time.Second, MaxGrantDuration: time.Duration(c.GrantMaxSeconds) * time.Second, DefaultDeviceLimit: c.DeviceLimit}
 	return out, out.Validate()
 }

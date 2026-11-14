@@ -590,6 +590,10 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 	if in.Desired == nil || in.Lease == nil || !in.DesiredOK || !in.LeaseFresh {
 		return enforce.Model{}, 0, nil
 	}
+	const maxSeconds = int64((1<<63 - 1) / int64(time.Second))
+	if seconds := int64(in.Lease.MaxOfflineSeconds); seconds < -maxSeconds || seconds > maxSeconds {
+		return enforce.Model{}, 0, errCapacity
+	}
 	cap, err := in.Desired.NodeCapacity.Get()
 	if err != nil || cap.UpBps <= 0 || cap.DownBps <= 0 {
 		return enforce.Model{}, 0, errCapacity

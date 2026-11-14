@@ -34,5 +34,25 @@ func Mono() (time.Duration, error) {
 	if err := unix.ClockGettime(unix.CLOCK_MONOTONIC, &ts); err != nil {
 		return 0, fmt.Errorf("timeanchor: CLOCK_MONOTONIC: %w", err)
 	}
-	return time.Duration(ts.Sec)*time.Second + time.Duration(ts.Nsec), nil
+	d, ok := MonotonicDuration(int64(ts.Sec), int64(ts.Nsec))
+	if !ok {
+		return 0, fmt.Errorf("timeanchor: CLOCK_MONOTONIC: %w", unix.EOVERFLOW)
+	}
+	return d, nil
+}
+
+// MonotonicDuration converts a Linux monotonic sample without allowing either
+// the seconds multiplication or the nanoseconds sum to wrap.
+func MonotonicDuration(seconds, nanoseconds int64) (time.Duration, bool) {
+	const maxInt64 = int64(1<<63 - 1)
+	const minInt64 = -maxInt64 - 1
+	const unit = int64(time.Second)
+	if seconds > maxInt64/unit || seconds < minInt64/unit {
+		return 0, false
+	}
+	scaled := seconds * unit
+	if nanoseconds > 0 && scaled > maxInt64-nanoseconds || nanoseconds < 0 && scaled < minInt64-nanoseconds {
+		return 0, false
+	}
+	return time.Duration(scaled) + time.Duration(nanoseconds), true
 }

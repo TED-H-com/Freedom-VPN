@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"golang.org/x/sys/unix"
 )
 
@@ -18,7 +19,11 @@ func MonotonicNow() (time.Duration, error) {
 	if err := unix.ClockGettime(unix.CLOCK_MONOTONIC, &ts); err != nil {
 		return 0, err
 	}
-	return time.Duration(ts.Nano()), nil
+	d, ok := timeanchor.MonotonicDuration(int64(ts.Sec), int64(ts.Nsec))
+	if !ok {
+		return 0, unix.EOVERFLOW
+	}
+	return d, nil
 }
 
 // DeadlineEvidence brackets installation, not a hardware timestamp. InstalledBy
