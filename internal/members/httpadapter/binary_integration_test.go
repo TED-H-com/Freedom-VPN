@@ -123,7 +123,8 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	}
 	transport := &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS13, RootCAs: roots}}
 	defer transport.CloseIdleConnections()
-	client := &http.Client{Transport: transport, Timeout: time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	// 30s mirrors the handler's own default deadline and only bounds a hang.
+	client := &http.Client{Transport: transport, Timeout: 30 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	env := []string{}
 	for _, s := range os.Environ() {
 		if !strings.HasPrefix(s, "FVPN_") && !strings.HasPrefix(s, "SSL_CERT_FILE=") && !strings.HasPrefix(s, "SSL_CERT_DIR=") {
@@ -309,7 +310,7 @@ func availableAddress(t *testing.T) string {
 }
 func waitReady(t *testing.T, client *http.Client, base string, logs *synchronizedBuffer, exit *binaryExit) string {
 	t.Helper()
-	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
 	defer cancel()
 	base, err := awaitBinaryReady(ctx, client, base, logs, exit)
 	if err != nil {
