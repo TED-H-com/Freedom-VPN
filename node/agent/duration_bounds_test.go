@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 )
@@ -34,6 +35,13 @@ func TestAT13_AgentTimingDurationIntegerBounds(t *testing.T) {
 			t.Run(field.name+"/"+tc.name, func(t *testing.T) {
 				var c Config
 				field.set(&c, int(tc.n))
+				if tc.n > 0 {
+					var err error
+					c, err = LoadConfig(writeAgentConfig(t, fmt.Sprintf(`, %q: %d`, field.name+"_seconds", tc.n)))
+					if err != nil {
+						t.Fatalf("LoadConfig error = %v", err)
+					}
+				}
 				err := validateTiming(c)
 				if (err == nil) != tc.ok {
 					t.Fatalf("validateTiming error = %v", err)
