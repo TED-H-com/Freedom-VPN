@@ -1,0 +1,21 @@
+[
+  {
+    "source": "tests/handover/handover_test.go",
+    "source_commit": "2f5159f377cb807cd4ed203ef6e4d1785f020ba9",
+    "function": "TestHandover_Followup53Claims",
+    "bytes": 12979,
+    "sha256": "7eae01eca6287b12a157d8c975f56b31d6baf2a3dbdc54565b3de5605860ccd0",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, path)",
+        "after": "readOwnedDoc(t, root, followup54InputPath(path))",
+        "count": 2
+      },
+      {
+        "before": "readOwnedDoc(t, root, e.Path)",
+        "after": "readOwnedDoc(t, root, followup54InputPath(e.Path))",
+        "count": 1
+      }
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+[
+  {
+    "name": "installer",
+    "path": "docs/handover/follow-up-51.md",
+    "heading": "Existing procedures linked and carried gaps",
+    "passage": "- Deployment §9.1: real interface/address/route provisioning; the installer creates dummy links without addresses or routes.",
+    "erratum": "- `docs/handover/follow-up-51.md`, [“Existing procedures linked and carried gaps”](follow-up-51.md#existing-procedures-linked-and-carried-gaps), deployment §9.1: agent datapath interface names must start with `fv`; the installer creates dummy links without addresses or routes, and real interface, address and route provisioning remains a documented gap. See [current node prerequisites](deploy.md#91-node-host-prerequisites-directory-layout-and-configuration-agentsmd-4-nodeenforceapplygo-nodeenforceexecutorgo)."
+  },
+  {
+    "name": "restricted_recovery",
+    "path": "docs/handover/follow-up-51.md",
+    "heading": "Existing procedures linked and carried gaps",
+    "passage": "- Restore drill step 3.2 / backup Steps 6–8: restricted recovery startup completing usage replay, entitlement computation and policy synchronization before the automatic worker starts; current control-only startup can still serve restored authorization.",
+    "erratum": "- `docs/handover/follow-up-51.md`, [“Existing procedures linked and carried gaps”](follow-up-51.md#existing-procedures-linked-and-carried-gaps), restore startup: restricted recovery startup remains absent; a host forwarding fence used for staging is not a product recovery mode. Control can issue leases from restored authorization before newer intent is reapplied; see [current restore ordering and exposure](restore-drill.md#phase-3-rotate-ledger_epoch-and-start-central-services-173-steps-26)."
+  },
+  {
+    "name": "member_zh",
+    "path": "docs/handover/member-guide.md",
+    "heading": "3.2 `AT09`、`AT29`",
+    "passage": "歷史 follow-up 7 的限制與資格條件（當時 `AT28`–`AT32` 為「子集通過、全案 `blocked`」；`AT30` 後於 #265 通過，見[驗收紀錄](../e2e/at/secops/AT30.md)）",
+    "erratum": "- `docs/handover/member-guide.md`, “3.2 AT09、AT29”, historical follow-up 7 qualification in zh-TW: AT30 first passed in [follow-up 9](../e2e/at/secops/history/follow-up-9/AT30.md), then passed again in [follow-up 10](../e2e/at/secops/history/follow-up-10/AT30.md). The [current AT30 record](../e2e/at/secops/AT30.md#at30-restore--follow-up-13) reports a later pass."
+  },
+  {
+    "name": "member_en",
+    "path": "docs/handover/member-guide.md",
+    "heading": "3.2 `AT09`, `AT29`",
+    "passage": "Historical follow-up 7 qualifications (`AT28`–`AT32` were `blocked` with passed subsets; AT30 later passed in #265):",
+    "erratum": "- `docs/handover/member-guide.md`, “3.2 AT09, AT29”, historical follow-up 7 qualification in English: AT30 first passed in [follow-up 9](../e2e/at/secops/history/follow-up-9/AT30.md), then passed again in [follow-up 10](../e2e/at/secops/history/follow-up-10/AT30.md). The [current AT30 record](../e2e/at/secops/AT30.md#at30-restore--follow-up-13) reports a later pass."
+  }
+]
