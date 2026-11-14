@@ -2,6 +2,7 @@ package exits
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/google/uuid"
@@ -44,5 +45,36 @@ func TestFakeNetBirdAdapter_IdempotentRouteCreation(t *testing.T) {
 	st, err := nb.ReadExitState(ctx, "nb-main", exitID, ev1.ExternalID)
 	if err != nil || st.Enabled {
 		t.Fatalf("ReadExitState after withdraw = (%+v, %v), want Enabled=false", st, err)
+	}
+}
+
+func TestFakeNetBirdAdapter_ReadExitPage(t *testing.T) {
+	ctx := context.Background()
+	nb := NewFakeNetBirdAdapter()
+	served := uuid.New()
+	other := uuid.New()
+	nb.InjectRouteState(served, ObservedExitState{Exists: true, Enabled: true, ExternalID: "nb-route-" + served.String(), PeerID: "peer"})
+	nb.SetExitEvidence(other, PublicationEvidenceError("route_ambiguous"))
+	nb.SetUnservedDeployment("other-deployment")
+
+	if _, err := nb.ReadExitPage(ctx, "other-deployment", []ExitPageRef{{ExitID: served}}); !errors.Is(err, ErrDeploymentNotServed) || nb.PageCalls() != 0 {
+		t.Fatalf("unserved deployment call=%d err=%v", nb.PageCalls(), err)
+	}
+	page := []ExitPageRef{{ExitID: served, ExternalID: "nb-route-" + served.String()}, {ExitID: other}}
+	got, err := nb.ReadExitPage(ctx, "nb-main", page)
+	if err != nil || nb.PageCalls() != 1 || len(got) != 2 || !got[0].State.Exists || got[0].Evidence != nil {
+		t.Fatalf("page=(%+v, %v) calls=%d", got, err, nb.PageCalls())
+	}
+	var evidence PublicationEvidenceError
+	if !errors.As(got[1].Evidence, &evidence) || string(evidence) != "route_ambiguous" {
+		t.Fatalf("evidence=%v", got[1].Evidence)
+	}
+	nb.SetPageError(errors.New("TEST ONLY page failed"))
+	if _, err = nb.ReadExitPage(ctx, "nb-main", page); err == nil || nb.PageCalls() != 2 {
+		t.Fatalf("page error call=%d err=%v", nb.PageCalls(), err)
+	}
+	seen := nb.PageExits()
+	if len(seen) != 2 || len(seen[0]) != 2 || seen[0][0] != served || seen[0][1] != other {
+		t.Fatalf("page exits=%v", seen)
 	}
 }

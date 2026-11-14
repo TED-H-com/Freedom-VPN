@@ -68,12 +68,34 @@ type ObservedExitState struct {
 	ObservedRef  string
 }
 
+// ExitPageRef is one exit in a single deployment page.
+type ExitPageRef struct {
+	ExitID     uuid.UUID
+	ExternalID string
+}
+
+// ExitPageResult is one exit's read-back from a page snapshot.
+// Evidence is a PublicationEvidenceError when State is not an observation.
+type ExitPageResult struct {
+	State    ObservedExitState
+	Evidence error
+}
+
+// ErrDeploymentNotServed means the adapter does not serve this deployment.
+// It is returned before any NetBird request. Reconcile skips those exits.
+var ErrDeploymentNotServed = errors.New("exits: netbird deployment is not served")
+
 // NetBirdAdapter abstracts the central NetBird management API for exit publication,
 // withdrawal, and read-back reconciliation (§7.2).
 type NetBirdAdapter interface {
 	PublishExit(ctx context.Context, spec PublishExitSpec) (PublishedRouteEvidence, error)
 	WithdrawExit(ctx context.Context, deploymentID string, exitID uuid.UUID, externalID string) (string, error)
 	ReadExitState(ctx context.Context, deploymentID string, exitID uuid.UUID, externalID string) (ObservedExitState, error)
+	// ReadExitPage reads NetBird once for the exits of one deployment page.
+	// Results are in input order. ErrDeploymentNotServed means the deployment
+	// is not served and no request was made. Any other error is a whole-call
+	// failure. A per-exit PublicationEvidenceError is that result's Evidence.
+	ReadExitPage(ctx context.Context, deploymentID string, exits []ExitPageRef) ([]ExitPageResult, error)
 }
 
 // FakeNetBirdAdapter is a thread-safe in-memory NetBirdAdapter for unit and integration tests.
@@ -87,6 +109,11 @@ type FakeNetBirdAdapter struct {
 	publishErr    error
 	readbackErr   error
 	withdrawErr   error
+	pageCalls     int
+	pageExits     [][]uuid.UUID
+	pageErr       error
+	unserved      map[string]struct{}
+	exitEvidence  map[uuid.UUID]error
 }
 
 // NewFakeNetBirdAdapter constructs a FakeNetBirdAdapter.
@@ -96,6 +123,8 @@ func NewFakeNetBirdAdapter() *FakeNetBirdAdapter {
 		exitToRouteID: make(map[uuid.UUID]string),
 	}
 }
+
+var _ NetBirdAdapter = (*FakeNetBirdAdapter)(nil)
 
 // SetPublishError configures PublishExit to fail with err when non-nil.
 func (f *FakeNetBirdAdapter) SetPublishError(err error) {
@@ -116,6 +145,57 @@ func (f *FakeNetBirdAdapter) SetWithdrawError(err error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.withdrawErr = err
+}
+
+// SetPageError makes ReadExitPage fail for every served deployment.
+func (f *FakeNetBirdAdapter) SetPageError(err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.pageErr = err
+}
+
+// SetUnservedDeployment makes ReadExitPage return ErrDeploymentNotServed
+// for deploymentID without counting a page read.
+func (f *FakeNetBirdAdapter) SetUnservedDeployment(deploymentID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.unserved == nil {
+		f.unserved = map[string]struct{}{}
+	}
+	f.unserved[deploymentID] = struct{}{}
+}
+
+// SetExitEvidence makes ReadExitPage return err as that exit's evidence.
+// A nil err clears a previous injection.
+func (f *FakeNetBirdAdapter) SetExitEvidence(exitID uuid.UUID, err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.exitEvidence == nil {
+		f.exitEvidence = map[uuid.UUID]error{}
+	}
+	if err == nil {
+		delete(f.exitEvidence, exitID)
+		return
+	}
+	f.exitEvidence[exitID] = err
+}
+
+// PageCalls returns how many ReadExitPage calls read a served deployment.
+func (f *FakeNetBirdAdapter) PageCalls() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.pageCalls
+}
+
+// PageExits returns the exit IDs of each served ReadExitPage call, in order.
+func (f *FakeNetBirdAdapter) PageExits() [][]uuid.UUID {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	out := make([][]uuid.UUID, len(f.pageExits))
+	for i, ids := range f.pageExits {
+		out[i] = append([]uuid.UUID(nil), ids...)
+	}
+	return out
 }
 
 // InjectRouteState mutates the in-memory NetBird route state directly (for simulating external drift).
@@ -228,6 +308,39 @@ func (f *FakeNetBirdAdapter) ReadExitState(_ context.Context, _ string, exitID u
 	if f.readbackErr != nil {
 		return ObservedExitState{}, f.readbackErr
 	}
+	return f.routeLocked(exitID, externalID), nil
+}
+
+// ReadExitPage returns one in-memory result per exit. A deployment in the
+// unserved set returns ErrDeploymentNotServed and is not counted. Otherwise
+// the call is counted once, even when pageErr fails the whole call.
+func (f *FakeNetBirdAdapter) ReadExitPage(_ context.Context, deploymentID string, page []ExitPageRef) ([]ExitPageResult, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if _, skip := f.unserved[deploymentID]; skip {
+		return nil, ErrDeploymentNotServed
+	}
+	f.pageCalls++
+	ids := make([]uuid.UUID, len(page))
+	for i, item := range page {
+		ids[i] = item.ExitID
+	}
+	f.pageExits = append(f.pageExits, ids)
+	if f.pageErr != nil {
+		return nil, f.pageErr
+	}
+	out := make([]ExitPageResult, len(page))
+	for i, item := range page {
+		if err := f.exitEvidence[item.ExitID]; err != nil {
+			out[i].Evidence = err
+			continue
+		}
+		out[i].State = f.routeLocked(item.ExitID, item.ExternalID)
+	}
+	return out, nil
+}
+
+func (f *FakeNetBirdAdapter) routeLocked(exitID uuid.UUID, externalID string) ObservedExitState {
 	extID := externalID
 	if extID == "" {
 		extID = f.exitToRouteID[exitID]
@@ -236,7 +349,7 @@ func (f *FakeNetBirdAdapter) ReadExitState(_ context.Context, _ string, exitID u
 		return ObservedExitState{
 			Exists:      false,
 			ObservedRef: fmt.Sprintf("netbird:exit:%s:absent", exitID),
-		}, nil
+		}
 	}
 	st, ok := f.routes[extID]
 	if !ok {
@@ -244,9 +357,9 @@ func (f *FakeNetBirdAdapter) ReadExitState(_ context.Context, _ string, exitID u
 			Exists:      false,
 			ExternalID:  extID,
 			ObservedRef: fmt.Sprintf("netbird:route:%s:absent", extID),
-		}, nil
+		}
 	}
-	return st, nil
+	return st
 }
 
 // Service manages exit publication commands, worker execution, and NetBird reconciliation.
