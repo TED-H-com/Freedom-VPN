@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -1064,43 +1065,51 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
 	})
 
 	t.Run("adoption_lock_does_not_trigger_probe_exception_install", func(t *testing.T) {
-		r, src, _ := r20ServedPendingDelta(t)
-		cfg := r.eng.cfg
-		if err := os.MkdirAll(cfg.JournalDir, 0o700); err != nil {
-			t.Fatal(err)
-		}
-		ch, err := healthattest.Issue(healthattest.Input{
-			TxnID:         uuid.Must(uuid.NewV7()).String(),
-			ReleaseID:     cfg.ReleaseID,
-			NodeID:        r.eng.nodeID.String(),
-			IncarnationID: r.eng.incID.String(),
-			BootID:        r.eng.bootID.String(),
-			Now:           r.clock.Wall().Add(-time.Second),
-			TTL:           30 * time.Second,
-			Components: healthattest.Components{
-				NodeAgent:   cfg.AgentRelease,
-				Netbird:     "0.0.0-test",
-				NodeUpdater: "0.0.0-test",
-				Enforcement: "1",
-			},
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		ch.Probe = labProbe()
-		if err := healthattest.WriteChallenge(cfg.JournalDir, ch); err != nil {
-			t.Fatal(err)
-		}
+		synctest.Test(t, func(t *testing.T) {
+			r, src, _ := r20ServedPendingDelta(t, func(r *rig) {
+				closeAdoptionControl(t, r)
+				// Persist changed counters after a nonempty sample interval.
+				time.Sleep(time.Microsecond)
+			})
+			// The additional bytes arrived during the process gap.
+			time.Sleep(time.Microsecond)
+			cfg := r.eng.cfg
+			if err := os.MkdirAll(cfg.JournalDir, 0o700); err != nil {
+				t.Fatal(err)
+			}
+			ch, err := healthattest.Issue(healthattest.Input{
+				TxnID:         uuid.Must(uuid.NewV7()).String(),
+				ReleaseID:     cfg.ReleaseID,
+				NodeID:        r.eng.nodeID.String(),
+				IncarnationID: r.eng.incID.String(),
+				BootID:        r.eng.bootID.String(),
+				Now:           r.clock.Wall().Add(-time.Second),
+				TTL:           30 * time.Second,
+				Components: healthattest.Components{
+					NodeAgent:   cfg.AgentRelease,
+					Netbird:     "0.0.0-test",
+					NodeUpdater: "0.0.0-test",
+					Enforcement: "1",
+				},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			ch.Probe = labProbe()
+			if err := healthattest.WriteChallenge(cfg.JournalDir, ch); err != nil {
+				t.Fatal(err)
+			}
 
-		baselinesBefore := r.plane.baselines
-		next := r20Successor(t, r, cfg, src, r.plane)
-		if err := next.Boot(t.Context()); err != nil {
-			t.Fatal(err)
-		}
-		if !next.serving || r.plane.baselines != baselinesBefore {
-			t.Fatalf("expected same-boot adoption to succeed without installing probe baseline, got serving=%v baselines=%d (before %d)",
-				next.serving, r.plane.baselines, baselinesBefore)
-		}
+			baselinesBefore := r.plane.baselines
+			next := r20Successor(t, r, cfg, src, r.plane)
+			if err := next.Boot(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			if !next.serving || r.plane.baselines != baselinesBefore {
+				t.Fatalf("expected same-boot adoption to succeed without installing probe baseline, got serving=%v baselines=%d (before %d)",
+					next.serving, r.plane.baselines, baselinesBefore)
+			}
+		})
 	})
 }
 

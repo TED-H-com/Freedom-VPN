@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"sync/atomic"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -171,139 +172,145 @@ func TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption(t *testing.T) 
 }
 
 func r23H1b(t *testing.T, idleZero bool, exactMicro ...bool) {
-	// Regression r23: H-1 (R23-H-1) — When the open usage epoch advances while
-	// serving a multi-device generation, usage_apply_intent remains on E1; on a
-	// same-boot restart after devB becomes active in E2, restartHeadBindings
-	// drops devB, adoptStoredServing refuses adoption, and settleRetainedUsage
-	// turns devB's E2 traffic into an unknown_device gap.
-	r := newRig(t)
-	if len(exactMicro) > 0 && exactMicro[0] {
-		if rem := r.clock.Wall().Nanosecond() % 1000; rem != 0 {
-			r.clock.Advance(time.Duration(1000-rem) * time.Nanosecond)
+	synctest.Test(t, func(t *testing.T) {
+		// Regression r23: H-1 (R23-H-1) — When the open usage epoch advances while
+		// serving a multi-device generation, usage_apply_intent remains on E1; on a
+		// same-boot restart after devB becomes active in E2, restartHeadBindings
+		// drops devB, adoptStoredServing refuses adoption, and settleRetainedUsage
+		// turns devB's E2 traffic into an unknown_device gap.
+		r := newRig(t)
+		// Keep the ordinary fixture distinct from the exact-microsecond case
+		// even though the bubble epoch starts on a whole second.
+		r.clock.Advance(time.Nanosecond)
+		if len(exactMicro) > 0 && exactMicro[0] {
+			if rem := r.clock.Wall().Nanosecond() % 1000; rem != 0 {
+				r.clock.Advance(time.Duration(1000-rem) * time.Nanosecond)
+			}
 		}
-	}
-	alignControlClock(r)
-	r.srv.StickyLease(false)
-	r.eng.prober = &verProbe{version: "0.76.2"}
-	r.srv.SetUsageUnavailable(1000)
+		alignControlClock(r)
+		r.srv.StickyLease(false)
+		r.eng.prober = &verProbe{version: "0.76.2"}
+		r.srv.SetUsageUnavailable(1000)
 
-	enrollBoot(t, r)
-	stepOK(t, r)
+		enrollBoot(t, r)
+		stepOK(t, r)
 
-	// Configure generation 2 with two bound devices (devA -> memberA, devB -> memberB).
-	now := r.clock.Wall()
-	bA := oneBinding(now)
-	memberA := bA.MemberId
-	devA := bA.DeviceId
+		// Configure generation 2 with two bound devices (devA -> memberA, devB -> memberB).
+		now := r.clock.Wall()
+		bA := oneBinding(now)
+		memberA := bA.MemberId
+		devA := bA.DeviceId
 
-	devB := uuid.MustParse("019a0000-0000-7000-8000-0000000000d2")
-	memberB := uuid.MustParse("019a0000-0000-7000-8000-0000000000b2")
-	bB := bA
-	bB.BindingRevision = 2
-	bB.DeviceId = devB
-	bB.MemberId = memberB
-	bB.PeerId = "peer-b"
-	bB.AllowedIpv4 = []string{"100.64.0.11/32"}
-	fix := generationFixture(2, bA)
-	fix.Bindings = []api.DeviceBinding{bA, bB}
-	r.srv.SetFixture(fix)
+		devB := uuid.MustParse("019a0000-0000-7000-8000-0000000000d2")
+		memberB := uuid.MustParse("019a0000-0000-7000-8000-0000000000b2")
+		bB := bA
+		bB.BindingRevision = 2
+		bB.DeviceId = devB
+		bB.MemberId = memberB
+		bB.PeerId = "peer-b"
+		bB.AllowedIpv4 = []string{"100.64.0.11/32"}
+		fix := generationFixture(2, bA)
+		fix.Bindings = []api.DeviceBinding{bA, bB}
+		r.srv.SetFixture(fix)
 
-	upA := meter.CounterName(devA, meter.DirUpload)
-	upB := meter.CounterName(devB, meter.DirUpload)
-	src1 := &r20DynamicSource{
-		boot: r.eng.bootID.String(),
-		// Only devA has a counter entry when E1/E2 open; devB traffic arrives after E2 opens.
-		counters: map[string]enforce.CounterValue{
-			upA: {Packets: 1, Bytes: 2048},
-		},
-	}
-	if idleZero {
-		src1.setCounter(upB, enforce.CounterValue{})
-	}
-	r.eng.meterSource = src1
+		upA := meter.CounterName(devA, meter.DirUpload)
+		upB := meter.CounterName(devB, meter.DirUpload)
+		src1 := &r20DynamicSource{
+			boot: r.eng.bootID.String(),
+			// Only devA has a counter entry when E1/E2 open; devB traffic arrives after E2 opens.
+			counters: map[string]enforce.CounterValue{
+				upA: {Packets: 1, Bytes: 2048},
+			},
+		}
+		if idleZero {
+			src1.setCounter(upB, enforce.CounterValue{})
+		}
+		r.eng.meterSource = src1
 
-	// Step for generation 2: both devA and devB are admitted into appliedModel.Bindings.
-	stepOK(t, r)
-	if !r.eng.serving || len(r.eng.appliedModel.Bindings) != 2 {
-		t.Fatalf("step for gen 2 did not serve 2 bindings: serving=%v bindings=%d reasons=%v",
-			r.eng.serving, len(r.eng.appliedModel.Bindings), r.eng.decision.Reasons)
-	}
-	r.manualUsage(t)
-	src1.setBindings(r.eng.meterBindings)
-	r.eng.meter.Close()
-	r.clock.Advance(2 * time.Second)
-	var err error
-	r.eng.meter, err = meter.New(meter.Config{
-		NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: src1, Now: r.clock.Wall,
+		// Step for generation 2: both devA and devB are admitted into appliedModel.Bindings.
+		stepOK(t, r)
+		if !r.eng.serving || len(r.eng.appliedModel.Bindings) != 2 {
+			t.Fatalf("step for gen 2 did not serve 2 bindings: serving=%v bindings=%d reasons=%v",
+				r.eng.serving, len(r.eng.appliedModel.Bindings), r.eng.decision.Reasons)
+		}
+		r.manualUsage(t)
+		closeAdoptionControl(t, r)
+		src1.setBindings(r.eng.meterBindings)
+		r.eng.meter.Close()
+		r.clock.Advance(2 * time.Second)
+		var err error
+		r.eng.meter, err = meter.New(meter.Config{
+			NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: src1, Now: r.clock.Wall,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := r.eng.meter.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+
+		// Simulate the one-packet ruleset-switch nudge (or a counter reset on devA)
+		// opening a new epoch E2 during the same serving generation: OpenEpoch
+		// advances from E1 to E2 in usage.db while usage_apply_intent remains on E1.
+		r.clock.Advance(2 * time.Second)
+		src1.setCounter(upA, enforce.CounterValue{Packets: 0, Bytes: 2048})
+		if err := r.eng.meter.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		hAfter, err := r.eng.usage.Head(t.Context())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r.eng.restartIntent == nil || r.eng.restartIntent.Epoch == hAfter.OpenEpoch {
+			t.Fatalf("precondition: expected epoch switch to advance OpenEpoch past restartIntent.Epoch (%v vs %v)",
+				r.eng.restartIntent, hAfter.OpenEpoch)
+		}
+
+		// Process 1 stops cleanly for a same-boot restart while the kernel retains
+		// generation 2, and devB forwards 4096 B in E2 during the restart gap.
+		if err := r.eng.Close(); err != nil {
+			t.Fatal(err)
+		}
+		src1.setCounter(upB, enforce.CounterValue{Packets: 2, Bytes: 4096})
+
+		r.clock.Advance(2 * time.Second)
+		src2 := &r20DynamicSource{
+			boot: src1.boot,
+			counters: map[string]enforce.CounterValue{
+				upA: {Packets: 1, Bytes: 2048},
+				upB: {Packets: 2, Bytes: 4096},
+			},
+		}
+		next := r20Successor(t, r, r.eng.cfg, src2, r.plane)
+		next.prober = &verProbe{version: "0.76.2"}
+		if err := next.Boot(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		if !next.serving {
+			led := r21ReadLedger(t, r.eng.cfg, next.nodeID, next.incID)
+			t.Fatalf("R23-H-1b: same-boot adoption was refused after switchEpoch left usage_apply_intent on E1; "+
+				"next.serving=%v, memberA=%d, memberB=%d (want 4096), gaps=%d (%+v)",
+				next.serving,
+				led.byMemberRev[r21MemberRev{member: memberA, rev: 1}],
+				led.byMemberRev[r21MemberRev{member: memberB, rev: 2}],
+				len(led.gaps), led.gaps)
+		}
+		r.eng = next
+		r.manualUsage(t)
+		next.meter.Close()
+		next.meter, err = meter.New(meter.Config{NodeID: next.nodeID, IncarnationID: next.incID, Store: next.usage, Source: src2, Now: r.clock.Wall})
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.clock.Advance(2 * time.Second)
+		if err := next.meter.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		led := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
+		if led.byMemberRev[r21MemberRev{member: memberA, rev: 1}] != 2048 || led.byMemberRev[r21MemberRev{member: memberB, rev: 2}] != 4096 || len(led.gaps) != 1 || led.gaps[0].Gap.Reason != api.UsageGapReasonCounterDiscontinuity {
+			t.Fatalf("post-adoption attribution: %+v", led)
+		}
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := r.eng.meter.Sample(t.Context()); err != nil {
-		t.Fatal(err)
-	}
-
-	// Simulate the one-packet ruleset-switch nudge (or a counter reset on devA)
-	// opening a new epoch E2 during the same serving generation: OpenEpoch
-	// advances from E1 to E2 in usage.db while usage_apply_intent remains on E1.
-	r.clock.Advance(2 * time.Second)
-	src1.setCounter(upA, enforce.CounterValue{Packets: 0, Bytes: 2048})
-	if err := r.eng.meter.Sample(t.Context()); err != nil {
-		t.Fatal(err)
-	}
-	hAfter, err := r.eng.usage.Head(t.Context())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if r.eng.restartIntent == nil || r.eng.restartIntent.Epoch == hAfter.OpenEpoch {
-		t.Fatalf("precondition: expected epoch switch to advance OpenEpoch past restartIntent.Epoch (%v vs %v)",
-			r.eng.restartIntent, hAfter.OpenEpoch)
-	}
-
-	// Process 1 stops cleanly for a same-boot restart while the kernel retains
-	// generation 2, and devB forwards 4096 B in E2 during the restart gap.
-	if err := r.eng.Close(); err != nil {
-		t.Fatal(err)
-	}
-	src1.setCounter(upB, enforce.CounterValue{Packets: 2, Bytes: 4096})
-
-	r.clock.Advance(2 * time.Second)
-	src2 := &r20DynamicSource{
-		boot: src1.boot,
-		counters: map[string]enforce.CounterValue{
-			upA: {Packets: 1, Bytes: 2048},
-			upB: {Packets: 2, Bytes: 4096},
-		},
-	}
-	next := r20Successor(t, r, r.eng.cfg, src2, r.plane)
-	next.prober = &verProbe{version: "0.76.2"}
-	if err := next.Boot(t.Context()); err != nil {
-		t.Fatal(err)
-	}
-	if !next.serving {
-		led := r21ReadLedger(t, r.eng.cfg, next.nodeID, next.incID)
-		t.Fatalf("R23-H-1b: same-boot adoption was refused after switchEpoch left usage_apply_intent on E1; "+
-			"next.serving=%v, memberA=%d, memberB=%d (want 4096), gaps=%d (%+v)",
-			next.serving,
-			led.byMemberRev[r21MemberRev{member: memberA, rev: 1}],
-			led.byMemberRev[r21MemberRev{member: memberB, rev: 2}],
-			len(led.gaps), led.gaps)
-	}
-	r.eng = next
-	r.manualUsage(t)
-	next.meter.Close()
-	next.meter, err = meter.New(meter.Config{NodeID: next.nodeID, IncarnationID: next.incID, Store: next.usage, Source: src2, Now: r.clock.Wall})
-	if err != nil {
-		t.Fatal(err)
-	}
-	r.clock.Advance(2 * time.Second)
-	if err := next.meter.Sample(t.Context()); err != nil {
-		t.Fatal(err)
-	}
-	led := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
-	if led.byMemberRev[r21MemberRev{member: memberA, rev: 1}] != 2048 || led.byMemberRev[r21MemberRev{member: memberB, rev: 2}] != 4096 || len(led.gaps) != 1 || led.gaps[0].Gap.Reason != api.UsageGapReasonCounterDiscontinuity {
-		t.Fatalf("post-adoption attribution: %+v", led)
-	}
 }
 
 // TestR23_H2_HandoffBarrierRaceLeavesFinalDoneFalse_NextServeFailsAdmission

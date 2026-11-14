@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strconv"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -230,22 +231,28 @@ func TestReviewR19_Q4_D133TextRequiresCeilings(t *testing.T) {
 }
 
 func TestReviewR19_Q5_CurrentBootAdoptsVerifiedCheckpoint(t *testing.T) {
-	r := newRig(t)
-	servePair(t, r)
-	gen, baselines := r.eng.appliedGen, r.plane.baselines
-	restartEngine(t, r, r.plane)
-	if !r.eng.serving || r.eng.appliedGen != gen || r.plane.baselines != baselines {
-		t.Fatalf("same-boot adoption failed: serving=%v gen=%d baselines %d->%d", r.eng.serving, r.eng.appliedGen, baselines, r.plane.baselines)
-	}
+	synctest.Test(t, func(t *testing.T) {
+		r := newRig(t)
+		servePair(t, r)
+		closeAdoptionControl(t, r)
+		gen, baselines := r.eng.appliedGen, r.plane.baselines
+		restartEngine(t, r, r.plane)
+		if !r.eng.serving || r.eng.appliedGen != gen || r.plane.baselines != baselines {
+			t.Fatalf("same-boot adoption failed: serving=%v gen=%d baselines %d->%d", r.eng.serving, r.eng.appliedGen, baselines, r.plane.baselines)
+		}
+	})
 }
 
 func TestReviewR19_Q5_PreserveServingOnStopSucceeds(t *testing.T) {
-	r := newRig(t)
-	servePair(t, r)
-	baselines := r.plane.baselines
-	if !r.eng.preserveServingOnStop(context.Background()) || !r.eng.serving || r.plane.baselines != baselines {
-		t.Fatalf("preserveServingOnStop=%v serving=%v baselines %d->%d", r.eng.serving, r.eng.serving, baselines, r.plane.baselines)
-	}
+	synctest.Test(t, func(t *testing.T) {
+		r := newRig(t)
+		servePair(t, r)
+		closeAdoptionControl(t, r)
+		baselines := r.plane.baselines
+		if !r.eng.preserveServingOnStop(context.Background()) || !r.eng.serving || r.plane.baselines != baselines {
+			t.Fatalf("preserveServingOnStop=%v serving=%v baselines %d->%d", r.eng.serving, r.eng.serving, baselines, r.plane.baselines)
+		}
+	})
 }
 
 func TestReviewR19_Q5_ConntrackCountSurvivesRestartAndClearResetsIt(t *testing.T) {
