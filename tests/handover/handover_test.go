@@ -20450,9 +20450,9 @@ func TestHandover_Followup54Claims(t *testing.T) {
 			Path, SHA256 string
 			Bytes        int
 		}{
-			{"docs/handover/follow-up-54.md", "2d72f5b7c885b769c88d3416abc901cecc0fcb518fe0a3f7b63ce749f69881a3", 4726},
-			{"tests/handover/testdata/followup54-edits.json", "c53856ca1d91acc0f71e7936652387587428ad4e0920bf7b563777e10fc533d8", 133563},
-			{"tests/handover/testdata/followup54-historical.json", "9117957fa619b408259b974c91343e1d7c37523cc4146a47a806c6754f774e74", 3121},
+			{"docs/handover/follow-up-54.md", "092c780b2ccb2f7a860057e7440fa76929da23ebc40071228a44acd4613ab6b3", 4711},
+			{"tests/handover/testdata/followup54-edits.json", "f088ece210102ec9a25099a49247acef14451bd855509f93b7c703ec238f617d", 135373},
+			{"tests/handover/testdata/followup54-historical.json", "a8b1e7696de97d53256f8a66fb2b123e262657f2077b7af43ee6b5c6178948bf", 3106},
 			{"tests/handover/testdata/followup54-main.json", "620030dc13dab65291e4d04b07e027b2bce433dff3b8a8f2b4662c7091413c65", 1761},
 			{"tests/handover/testdata/followup54-prior-assertions.json", "e4e4b238ea49641313ede625b432365b21635a3d393e214d74072dc1fd8ac04e", 613},
 			{"tests/handover/testdata/followup54-snapshots.json", "f2cdbd5983733778690ff885663e4d879f41b41417fa2b7fd0bd6b2105ad9786", 5964},
@@ -20531,7 +20531,7 @@ func TestHandover_Followup54Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup54-edits.json", &edits)
 	t.Run("only_exact_permitted_edits", func(t *testing.T) {
-		if len(edits) != 56 {
+		if len(edits) != 57 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
