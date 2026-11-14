@@ -505,12 +505,10 @@ The plaintext is returned once, on creation, and never again (§6.1). It is not
 
 `AuditEvent` and `changes` are redacted configuration history (§16.4). Property
 names ending in `_sha256` are digests and are never redacted. That includes
-`token_sha256`. `sensitive()` in `internal/audit/audit.go` matches the
-substring `token` after stripping underscores, so `token_sha256` is sensitive
-today. `Diff` then omits the key, and `redact` would replace a stored value
-with `[REDACTED]` on read. pki-enroll must exempt names ending in `_sha256`
-before that substring check. The contract rule is the exemption, not a new
-error code.
+`token_sha256`. `sensitive()` in `internal/audit/audit.go` exempts names with
+a nonempty prefix ending in `_sha256` before checking normalized sensitive
+substrings. `Diff` can therefore retain the allowlisted digest, and
+`enrollment.created` records it in `changes.after`.
 
 `listNodeIncarnations` is a synchronous 200 page. An unknown node is 404. A
 known node with no consumed enrollment is an empty page. Ordering is newest
