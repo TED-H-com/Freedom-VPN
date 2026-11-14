@@ -225,6 +225,23 @@ func newLimiter(max int) *limiter {
 // not depend on how fast the requests run, and restores it when the test ends.
 var limiterNow = time.Now
 
+// maxRateWait is the refill time for one token at the minimum valid rate.
+const maxRateWait = time.Duration(1/config.MinRatePerSecond) * time.Second
+
+func rateWait(tokens, perSecond float64) time.Duration {
+	if !(perSecond > 0) || math.IsInf(perSecond, 0) {
+		return maxRateWait
+	}
+	wait := math.Ceil((1 - tokens) / perSecond * float64(time.Second))
+	if !(wait <= float64(maxRateWait)) {
+		return maxRateWait
+	}
+	if wait < 1 {
+		return time.Nanosecond
+	}
+	return time.Duration(wait)
+}
+
 // allow spends one token or returns how long the caller should wait.
 // At capacity it walks from the tail and evicts the first bucket that is idle
 // with a full token count or has been idle for more than an hour. A live
@@ -271,12 +288,16 @@ func (l *limiter) allowGrouped(key, group string, b config.Bucket) time.Duration
 	} else {
 		l.moveFront(e)
 	}
-	e.tokens = math.Min(float64(b.Burst), e.tokens+now.Sub(e.at).Seconds()*b.PerSecond)
+	refill := 0.0
+	if b.PerSecond > 0 && !math.IsInf(b.PerSecond, 0) {
+		refill = now.Sub(e.at).Seconds() * b.PerSecond
+	}
+	e.tokens = math.Min(float64(b.Burst), e.tokens+refill)
 	e.at = now
 	e.perSecond = b.PerSecond
 	e.burst = float64(b.Burst)
 	if e.tokens < 1 {
-		return time.Duration(math.Ceil((1 - e.tokens) / b.PerSecond * float64(time.Second)))
+		return rateWait(e.tokens, b.PerSecond)
 	}
 	e.tokens--
 	return 0

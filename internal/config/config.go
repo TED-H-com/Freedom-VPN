@@ -13,6 +13,14 @@ import (
 	"strings"
 )
 
+// MinRatePerSecond and MaxRatePerSecond bound bucket refill rates. At the
+// minimum, one token refills every 100000 seconds, so the longest wait a valid
+// bucket returns is 100000 seconds.
+const (
+	MinRatePerSecond = 0.00001
+	MaxRatePerSecond = 100000
+)
+
 type Bucket struct {
 	PerSecond float64 `json:"per_second"`
 	Burst     int     `json:"burst"`
@@ -153,6 +161,9 @@ func (c Config) Validate() error {
 	if c.DatabaseURLFile == "" {
 		return errors.New("database_url_file required")
 	}
+	if c.LoginSubjectPerMinute < 1 || c.LoginSubjectPerMinute > 100000 {
+		return errors.New("invalid rate bucket: login_subject_per_minute")
+	}
 	v := reflect.ValueOf(c)
 	t := v.Type()
 	for i := 0; i < v.NumField(); i++ {
@@ -161,13 +172,24 @@ func (c Config) Validate() error {
 			return fmt.Errorf("invalid positive bound: %s", t.Field(i).Tag.Get("json"))
 		}
 	}
-	for _, b := range []Bucket{c.IngressRate, c.BrowserRate, c.AgentRate, c.HeartbeatRate, c.LeaseRate, c.UsageRate, c.AnonymousRate, c.ReadRate, c.LoginRate} {
-		if b.PerSecond <= 0 || b.PerSecond > 100000 || b.Burst < 1 || b.Burst > 100000 {
-			return errors.New("invalid rate bucket")
+	for _, item := range []struct {
+		name   string
+		bucket Bucket
+	}{
+		{"ingress_rate", c.IngressRate},
+		{"browser_rate", c.BrowserRate},
+		{"agent_rate", c.AgentRate},
+		{"heartbeat_rate", c.HeartbeatRate},
+		{"lease_rate", c.LeaseRate},
+		{"usage_rate", c.UsageRate},
+		{"anonymous_rate", c.AnonymousRate},
+		{"read_rate", c.ReadRate},
+		{"login_rate", c.LoginRate},
+	} {
+		b := item.bucket
+		if !(b.PerSecond >= MinRatePerSecond && b.PerSecond <= MaxRatePerSecond) || b.Burst < 1 || b.Burst > 100000 {
+			return fmt.Errorf("invalid rate bucket: %s", item.name)
 		}
-	}
-	if c.LoginSubjectPerMinute < 1 || c.LoginSubjectPerMinute > 100000 {
-		return errors.New("invalid rate bucket")
 	}
 	if err := c.validateTrustedProxies(); err != nil {
 		return err
