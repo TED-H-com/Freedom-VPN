@@ -17,6 +17,31 @@ type gofmtSet struct {
 
 // Git's pathspec rules differ from shell globs, so let Git resolve them.
 func trackedFiles(root string, pathspecs ...string) ([]string, error) {
+	topCmd := exec.Command("git", "rev-parse", "--show-toplevel")
+	topCmd.Dir = root
+	topOutput, err := topCmd.Output()
+	if err != nil {
+		return nil, fmt.Errorf("gofmt inventory needs a git checkout at %q: git rev-parse: %w", root, err)
+	}
+	top := strings.TrimSpace(string(topOutput))
+	canonical := func(name string) (string, error) {
+		absolute, err := filepath.Abs(name)
+		if err != nil {
+			return "", err
+		}
+		return filepath.EvalSymlinks(absolute)
+	}
+	actualRoot, err := canonical(root)
+	if err != nil {
+		return nil, fmt.Errorf("gofmt inventory needs a git checkout at %q (git top level %q): %w", root, top, err)
+	}
+	actualTop, err := canonical(top)
+	if err != nil {
+		return nil, fmt.Errorf("gofmt inventory needs a git checkout at %q (git top level %q): %w", root, top, err)
+	}
+	if actualRoot != actualTop {
+		return nil, fmt.Errorf("gofmt inventory needs a git checkout at %q (git top level %q)", root, top)
+	}
 	args := append([]string{"ls-files", "--cached", "-z", "--"}, pathspecs...)
 	cmd := exec.Command("git", args...)
 	cmd.Dir = root

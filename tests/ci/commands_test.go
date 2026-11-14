@@ -82,6 +82,10 @@ func TestGofmtInputExtraction(t *testing.T) {
 	if err != nil || len(sets) != 2 {
 		t.Errorf("commands in shell and quoted substitutions: %v, %v", sets, err)
 	}
+	subdir := filepath.Join(root, "tests", "ci")
+	if _, err := trackedFiles(subdir); err == nil || !strings.Contains(err.Error(), "needs a git checkout") || !strings.Contains(err.Error(), subdir) || !strings.Contains(err.Error(), root) {
+		t.Errorf("subdirectory checkout error = %v", err)
+	}
 	if _, err := trackedFiles(t.TempDir()); err == nil || !strings.Contains(err.Error(), "needs a git checkout") {
 		t.Errorf("missing checkout error = %v", err)
 	}
