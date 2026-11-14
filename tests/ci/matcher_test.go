@@ -3,6 +3,7 @@ package ci
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -20,6 +21,9 @@ type compiledPattern struct {
 func compilePatterns(patterns []string) ([]compiledPattern, error) {
 	var compiled []compiledPattern
 	for _, pattern := range patterns {
+		if strings.ContainsAny(pattern, `[]+\`) {
+			return nil, fmt.Errorf("unsupported syntax in pattern %q", pattern)
+		}
 		negative := strings.HasPrefix(pattern, "!")
 		if negative {
 			pattern = pattern[1:]
@@ -104,6 +108,12 @@ func TestWorkflowMatcher(t *testing.T) {
 		{"globstar nested", eventFilter{Paths: []string{"a/**"}}, "a/sub/file.go", true},
 		{"globstar zero directories", eventFilter{Paths: []string{"a/**/file.go"}}, "a/file.go", true},
 		{"globstar more directories", eventFilter{Paths: []string{"a/**/file.go"}}, "a/b/c/file.go", true},
+		{"leading globstar root", eventFilter{Paths: []string{"**/file.go"}}, "file.go", true},
+		{"leading globstar nested", eventFilter{Paths: []string{"**/file.go"}}, "a/b/file.go", true},
+		{"leading globstar suffix", eventFilter{Paths: []string{"**/file.go"}}, "file.go.txt", false},
+		{"go module", eventFilter{Paths: []string{"go.*"}}, "go.mod", true},
+		{"go checksum", eventFilter{Paths: []string{"go.*"}}, "go.sum", true},
+		{"go module nested", eventFilter{Paths: []string{"go.*"}}, "vendor/go.mod", false},
 		{"question mark", eventFilter{Paths: []string{"a/?.go"}}, "a/x.go", true},
 		{"unicode literal and wildcard", eventFilter{Paths: []string{"文件/?.go"}}, "文件/測.go", true},
 		{"question mark stops at slash", eventFilter{Paths: []string{"a?b"}}, "a/b", false},
@@ -124,6 +134,11 @@ func TestWorkflowMatcher(t *testing.T) {
 	}
 	if _, err := (eventFilter{Paths: []string{"**"}, PathsIgnore: []string{"x"}}).includes("x"); err == nil {
 		t.Fatal("paths and paths-ignore together must be rejected")
+	}
+	for _, pattern := range []string{"a/[b", "a/]b", "a/+b", `a/\b`} {
+		if _, err := compilePatterns([]string{pattern}); err == nil || !strings.Contains(err.Error(), strconv.Quote(pattern)) {
+			t.Errorf("unsupported pattern %q: got error %v", pattern, err)
+		}
 	}
 }
 

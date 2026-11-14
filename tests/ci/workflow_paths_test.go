@@ -293,9 +293,25 @@ func recordScripts(text string, scripts map[string]bool) {
 	}
 }
 
-func commandsFromStep(root, run string, requests, tests map[string]map[string]bool, files, scripts map[string]bool) error {
+func commandsFromStep(root, run string, requests, tests map[string]map[string]bool, files, scripts map[string]bool, tracked []string, formats *[]gofmtSet) error {
+	addFormats := func(text string) error {
+		sets, err := gofmtInputs(root, text, tracked)
+		if err != nil {
+			return err
+		}
+		for _, set := range sets {
+			for _, file := range set.files {
+				files[file] = true
+			}
+			*formats = append(*formats, set)
+		}
+		return nil
+	}
 	recordScripts(run, scripts)
 	if err := parseGoCommands(run, requests, tests); err != nil {
+		return err
+	}
+	if err := addFormats(run); err != nil {
 		return err
 	}
 	for _, match := range makeLine.FindAllStringSubmatch(run, -1) {
@@ -320,6 +336,9 @@ func commandsFromStep(root, run string, requests, tests map[string]map[string]bo
 		files[makefile] = true
 		recordScripts(string(out), scripts)
 		if err := parseGoCommands(string(out), requests, tests); err != nil {
+			return fmt.Errorf("%s: %w", match[0], err)
+		}
+		if err := addFormats(string(out)); err != nil {
 			return fmt.Errorf("%s: %w", match[0], err)
 		}
 	}
@@ -616,6 +635,10 @@ func TestWorkflowPaths(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	tracked, err := trackedFiles(root)
+	if err != nil {
+		t.Fatal(err)
+	}
 	// A file-only module proxy lets go list use the local download cache while
 	// guaranteeing that this test never contacts a proxy or checksum server.
 	cacheCmd := exec.Command("go", "env", "GOMODCACHE")
@@ -655,6 +678,7 @@ func TestWorkflowPaths(t *testing.T) {
 			tests := map[string]map[string]bool{}
 			scripts := map[string]bool{}
 			files := map[string]bool{path: true}
+			var formats []gofmtSet
 			for pinned := range in.pins {
 				files[pinned] = true
 			}
@@ -673,8 +697,15 @@ func TestWorkflowPaths(t *testing.T) {
 				}
 			}
 			for _, step := range def.Steps {
-				if err := commandsFromStep(root, step.Run, requests, tests, files, scripts); err != nil {
+				if err := commandsFromStep(root, step.Run, requests, tests, files, scripts, tracked, &formats); err != nil {
 					t.Errorf("%s job %s: %v", name, job, err)
+				}
+			}
+			seenFormats := map[string]bool{}
+			for _, format := range formats {
+				if !seenFormats[format.command] {
+					t.Logf("gofmt %s/%s form=%s files=%d command=%q", name, job, format.form, len(format.files), format.command)
+					seenFormats[format.command] = true
 				}
 			}
 			addRequest(requests, "", in.packages...)

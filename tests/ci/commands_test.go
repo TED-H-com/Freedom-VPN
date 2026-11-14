@@ -36,6 +36,66 @@ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags integration ./internal/ex
 	}
 }
 
+func TestGofmtInputExtraction(t *testing.T) {
+	root, err := filepath.Abs("../..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	tracked, err := trackedFiles(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		name, command, form string
+		want                []string
+	}{
+		{"git pathspec", `test -z "$(gofmt -l $(git ls-files --cached --others --exclude-standard 'pkg/decstr/*.go'))"`, "git ls-files", []string{"pkg/decstr/decstr.go", "pkg/decstr/decstr_test.go"}},
+		{"rg directories", `gofmt -l $(rg --files pkg/decstr pkg/canonjson -g '*.go')`, "rg --files", []string{"pkg/canonjson/canonjson.go", "pkg/canonjson/canonjson_test.go", "pkg/canonjson/review_test.go", "pkg/decstr/decstr.go", "pkg/decstr/decstr_test.go"}},
+		{"literal paths and shell glob", `gofmt -l pkg/decstr pkg/canonjson/*test.go pkg/envelope/envelope.go`, "paths", []string{"pkg/canonjson/canonjson_test.go", "pkg/canonjson/review_test.go", "pkg/decstr/decstr.go", "pkg/decstr/decstr_test.go", "pkg/envelope/envelope.go"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sets, err := gofmtInputs(root, tt.command, tracked)
+			if err != nil || len(sets) != 1 {
+				t.Fatalf("sets = %v, error = %v", sets, err)
+			}
+			if sets[0].form != tt.form || !reflect.DeepEqual(sets[0].files, tt.want) {
+				t.Errorf("got %s %v; want %s %v", sets[0].form, sets[0].files, tt.form, tt.want)
+			}
+		})
+	}
+	sets, err := gofmtInputs(root, `gofmt -l $(git ls-files --cached --others --exclude-standard 'pkg/*.go')`, tracked)
+	if err != nil || len(sets) != 1 || !contains(sets[0].files, "pkg/decstr/decstr.go") {
+		t.Errorf("git pathspec star must cross directories: %v, %v", sets, err)
+	}
+	withNested := append(append([]string(nil), tracked...), "pkg/decstr/nested/extra.go")
+	sets, err = gofmtInputs(root, `gofmt -l pkg/decstr/*.go`, withNested)
+	if err != nil || len(sets) != 1 || contains(sets[0].files, "pkg/decstr/nested/extra.go") {
+		t.Errorf("shell glob star must stop at a slash: %v, %v", sets, err)
+	}
+	for _, command := range []string{`gofmt -l $(find pkg -name '*.go')`, `gofmt -l $files`, `gofmt -w pkg/decstr`} {
+		if _, err := gofmtInputs(root, command, tracked); err == nil || !strings.Contains(err.Error(), "gofmt") {
+			t.Errorf("unsupported command %q: %v", command, err)
+		}
+	}
+	sets, err = gofmtInputs(root, `echo 'gofmt required'; echo "gofmt needed: $(gofmt -l pkg/decstr)"; gofmt -l pkg/decstr`, tracked)
+	if err != nil || len(sets) != 2 {
+		t.Errorf("commands in shell and quoted substitutions: %v, %v", sets, err)
+	}
+	if _, err := trackedFiles(t.TempDir()); err == nil || !strings.Contains(err.Error(), "needs a git checkout") {
+		t.Errorf("missing checkout error = %v", err)
+	}
+}
+
+func contains(values []string, want string) bool {
+	for _, value := range values {
+		if value == want {
+			return true
+		}
+	}
+	return false
+}
+
 func TestIndirectWiringRequiresReview(t *testing.T) {
 	root := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(root, "apps/portal"), 0o700); err != nil {
