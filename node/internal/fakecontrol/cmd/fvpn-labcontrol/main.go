@@ -145,17 +145,7 @@ func serve(dir, admin string) error {
 		srv.SetMaxOfflineSeconds(body.Seconds)
 		w.WriteHeader(http.StatusNoContent)
 	})
-	mux.HandleFunc("POST /service", func(w http.ResponseWriter, r *http.Request) {
-		var body struct {
-			Seconds int `json:"seconds"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Seconds <= 0 {
-			http.Error(w, "seconds", http.StatusBadRequest)
-			return
-		}
-		srv.SetServiceFor(time.Duration(body.Seconds) * time.Second)
-		w.WriteHeader(http.StatusNoContent)
-	})
+	mux.HandleFunc("POST /service", serviceHandler(srv))
 	mux.HandleFunc("POST /usage/unavailable", func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			N int `json:"n"`
@@ -167,18 +157,7 @@ func serve(dir, admin string) error {
 		srv.SetUsageUnavailable(body.N)
 		w.WriteHeader(http.StatusNoContent)
 	})
-	mux.HandleFunc("POST /usage/retry", func(w http.ResponseWriter, r *http.Request) {
-		var body struct {
-			N       int `json:"n"`
-			Seconds int `json:"seconds"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.N < 0 || body.Seconds < 0 {
-			http.Error(w, "n", http.StatusBadRequest)
-			return
-		}
-		srv.SetUsageRetryAfter(body.N, body.Seconds)
-		w.WriteHeader(http.StatusNoContent)
-	})
+	mux.HandleFunc("POST /usage/retry", usageRetryHandler(srv))
 	mux.HandleFunc("POST /usage/checkpoint", func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Mode    string `json:"mode"`
@@ -217,6 +196,35 @@ func serve(dir, admin string) error {
 	}
 	fmt.Fprintln(os.Stderr, "labcontrol ready")
 	select {}
+}
+
+func serviceHandler(srv *fakecontrol.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			Seconds int `json:"seconds"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.Seconds <= 0 || int64(body.Seconds) > (1<<63-1)/int64(time.Second) {
+			http.Error(w, "seconds", http.StatusBadRequest)
+			return
+		}
+		srv.SetServiceFor(time.Duration(body.Seconds) * time.Second)
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func usageRetryHandler(srv *fakecontrol.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var body struct {
+			N       int `json:"n"`
+			Seconds int `json:"seconds"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.N < 0 || body.Seconds < 0 || int64(body.Seconds) > (1<<63-1)/int64(time.Second) {
+			http.Error(w, "n", http.StatusBadRequest)
+			return
+		}
+		srv.SetUsageRetryAfter(body.N, body.Seconds)
+		w.WriteHeader(http.StatusNoContent)
+	}
 }
 
 func labBindings(now time.Time) []api.DeviceBinding {

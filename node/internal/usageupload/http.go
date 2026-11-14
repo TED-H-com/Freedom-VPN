@@ -76,7 +76,7 @@ func parseRetryAfter(v string, now time.Time) time.Duration {
 		return 0
 	}
 	if sec, err := strconv.Atoi(v); err == nil {
-		if sec < 0 {
+		if sec < 0 || int64(sec) > (1<<63-1)/int64(time.Second) {
 			return 0
 		}
 		return time.Duration(sec) * time.Second

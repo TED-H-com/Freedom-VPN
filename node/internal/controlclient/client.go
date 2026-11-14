@@ -299,7 +299,7 @@ func retryAfterOf(v string, now time.Time) time.Duration {
 		return 0
 	}
 	if n, err := strconv.Atoi(v); err == nil {
-		if n < 0 {
+		if n < 0 || int64(n) > (1<<63-1)/int64(time.Second) {
 			return 0
 		}
 		return time.Duration(n) * time.Second
