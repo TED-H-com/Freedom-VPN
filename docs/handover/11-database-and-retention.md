@@ -1,6 +1,8 @@
 # Database and retention index
 
-**Current cut — [follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Deploy migration 00192 before the new control binary; installer corrections require the new evidence key and bound.
+**Current cut:** [follow-up 54](follow-up-54.md).
+
+**[Follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Deploy migration 00192 before the new control binary; installer corrections require the new evidence key and bound.
 
 The complete forward inventory is `db/migrations/*.sql`, embedded by the migrator. Follow [deployment §3](deploy.md) for migration status and role separation and the [restore drill](restore-drill.md) for read-only reconciliation queries. `TestHandover_MigrationInventory` derives the count and highest number from the files; examples intentionally abbreviate status output instead of pinning a count that becomes stale.
 

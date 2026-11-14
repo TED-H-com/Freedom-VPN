@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 54](follow-up-54.md), #533, #534, #535 and #536 at `2f5159f3`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 53](follow-up-53.md), #529, #528, #530, #531 and #532 at `e055143e`; source-backed changes, verification boundaries and carried gaps.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
@@ -104,6 +104,8 @@ Provision PostgreSQL 17 on a dedicated volume with TLS enabled and continuous WA
 For repository configuration, credentials, backup scripts and scheduled units, see the [backup guide](../ops/backups.md).
 
 The isolated verifier starts with its own PostgreSQL configuration, HBA and ident outside restored PGDATA, retaining only this restore’s validated pgBackRest recovery settings. It does not boot restored production configuration or certify a production restart; see [the isolated verification boundary](../ops/backups.md#21-postgresql-17-wal-archiving-fragment-deploybackuppostgresfvpn-archivingconf).
+
+PostgreSQL's connection limit must cover each worker's pool, each control process's pool (the `db.Open` default is 10), the migrator, backup, administrative and other clients, and PostgreSQL's reserved connections. One control and one worker at the default concurrency have a combined pool maximum of 34 connections; these are maxima, not the number of connections already open.
 
 Carried gap: first-host pgBackRest provisioning, initial stanza/base backup, and delivery of repository credentials to PostgreSQL archiving are not completed by the fragment below. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
@@ -426,6 +428,8 @@ Carried gap: provisioning the OIDC client-secret file consumed by this control c
   "usage_config_file": "/etc/fvpn/usage.json"
 }
 ```
+
+The worker sizes its PostgreSQL pool using `worker_concurrency`, the largest connection peak registered by its event types, the peaks of its scheduled runners, and one connection for readiness. With the current registrations the maximum is 5 × `worker_concurrency` + 4: 24 at the default of 4. The pool limit is 60, so the largest accepted concurrency is 11 (a pool of 59). Configuration validation accepts larger values up to 1000, but the worker refuses 12 through 1000 at startup: it logs the budget error and exits with status 1 before reading its database secret.
 
 ### 6.2 `/etc/fvpn/members.json` (`members_config_file`)
 
@@ -859,7 +863,7 @@ Installer ENR-06 (#266) historically failed first start because `/var/run/netbir
   1. `GET /api/v1/admin/fleet-config` returns `200 OK` `FleetConfig` and strong `ETag: "<resource_version>"` (if the singleton row is absent, `GET` returns `max_offline_lease_seconds: 86400`, `default_max_offline_lease_seconds: 86400`, `resource_version: "0"`, `updated_at: "1970-01-01T00:00:00Z"`, `ETag: "0"` without writing).
   2. `PUT /api/v1/admin/fleet-config` requires `If-Match: "<resource_version>"`, a UUID `Idempotency-Key`, `X-CSRF-Token`, `Origin`, and `{"max_offline_lease_seconds": <60..86400>, "reason": "<1..500 chars>"}`. It locks `fleet_config` (`SELECT ... FOR UPDATE`, serializing with `fleetupdate.CreateBatch` without modifying `generation` or release-support columns), increments `resource_version`, appends one `fleet_config.update` audit event on `fleet_config:00000000-0000-0000-0000-000000000001` (`operation_id: null`) containing both `before` (`{"max_offline_lease_seconds"}`) and `after` (`{"max_offline_lease_seconds", "resource_version", "updated_at", "reason"}`) snapshots (even on an accepted same-value write), and returns synchronous **`200 OK`** `FleetConfig` with the new strong `ETag` (creating zero `operations` or `outbox_events` rows).
   3. Missing `If-Match` returns `428 PRECONDITION_REQUIRED`; stale `If-Match` returns `412 RESOURCE_VERSION_CONFLICT` with `details.current_resource_version`; reusing an `Idempotency-Key` with a different payload returns `409 IDEMPOTENCY_CONFLICT` (whereas replaying the same key and payload returns the original `200 OK` body and `ETag` reconstructed from the immutable audit row keyed by `idempotency_requests.id`, so keep `audit_days` retention $\ge$ `idempotency_seconds`); and out-of-range values (`< 60` or `> 86400`), weak `If-Match`, bad `reason`, or unknown fields return `422 VALIDATION_FAILED`.
-  4. Existing signed leases (`node_leases`) and their replays keep their signed `max_offline_seconds`, `expires_at`, and Ed25519 signature; the next lease renewal (`POST /api/v1/agent/lease-renewals`) copies the updated `max_offline_lease_seconds` (`TestD065_AT29_FleetConfigOnlyChangesNewLeases`; see [`operator-guide.md` §3.6](operator-guide.md#36-configuring-the-fleet-offline-lease-ceiling-getput-apiv1adminfleet-config-d-065-d-067-176-179-206-145-163-at29-docsnodesreadmemd-docsnodeswiringmd-internalnodeshttpwirefleet_configgo) for full curl examples).
+  4. Existing signed leases (`serving_leases`) and their replays keep their signed `max_offline_seconds`, `expires_at`, and Ed25519 signature; the next lease renewal (`POST /api/v1/agent/lease-renewals`) copies the updated `max_offline_lease_seconds` (`TestD065_AT29_FleetConfigOnlyChangesNewLeases`; see [`operator-guide.md` §3.6](operator-guide.md#36-configuring-the-fleet-offline-lease-ceiling-getput-apiv1adminfleet-config-d-065-d-067-176-179-206-145-163-at29-docsnodesreadmemd-docsnodeswiringmd-internalnodeshttpwirefleet_configgo) for full curl examples).
 
 ### Follow-up 16 restore evidence (2026-10-31 EDT)
 

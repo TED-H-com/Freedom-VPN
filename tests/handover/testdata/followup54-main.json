@@ -1,0 +1,43 @@
+{
+  "source_commit": "2f5159f377cb807cd4ed203ef6e4d1785f020ba9",
+  "merged_prs": [
+    533,
+    534,
+    535,
+    536
+  ],
+  "prs": [
+    {
+      "number": 533,
+      "title": "db: every pool connection scans timestamps in UTC, so API times end in Z on a host in any time zone",
+      "merge_commit": "6321c3ec13dd0ae3c88efde2985a651d75d57140",
+      "pre_merge_head": "b1862238836bae9987d66380a4dc0de0b818c923",
+      "merged_at": "2026-11-13T13:12:52Z",
+      "roadmap_commit": "da6d281a8bddc24c403a3a91c2ef8563774ec871"
+    },
+    {
+      "number": 534,
+      "title": "handover: follow-up 53 — cut #528–#532, and correct the deployment, calibration, operator, member, database, restore-drill and backup guides against the code",
+      "merge_commit": "abd0d850b43e623f4f68098127761bb449ed0a8f",
+      "pre_merge_head": "1d45500bb7866d8b76df7ca664834b7e5acea84b",
+      "merged_at": "2026-11-13T15:50:08Z",
+      "roadmap_commit": "29d884b206ccba21c77187e12381c6cea3e46401"
+    },
+    {
+      "number": 535,
+      "title": "node: run the same-boot adoption test and 13 other positive adoption tests on virtual time",
+      "merge_commit": "8b7b15a380077da72e868a7e2f0de30587e341bc",
+      "pre_merge_head": "741ffd40ea26df019a89beb0c7ede9e97bf50172",
+      "merged_at": "2026-11-14T03:16:20Z",
+      "roadmap_commit": "c7c4eb8e14300900b1d056150a199b695be2cee6"
+    },
+    {
+      "number": 536,
+      "title": "worker: size the database pool from worker_concurrency and refuse a setting above 11",
+      "merge_commit": "e965ea2b2f757afd700dac21c96b9fc8b2c56fcd",
+      "pre_merge_head": "7ede0c43c217d00672e21f10e366f40786e7d8e5",
+      "merged_at": "2026-11-14T09:09:55Z",
+      "roadmap_commit": "2f5159f377cb807cd4ed203ef6e4d1785f020ba9"
+    }
+  ]
+}

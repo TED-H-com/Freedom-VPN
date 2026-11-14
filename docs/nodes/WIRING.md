@@ -154,12 +154,13 @@ generation and node operation steps still require agent observations (§14.5).
 | `release.verify` | `VerifyRelease` with `HTTPSFetcher` streams both architecture artifacts with size/hash/origin checks. Fenced terminal verification persists success or failure evidence; failed verification never marks its step successful. |
 | `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
 | `node.resolver_documents.reconcile` | Reads the eligible document through the DNS publisher's reader, pages current signed states with differing references, and recompiles them under the claim/fleet/node locks. Issuance and the new signed state commit together. No external network calls. |
+| `node.staleness.sweep` | Uses accepted central receipt age to sweep node status, with stale threshold `min(90s, online_seconds)` and offline threshold `online_seconds`. Its independent claimed chain schedules a delayed successor under the claim and fleet lock; errors return for retry, and scheduling can delay a transition. |
 | `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
 
-The supervised runner seeds both reconciliation chains immediately at startup
+The supervised runner seeds all three chains immediately at startup
 and checks for missing chains every `min(reconcile_seconds, 60)` seconds. Fleet
 reconciliation retains its configured successor delay; resolver-document delivery
-has an independent delay capped at 60 seconds. Fleet locking coalesces seeds from
+and the independent staleness sweep each use the bounded cadence. Fleet locking coalesces seeds from
 multiple processes and event-created successors. Runners only enqueue; the shared
 dispatcher claims and completes work. Enqueue failures return to the supervisor;
 cancellation stops the runner. Reconciliation never guesses success for
@@ -727,14 +728,14 @@ registered on `httpapi.Composite`, all 47 OpenAPI operations are wired.
 - **`awaiting_member_grants` (`ForwardingBlockReason`, D-067)**: `SubmitObservation`
   validates `report.ForwardingBlockReasons` against `api.ForwardingBlockReason.Valid()` and
   accepts `awaiting_member_grants` ("valid node lease, no member grants yet while bindings
-  are desired"). When `member_forwarding_enabled == false` with `awaiting_member_grants`
-  and `internet_only == passed` (`meter_path` absent, `not_run`, or `passed`),
-  `evaluateObservationEvidence` keeps `safety_status = 'passed'` and `data_health = 'healthy'`
-  (provisional, not `expired`). `GetNode` and `ListNodes` project `provisioning_state = 'ready'`,
-  `safety_status = 'passed'`, `data_health = 'healthy'`, and `member_forwarding_observed = false`,
-  while `node_observations.report_payload` retains `forwarding_block_reasons: ["awaiting_member_grants"]`
-  and `PublicationDataPathFailure` returns `"forwarding_disabled"` so publication state is
-  unchanged until member grants arrive and member forwarding is enabled.
+  are desired"). A healthy provisional report can project ready, passed safety,
+  healthy data and forwarding off; the reason alone does not guarantee that shape.
+  `evaluateObservationEvidence` also considers the backend, isolation and meter
+  checks, tunnel probe and retained isolation errors. Apply or dependency failures
+  override the three serving-check codes while the separate lease-stage awaiting
+  error can remain. The stored report retains its block reasons. When the provisional
+  serving checks fail, `publicationForwardingFailure` evaluates those failures
+  before disabled forwarding and returns `"check_failed"`.
 
 ## Cloned-identity conflict detection, freeze, and `NodeDetail.identity_conflict` projection (D-072, Follow-ups 21 & 22)
 
