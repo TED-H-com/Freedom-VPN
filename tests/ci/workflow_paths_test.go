@@ -2,6 +2,7 @@ package ci
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"go/parser"
@@ -36,9 +37,22 @@ type workflow struct {
 // Source roots are scanned for new literal commands and repository paths.
 type indirect struct {
 	packages []string
-	files    []string // exact files or directories ending in /**
-	sources  []string // files or trees containing the indirect references
-	fixture  string   // source copied into a temporary module
+	files    []string          // exact files or directories ending in /**
+	sources  []string          // files or trees containing the indirect references
+	fixture  string            // source copied into a temporary module
+	pins     map[string]string // dynamic script wiring that must be re-audited on change
+	npm      map[string]string // invoked package.json scripts
+}
+
+const stackDriverHash = "c5b018fd00a38aade91da66e1d9428ca5dfebff8ba139bb18bef2db5505ac239"
+
+// Any npm script can affect npm ci through lifecycle hooks.
+var portalScripts = map[string]string{
+	"dev": "vite", "dev:stack": "node e2e/dev-stack.mjs", "preview": "vite preview",
+	"build": "tsc --noEmit && vite build", "typecheck": "tsc --noEmit", "lint": "eslint .",
+	"format:check": `prettier --check "src/**/*.{ts,tsx,css}" "e2e/**/*.{ts,mjs}" index.html vite.config.ts playwright.config.ts eslint.config.js`,
+	"format":       `prettier --write "src/**/*.{ts,tsx,css}" "e2e/**/*.{ts,mjs}" index.html vite.config.ts playwright.config.ts eslint.config.js`,
+	"test":         "node --test e2e/*.test.mjs && vitest run", "test:coverage": "node --test e2e/*.test.mjs && vitest run --coverage", "e2e": "playwright test",
 }
 
 var stackPackages = []string{
@@ -66,11 +80,11 @@ func together(lists ...[]string) []string {
 var indirectInputs = map[string]map[string]indirect{
 	"at-members": {
 		"verify":         {packages: []string{"./tests/e2e/at/members/cmd/probe"}, files: []string{"tests/e2e/at/members/**", "docs/e2e/at/members/**", "deploy/devstack/probe-portal.mjs", "docs/dns/BACKEND.md", "docs/poc/G2-f802-mtu1280-2026-10-31.md", "contracts/examples/valid/ObservationReport.json", "contracts/examples/policies/fair-use.json"}, sources: []string{"tests/e2e/at/members"}},
-		"assigned-stack": {packages: together(stackPackages, []string{"./tests/e2e/at/members/cmd/probe"}), files: []string{"mk/e2e.mk", "deploy/devstack/**", "deploy/backup/postgres/**", "apps/portal/**", "tests/e2e/at/members/**", "docs/e2e/at/members/**", "docs/dns/BACKEND.md", "docs/poc/G2-f802-mtu1280-2026-10-31.md", "contracts/examples/valid/ObservationReport.json", "contracts/examples/policies/fair-use.json"}, sources: []string{"deploy/devstack", "tests/e2e/at/members"}},
+		"assigned-stack": {packages: together(stackPackages, []string{"./tests/e2e/at/members/cmd/probe"}), files: []string{"mk/e2e.mk", "deploy/devstack/**", "deploy/backup/postgres/**", "apps/portal/**", "tests/e2e/at/members/**", "docs/e2e/at/members/**", "docs/dns/BACKEND.md", "docs/poc/G2-f802-mtu1280-2026-10-31.md", "contracts/examples/valid/ObservationReport.json", "contracts/examples/policies/fair-use.json"}, sources: []string{"deploy/devstack", "tests/e2e/at/members"}, pins: map[string]string{"deploy/devstack/up.sh": stackDriverHash}, npm: portalScripts},
 	},
 	"at-usage": {
 		"verify":         {packages: usagePackages, files: []string{"tests/e2e/at/usage/**", "docs/e2e/at/usage/**"}, sources: []string{"tests/e2e/at/usage"}},
-		"assigned-stack": {packages: together(stackPackages, usagePackages), files: []string{"mk/e2e.mk", "deploy/devstack/**", "deploy/backup/postgres/**", "apps/portal/**", "tests/e2e/at/usage/**", "docs/e2e/at/usage/**"}, sources: []string{"deploy/devstack", "tests/e2e/at/usage"}},
+		"assigned-stack": {packages: together(stackPackages, usagePackages), files: []string{"mk/e2e.mk", "deploy/devstack/**", "deploy/backup/postgres/**", "apps/portal/**", "tests/e2e/at/usage/**", "docs/e2e/at/usage/**"}, sources: []string{"deploy/devstack", "tests/e2e/at/usage"}, pins: map[string]string{"deploy/devstack/up.sh": stackDriverHash, "tests/e2e/at/usage/stack.sh": "026119fe79f3af2fac9123e6001d553613b5be8ce32a770297df941778c42240"}, npm: portalScripts},
 	},
 	"at-secops": {
 		"component-checks": {packages: []string{"./tests/e2e/at/secops/leaseprobe", "./tests/e2e/at/secops/proxyprobe", "./internal/usage/cmd/fvpn-usage-admin"}, files: []string{"tests/e2e/at/secops/**", "docs/e2e/at/secops/**", "node/agent/observe.go", "node/agent/sync.go", "node/agent/serving.go", "deploy/devstack/nginx.conf", "deploy/backup/restore-pitr.sh", "deploy/backup/post-restore-checklist.sql", "deploy/backup/backup.sh", "contracts/examples/policies/fair-use.json"}, sources: []string{"tests/e2e/at/secops"}},
@@ -90,10 +104,10 @@ var indirectInputs = map[string]map[string]indirect{
 	},
 	"fleetupdate": {"verify": {files: []string{"Makefile", "mk/**", "contracts/examples/valid/ObservationReport.json", "contracts/examples/valid/UpdateResult.installer.json", "contracts/vectors/release-manifest-signing.json"}}},
 	"installer": {
-		"verify": {files: []string{"tests/installer/**", "deploy/node/**"}, sources: []string{"tests/installer/control-build.py"}, fixture: "tests/installer/cmd/fvpn-w5-control"},
+		"verify": {files: []string{"tests/installer/**", "deploy/node/**"}, sources: []string{"tests/installer/control-build.py"}, fixture: "tests/installer/cmd/fvpn-w5-control", pins: map[string]string{"tests/installer/control-build.py": "2e53816a71000b9ea41e0e02aca1e80bf634d4eec49c8da8a85f3cb484cf4933"}},
 	},
 	"portal": {
-		"portal": {packages: []string{"./apps/control/cmd/fvpn-control", "./apps/worker/cmd/fvpn-worker"}, files: []string{"apps/portal/**", "contracts/vectors/release-manifest-signing.json", "internal/fleetupdate/testdata/at26-direct-rollback.json", "internal/netbird/testdata/**"}, sources: []string{"apps/portal/e2e/dev-stack.mjs", "apps/portal/playwright.config.ts"}},
+		"portal": {packages: []string{"./apps/control/cmd/fvpn-control", "./apps/worker/cmd/fvpn-worker"}, files: []string{"apps/portal/**", "contracts/vectors/release-manifest-signing.json", "internal/fleetupdate/testdata/at26-direct-rollback.json", "internal/netbird/testdata/**"}, sources: []string{"apps/portal/e2e/dev-stack.mjs", "apps/portal/playwright.config.ts", "apps/portal/package.json"}, pins: map[string]string{"apps/portal/playwright.config.ts": "7e3fe2a53ad5e58ce94c4ca112c8fd8ba29151b542adca7afda8ee429ee8a383"}, npm: portalScripts},
 	},
 }
 
@@ -460,6 +474,10 @@ func sourceFiles(root string, sources []string) ([]string, error) {
 				if path == p || strings.HasPrefix(entry.Name(), "test_") {
 					files[path] = true
 				}
+			case ".json":
+				if path == p {
+					files[path] = true
+				}
 			}
 			return nil
 		})
@@ -468,6 +486,42 @@ func sourceFiles(root string, sources []string) ([]string, error) {
 		}
 	}
 	return sortedKeys(files), nil
+}
+
+func checkWiring(root string, in indirect) ([]string, error) {
+	var problems []string
+	for path, expected := range in.pins {
+		data, err := os.ReadFile(filepath.Join(root, path))
+		if err != nil {
+			return nil, err
+		}
+		if fmt.Sprintf("%x", sha256.Sum256(data)) != expected {
+			problems = append(problems, path+": dynamic script changed; review and update indirect inventory")
+		}
+	}
+	if in.npm != nil {
+		const path = "apps/portal/package.json"
+		data, err := os.ReadFile(filepath.Join(root, path))
+		if err != nil {
+			return nil, err
+		}
+		var manifest struct {
+			Scripts map[string]string `json:"scripts"`
+		}
+		if err := json.Unmarshal(data, &manifest); err != nil {
+			return nil, err
+		}
+		if len(manifest.Scripts) != len(in.npm) {
+			problems = append(problems, path+": npm scripts changed; review and update indirect inventory")
+		} else {
+			for name, expected := range in.npm {
+				if actual, ok := manifest.Scripts[name]; !ok || actual != expected {
+					problems = append(problems, path+": npm script "+name+" changed; review and update indirect inventory")
+				}
+			}
+		}
+	}
+	return problems, nil
 }
 
 // Literal scanning is intentionally conservative; computed paths and shell
@@ -601,6 +655,23 @@ func TestWorkflowPaths(t *testing.T) {
 			tests := map[string]map[string]bool{}
 			scripts := map[string]bool{}
 			files := map[string]bool{path: true}
+			for pinned := range in.pins {
+				files[pinned] = true
+			}
+			if in.npm != nil {
+				files["apps/portal/package.json"] = true
+			}
+			wiringProblems, err := checkWiring(root, in)
+			if err != nil {
+				t.Errorf("%s job %s: %v", name, job, err)
+			}
+			for _, problem := range wiringProblems {
+				for _, event := range []string{"pull_request", "push"} {
+					if _, ok := wf.On[event]; ok {
+						t.Errorf("%s job %s event %s: %s", name, job, event, problem)
+					}
+				}
+			}
 			for _, step := range def.Steps {
 				if err := commandsFromStep(root, step.Run, requests, tests, files, scripts); err != nil {
 					t.Errorf("%s job %s: %v", name, job, err)
