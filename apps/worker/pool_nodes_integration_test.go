@@ -161,6 +161,16 @@ func nodeBudgetCase(t *testing.T, kind string, size int) (*pgxpool.Pool, func(co
 		}
 		serviceNow = time.Now().Add(time.Duration(base.Config.OnlineSeconds+1) * time.Second)
 		event = seedBudgetEvent(t, base.Pool, kind, enrolled.Response.NodeId, map[string]int{"schema_version": 1})
+	case "node.netbird_routes.reconcile":
+		// A published exit with no NetBird route is route drift. The measured
+		// handler reads that state and writes the drift element.
+		if _, err := base.Pool.Exec(t.Context(), `UPDATE node_incarnations SET deployment_id=$2, peer_id='TEST-peer' WHERE id=$1 AND revoked_at IS NULL`, enrolled.Response.NodeIncarnationId, base.Config.NetBirdDeployment); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := base.Pool.Exec(t.Context(), `UPDATE exits SET publication_intent='published', resource_version=resource_version+1 WHERE node_id=$1`, enrolled.Response.NodeId); err != nil {
+			t.Fatal(err)
+		}
+		event = seedBudgetEvent(t, base.Pool, kind, enrolled.Response.NodeId, map[string]int{"schema_version": 1})
 	case nodelib.EventGenerationHoldCheck:
 		serviceNow = seedBudgetHold(t, base, report)
 		event = loadLatestOutbox(t, t.Context(), base.Pool, kind)
@@ -183,7 +193,18 @@ func nodeBudgetCase(t *testing.T, kind string, size int) (*pgxpool.Pool, func(co
 		nodelib.WithClock(func() time.Time { return serviceNow })(runtime.Nodes)
 	}
 	handler := NodeJobs(runtime, makeClient(pool), budgetFetcher{}, 3)[kind]
-	return pool, func(ctx context.Context) (string, error) { return handler(ctx, event) }, tr
+	return pool, func(ctx context.Context) (string, error) {
+		receipt, err := handler(ctx, event)
+		if err != nil || kind != "node.netbird_routes.reconcile" {
+			return receipt, err
+		}
+		var found bool
+		qerr := pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM nodes n, jsonb_array_elements(n.drift) elem WHERE n.id=$1 AND elem->>'field'='netbird_route')`, enrolled.Response.NodeId).Scan(&found)
+		if qerr != nil || !found {
+			return receipt, fmt.Errorf("reconcile did not record route drift: %v found=%t", qerr, found)
+		}
+		return receipt, nil
+	}, tr
 }
 
 func runBudgetPair(t *testing.T, name string, peak int, factory func(*testing.T, int) (*pgxpool.Pool, func(context.Context) (string, error), *budgetTrace)) {
