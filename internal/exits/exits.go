@@ -683,14 +683,22 @@ func (s *Service) ExecuteOperation(ctx context.Context, opID uuid.UUID) (api.Ope
 	}
 }
 
+// supersedeContradictoryPublication supersedes publication operations that contradict
+// the current intent. A failed operation is one a retry would execute again; the
+// schema lets failed change only to running, so superseding it takes two statements.
 func (s *Service) supersedeContradictoryPublication(ctx context.Context, opID, nodeID uuid.UUID) (bool, error) {
-	var superseded bool
-	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-		tag, err := tx.Exec(ctx, `UPDATE operations SET status='superseded',completed_at=$3,resource_version=coalesce(resource_version,0)+1
- WHERE id=$1 AND status IN ('pending','running') AND EXISTS (
+	const contradiction = `EXISTS (
  SELECT 1 FROM exits WHERE node_id=$2 AND
  ((operations.kind='node.publish' AND publication_intent<>'published') OR
-  (operations.kind IN ('node.unpublish','node.disable') AND publication_intent='published')))`, opID, nodeID, s.now().UTC())
+  (operations.kind IN ('node.unpublish','node.disable') AND publication_intent='published')))`
+	var superseded bool
+	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		if _, err := tx.Exec(ctx, `UPDATE operations SET status='running',resource_version=coalesce(resource_version,0)+1
+ WHERE id=$1 AND status='failed' AND `+contradiction, opID, nodeID); err != nil {
+			return err
+		}
+		tag, err := tx.Exec(ctx, `UPDATE operations SET status='superseded',completed_at=$3,resource_version=coalesce(resource_version,0)+1
+ WHERE id=$1 AND status IN ('pending','running') AND `+contradiction, opID, nodeID, s.now().UTC())
 		if err == nil {
 			superseded = tag.RowsAffected() == 1
 		}

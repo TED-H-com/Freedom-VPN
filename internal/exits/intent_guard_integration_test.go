@@ -3,6 +3,7 @@
 package exits
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -123,6 +124,71 @@ func TestRecoveryModeT5_PublicationIntentGuard(t *testing.T) {
 			}
 		})
 	}
+	t.Run("failed_publish_then_unpublish", func(t *testing.T) {
+		f := newIntentGuardFixture(t, api.PublicationIntentUnpublished)
+		publish := f.set(api.PublicationIntentPublished)
+		f.acknowledge()
+		f.adapter.SetPublishError(errors.New("TEST ONLY publish failure"))
+		if op := f.execute(publish.OperationId); op.Status != api.OperationStatusFailed {
+			t.Fatalf("publish failure status=%s, want failed", op.Status)
+		}
+		f.adapter.SetPublishError(nil)
+		withdraw := f.set(api.PublicationIntentUnpublished)
+		if op := f.execute(withdraw.OperationId); op.Status != api.OperationStatusSucceeded && op.Status != api.OperationStatusPartiallySucceeded {
+			t.Fatalf("withdrawal did not complete: %s", op.Status)
+		}
+		if f.observed() != "withdrawn" {
+			t.Fatal("withdrawal was not observed")
+		}
+		f.acknowledge()
+		calls := f.adapter.PublishCalls()
+		if op := f.execute(publish.OperationId); op.Status != api.OperationStatusSuperseded {
+			t.Errorf("obsolete failed publish status=%s, want superseded", op.Status)
+		}
+		if f.adapter.PublishCalls() != calls || f.observed() != "withdrawn" {
+			t.Error("obsolete failed publish changed the withdrawn route")
+		}
+	})
+	t.Run("failed_unpublish_then_publish", func(t *testing.T) {
+		f := newIntentGuardFixture(t, api.PublicationIntentPublished)
+		withdraw := f.set(api.PublicationIntentUnpublished)
+		f.adapter.SetWithdrawError(errors.New("TEST ONLY withdraw failure"))
+		if op := f.execute(withdraw.OperationId); op.Status != api.OperationStatusFailed {
+			t.Fatalf("withdraw failure status=%s, want failed", op.Status)
+		}
+		f.adapter.SetWithdrawError(nil)
+		publish := f.set(api.PublicationIntentPublished)
+		f.acknowledge()
+		if op := f.execute(publish.OperationId); op.Status != api.OperationStatusSucceeded {
+			t.Fatalf("current publish status=%s, want succeeded", op.Status)
+		}
+		calls := f.adapter.WithdrawCalls()
+		if op := f.execute(withdraw.OperationId); op.Status != api.OperationStatusSuperseded {
+			t.Errorf("obsolete failed withdrawal status=%s, want superseded", op.Status)
+		}
+		if f.adapter.WithdrawCalls() != calls || f.observed() != "active" {
+			t.Error("obsolete failed withdrawal changed the published route")
+		}
+	})
+	t.Run("partially_succeeded_withdrawal_is_kept", func(t *testing.T) {
+		f := newIntentGuardFixture(t, api.PublicationIntentPublished)
+		withdraw := f.set(api.PublicationIntentUnpublished)
+		if op := f.execute(withdraw.OperationId); op.Status != api.OperationStatusPartiallySucceeded {
+			t.Fatalf("unconfirmed withdrawal status=%s, want partially_succeeded", op.Status)
+		}
+		f.set(api.PublicationIntentPublished)
+		superseded, err := f.exits.supersedeContradictoryPublication(t.Context(), withdraw.OperationId, f.node)
+		if err != nil || superseded {
+			t.Fatalf("partial withdrawal guard: superseded=%v err=%v", superseded, err)
+		}
+		op, err := nodes.GetOperation(t.Context(), f.pool, withdraw.OperationId)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if op.Status != api.OperationStatusPartiallySucceeded {
+			t.Errorf("unconfirmed withdrawal status=%s, want partially_succeeded", op.Status)
+		}
+	})
 	for _, kind := range []string{nodes.OpKindRevoke, nodes.OpKindRetire} {
 		t.Run(kind+"_with_published_intent", func(t *testing.T) {
 			f := newIntentGuardFixture(t, api.PublicationIntentPublished)
@@ -135,7 +201,7 @@ func TestRecoveryModeT5_PublicationIntentGuard(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if op := f.execute(withdrawal.OperationId); op.Status == api.OperationStatusSuperseded || f.adapter.WithdrawCalls() != 1 {
+			if op := f.execute(withdrawal.OperationId); (op.Status != api.OperationStatusSucceeded && op.Status != api.OperationStatusPartiallySucceeded) || f.adapter.WithdrawCalls() != 1 {
 				t.Fatalf("%s status=%s withdrawals=%d", kind, op.Status, f.adapter.WithdrawCalls())
 			}
 		})
