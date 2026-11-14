@@ -245,6 +245,9 @@ type Engine struct {
 
 // Start opens the store, the trust bundle and the control client.
 func Start(opt Options) (*Engine, error) {
+	if err := validateTiming(opt.Config); err != nil {
+		return nil, err
+	}
 	if opt.Clock == nil {
 		opt.Clock = systemClock{}
 	}
@@ -324,6 +327,16 @@ func Start(opt Options) (*Engine, error) {
 		e.reloadResolvers()
 	}
 	return e, nil
+}
+
+func validateTiming(c Config) error {
+	const maxSeconds = int64((1<<63 - 1) / int64(time.Second))
+	for _, seconds := range []int{c.RenewLeadSeconds, c.HeartbeatSeconds, c.WatchdogStaleSeconds, c.PollSeconds, c.ObservationSeconds} {
+		if int64(seconds) < -maxSeconds || int64(seconds) > maxSeconds {
+			return errors.New("agent: invalid duration")
+		}
+	}
+	return nil
 }
 
 // Close checkpoints a healthy same-boot restart or finishes the withdrawal
