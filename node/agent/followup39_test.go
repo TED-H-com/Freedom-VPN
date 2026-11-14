@@ -59,6 +59,24 @@ func r22CrashDuringStep(t *testing.T, r *rig) {
 	r20Crash(r.eng)
 }
 
+// r22WaitPastCheckpoint sleeps until real time is 10ms past the newest
+// usage checkpoint. A production meter reads time.Now, so callers run
+// this before one samples. The sleep is a lower bound: a slower host
+// arrives later and waits less.
+func r22WaitPastCheckpoint(t *testing.T, e *Engine) {
+	t.Helper()
+	st, err := usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, usagestore.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	head, err := st.Head(t.Context())
+	_ = st.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(max(0, time.Until(head.LastSample)+10*time.Millisecond))
+}
+
 func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 	for _, kind := range []string{"hold", "read_error"} {
 		for _, restart := range []bool{false, true} {
@@ -77,17 +95,16 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				// already checkpointed time.Now, so catch the rig clock up
 				// before sampling: a stamp behind that checkpoint is held,
 				// and one a full sample interval behind is a clock gap.
-				// A hold also keeps the new checkpoint one second inside a
-				// sample interval ahead of the wall clock. After a restart
-				// the meter is the production one and reads time.Now again;
-				// the checkpoint then stays held through Boot, and it is not
-				// far enough ahead to be recorded as a clock gap.
-				lead := time.Duration(0)
-				if kind == "hold" {
-					lead = meter.DefaultSampleInterval - time.Second
-				}
-				if wait := time.Now().Add(lead - time.Duration(offset.Load())).Sub(r.clock.Wall()); wait > 0 {
-					r.clock.Advance(wait)
+				// The first reading is the rig clock plus offset. The rig
+				// clock starts at real time, so a hold steps the wall clock
+				// back by that offset and the reading is real time, not
+				// ahead of it. The handoff then reads with offset 0, 1.5s
+				// behind the checkpoint, and stays held whatever real time does.
+				delta := time.Now().Add(-time.Duration(offset.Load())).Sub(r.clock.Wall())
+				if delta > 0 {
+					r.clock.Advance(delta)
+				} else if delta < 0 {
+					r.clock.JumpWall(delta)
 				}
 				a := oneBinding(r.clock.Wall())
 				b := a
@@ -127,7 +144,15 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 					t.Fatal("failed final sample was not left pending")
 				}
 				if restart {
+					// The restarted meter reads real time, so only a failing
+					// read keeps the final sample pending without depending
+					// on elapsed time.
+					fail.Store(true)
 					r20Crash(r.eng)
+					// A production meter reads time.Now. Wait until real
+					// time is past the newest checkpoint before it samples.
+					// A slower host reaches here later and waits less.
+					r22WaitPastCheckpoint(t, r.eng)
 					next, err := Start(Options{Config: r20ChangedSets(r), Clock: r.clock, Plane: r.plane, MeterSource: source, Prober: passProbe{}})
 					if err != nil {
 						t.Fatal(err)
@@ -152,7 +177,7 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				if r.eng.desired != nil && r.eng.desired.ConfigGeneration == 4 {
 					t.Fatal("pending interval allowed desired refresh")
 				}
-				if kind == "hold" {
+				if kind == "hold" && !restart {
 					st, err := usagestore.Open(r.eng.cfg.UsageDBPath(), r.eng.nodeID, r.eng.incID, usagestore.Options{})
 					if err != nil {
 						t.Fatal(err)
@@ -162,17 +187,11 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					if restart {
-						// The restarted meter stamps with time.Now. The
-						// checkpoint was taken from the rig clock and still
-						// leads the wall clock by less than one sample
-						// interval, so the sample is held rather than stored
-						// as a clock gap. Wait until the wall clock passes
-						// it. A slower host reaches here later and waits less.
-						time.Sleep(max(0, time.Until(head.LastSample)+10*time.Millisecond))
-					} else if wait := head.LastSample.Sub(r.clock.Wall()) + 10*time.Millisecond; wait > 0 {
-						// This meter still reads the rig clock. Sleeping
-						// would not release the sample.
+					// This meter still reads the rig clock. The restarted
+					// meter does not reach here: its reads fail until below,
+					// and real time is already past the checkpoint. Sleeping
+					// would not release this sample.
+					if wait := head.LastSample.Sub(r.clock.Wall()) + 10*time.Millisecond; wait > 0 {
 						r.clock.Advance(wait)
 					}
 				} else if !restart {
@@ -225,6 +244,10 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				cfg := r.eng.cfg
 				cfg.ExtraDeniedV4 = append(append([]string(nil), cfg.ExtraDeniedV4...), "198.51.100.0/24")
 				next := r20Successor(t, r, cfg, src, r.plane)
+				// The successor's meter reads time.Now. Wait until real
+				// time is past the newest checkpoint before it samples.
+				// A slower host reaches here later and waits less.
+				r22WaitPastCheckpoint(t, next)
 				if err := next.Boot(t.Context()); err != nil {
 					t.Fatal(err)
 				}
