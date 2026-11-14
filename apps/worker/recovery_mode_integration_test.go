@@ -171,6 +171,33 @@ func TestRecoveryModeT1_ClaimByMode(t *testing.T) {
 			t.Fatalf("claim with ledger and operation locked: events=%v err=%v", events, err)
 		}
 	})
+	t.Run("does_not_lock_ledger_in_normal_mode", func(t *testing.T) {
+		recoverySetMode(t, pool, "normal")
+		if _, err := pool.Exec(t.Context(), `UPDATE outbox_events SET lease_owner=NULL,lease_token=NULL,lease_until=NULL,attempt=0`); err != nil {
+			t.Fatal(err)
+		}
+		recoveryClaim(t, pool)
+		if _, err := pool.Exec(t.Context(), `UPDATE outbox_events SET lease_owner=NULL,lease_token=NULL,lease_until=NULL WHERE id=$1`, withdrawalEvent); err != nil {
+			t.Fatal(err)
+		}
+		tx, err := pool.Begin(t.Context())
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer func() { _ = tx.Rollback(t.Context()) }()
+		if _, err := tx.Exec(t.Context(), `SELECT id FROM usage_ledger_state FOR UPDATE`); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := tx.Exec(t.Context(), `SELECT id FROM operations WHERE id=$1 FOR UPDATE`, withdrawalOperation); err != nil {
+			t.Fatal(err)
+		}
+		ctx, cancel := context.WithTimeout(t.Context(), 2*time.Second)
+		defer cancel()
+		events, err := db.ClaimOutboxByLedgerMode(ctx, pool, "TEST ONLY unlocked reads", 1, time.Minute, recoveryAllowedTypes, recoveryFilteredType, recoveryWithdrawalKinds)
+		if err != nil || len(events) != 1 || events[0].ID != withdrawalEvent {
+			t.Fatalf("claim with ledger and operation locked: events=%v err=%v", events, err)
+		}
+	})
 	t.Run("missing_ledger_state", func(t *testing.T) {
 		recoveryRemoveLedgerState(t, pool)
 		if _, err := pool.Exec(t.Context(), `UPDATE outbox_events SET lease_owner=NULL,lease_token=NULL,lease_until=NULL,attempt=0`); err != nil {
@@ -293,7 +320,7 @@ func TestRecoveryModeT4_NoHeadOfLineBlocking(t *testing.T) {
 }
 
 func TestRecoveryModeT6_MemberSchedule(t *testing.T) {
-	for _, mode := range []string{"reconciling", "normal", "missing"} {
+	for _, mode := range []string{"frozen", "reconciling", "normal", "missing"} {
 		t.Run(mode, func(t *testing.T) {
 			pool := dbtest.New(t)
 			if mode == "missing" {
