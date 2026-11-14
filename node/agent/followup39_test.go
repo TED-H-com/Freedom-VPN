@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -95,12 +96,31 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				// already checkpointed time.Now, so catch the rig clock up
 				// before sampling: a stamp behind that checkpoint is held,
 				// and one a full sample interval behind is a clock gap.
-				// The first reading is the rig clock plus offset. The rig
-				// clock starts at real time, so a hold steps the wall clock
-				// back by that offset and the reading is real time, not
-				// ahead of it. The handoff then reads with offset 0, 1.5s
-				// behind the checkpoint, and stays held whatever real time does.
-				delta := time.Now().Add(-time.Duration(offset.Load())).Sub(r.clock.Wall())
+				// The first reading is the rig clock plus offset. The catch-up
+				// aligns that reading with the real time just read. The step can
+				// be forward or backward, and it is never further back than the
+				// anchor's backward skew minus 250ms. The handoff then reads with
+				// offset 0, 1.5s behind the checkpoint, and stays held whatever
+				// real time does.
+				r22WaitPastCheckpoint(t, r.eng)
+				limit := -(timeanchor.DefaultBackwardSkew - 250*time.Millisecond)
+				started := time.Now()
+				var delta time.Duration
+				for {
+					delta = time.Now().Add(-time.Duration(offset.Load())).Sub(r.clock.Wall())
+					if delta >= limit {
+						break
+					}
+					remain := 10*time.Second - time.Since(started)
+					if remain <= 0 {
+						t.Fatalf("catch-up still behind the anchor tolerance: delta=%s", delta)
+					}
+					gap := limit - delta
+					if gap > remain {
+						gap = remain
+					}
+					time.Sleep(gap)
+				}
 				if delta > 0 {
 					r.clock.Advance(delta)
 				} else if delta < 0 {
@@ -177,7 +197,7 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				if r.eng.desired != nil && r.eng.desired.ConfigGeneration == 4 {
 					t.Fatal("pending interval allowed desired refresh")
 				}
-				if kind == "hold" && !restart {
+				if kind == "hold" {
 					st, err := usagestore.Open(r.eng.cfg.UsageDBPath(), r.eng.nodeID, r.eng.incID, usagestore.Options{})
 					if err != nil {
 						t.Fatal(err)
@@ -187,12 +207,14 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					// This meter still reads the rig clock. The restarted
-					// meter does not reach here: its reads fail until below,
-					// and real time is already past the checkpoint. Sleeping
-					// would not release this sample.
-					if wait := head.LastSample.Sub(r.clock.Wall()) + 10*time.Millisecond; wait > 0 {
-						r.clock.Advance(wait)
+					// Only the rig-clock meter needs this advance. The restarted
+					// meter reads real time, the wait before Start already put
+					// real time past this checkpoint, and its reads fail until
+					// below, so moving the rig clock would not release the sample.
+					if !restart {
+						if wait := head.LastSample.Sub(r.clock.Wall()) + 10*time.Millisecond; wait > 0 {
+							r.clock.Advance(wait)
+						}
 					}
 				} else if !restart {
 					// A changed counter read at the checkpoint time is held.
