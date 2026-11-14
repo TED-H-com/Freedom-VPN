@@ -43,16 +43,26 @@ func TestReviewR11_IssuerSpecialPurposeDestinations(t *testing.T) {
 			t.Errorf("SpecDeniedV4 missing %s", cidr)
 		}
 	}
-	for _, cidr := range []string{"192.88.99.0/24", "192.31.196.0/24", "192.52.193.0/24", "192.175.48.0/24"} {
-		t.Run("special_"+cidr, func(t *testing.T) {
-			// TODO(review): netlab follow-up 5 owns these SpecDeniedV4 additions.
-			// Keep the rejection assertion active as soon as the shared range lands.
-			if !denied[cidr] {
-				t.Skip("awaiting netlab follow-up 5 SpecDeniedV4 addition")
+	const sixToFour = "192.88.99.0/24"
+	t.Run("special_"+sixToFour, func(t *testing.T) {
+		if !denied[sixToFour] {
+			t.Errorf("SpecDeniedV4 missing %s", sixToFour)
+		}
+		addr := netip.MustParsePrefix(sixToFour).Addr().Next().String() + "/32"
+		if err := validateProbePeer(probeWithDest(addr), known); err == nil {
+			t.Fatal("special-purpose destination accepted")
+		}
+	})
+	// These three are globally reachable, so they stay off SpecDeniedV4 and a
+	// destination inside each is accepted, as the fixture destination is.
+	for _, cidr := range []string{"192.31.196.0/24", "192.52.193.0/24", "192.175.48.0/24"} {
+		t.Run("reachable_"+cidr, func(t *testing.T) {
+			if denied[cidr] {
+				t.Errorf("SpecDeniedV4 lists %s", cidr)
 			}
 			addr := netip.MustParsePrefix(cidr).Addr().Next().String() + "/32"
-			if err := validateProbePeer(probeWithDest(addr), known); err == nil {
-				t.Fatal("special-purpose destination accepted")
+			if err := validateProbePeer(probeWithDest(addr), known); err != nil {
+				t.Errorf("globally reachable destination refused: %s", addr)
 			}
 		})
 	}
