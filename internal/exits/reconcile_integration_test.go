@@ -382,6 +382,13 @@ func TestReconcileNetBird_SkipsUnservedDeployment(t *testing.T) {
 	marker := []api.StateDrift{{Field: "capacity_report", Desired: presence.NewNullableWithValue("skip"), Observed: presence.NewNullableWithValue("skip")}}
 	f.setDrift(skippedNode, marker)
 	version, _ := f.nodeState(skippedNode)
+	observedAt := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
+	verified := time.Date(2026, 2, 3, 4, 5, 6, 0, time.UTC)
+	f.exec(`INSERT INTO external_bindings(resource_type,resource_id,provider,deployment_id,external_id,desired_hash,observed_hash,sync_state,last_verified_at,last_observed_at,last_error) VALUES('exit',$1,'netbird','dep-skip',$2,$3,$4,'synced',$5,$6,$7)`, skipped, "nb-skip-"+skipped.String(), bytes.Repeat([]byte{0x11}, 32), bytes.Repeat([]byte{0x22}, 32), verified, observedAt, "TEST ONLY keep")
+	var bindingBefore string
+	if err := f.pool.QueryRow(f.ctx, `SELECT b::text FROM external_bindings b WHERE resource_type='exit' AND resource_id=$1`, skipped).Scan(&bindingBefore); err != nil {
+		t.Fatal(err)
+	}
 	f.nb.SetUnservedDeployment("dep-skip")
 	items, err := f.svc.ReconcileNetBird(f.ctx)
 	if err != nil {
@@ -404,5 +411,40 @@ func TestReconcileNetBird_SkipsUnservedDeployment(t *testing.T) {
 	if f.nb.PageCalls() != 1 {
 		t.Fatalf("page calls=%d", f.nb.PageCalls())
 	}
+	var bindingAfter string
+	if err := f.pool.QueryRow(f.ctx, `SELECT b::text FROM external_bindings b WHERE resource_type='exit' AND resource_id=$1`, skipped).Scan(&bindingAfter); err != nil || bindingAfter != bindingBefore {
+		t.Fatalf("skipped binding changed\nbefore %s\nafter  %s err=%v", bindingBefore, bindingAfter, err)
+	}
 	f.sameIntents(before)
+}
+
+func TestReconcileNetBird_GroupsExitsByDeployment(t *testing.T) {
+	f := newReconcileFixture(t)
+	previous := reconcilePageSize
+	reconcilePageSize = 3
+	t.Cleanup(func() { reconcilePageSize = previous })
+	deps := []string{"dep-a", "dep-a", "dep-b", "dep-a", "dep-b"}
+	ids := make([]uuid.UUID, len(deps))
+	for i, dep := range deps {
+		ids[i] = uuid.MustParse(fmt.Sprintf("00000000-0000-4000-8000-%012d", i+1))
+		f.seedOrdered(ids[i], dep, string(api.PublicationIntentPublished))
+	}
+	if _, err := f.svc.ReconcileNetBird(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+	calls := f.nb.PageExits()
+	want := [][]uuid.UUID{{ids[0], ids[1]}, {ids[2]}, {ids[3]}, {ids[4]}}
+	if len(calls) != len(want) {
+		t.Fatalf("calls=%d want %d: %v", len(calls), len(want), calls)
+	}
+	for i := range want {
+		if len(calls[i]) != len(want[i]) {
+			t.Fatalf("call %d = %v want %v", i, calls[i], want[i])
+		}
+		for j := range want[i] {
+			if calls[i][j] != want[i][j] {
+				t.Fatalf("call %d = %v want %v", i, calls[i], want[i])
+			}
+		}
+	}
 }
