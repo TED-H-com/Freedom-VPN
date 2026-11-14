@@ -68,7 +68,7 @@ func seedExitTestNode(
 	}
 
 	grpID := uuid.New()
-	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, $2, $3)`, grpID, "grp-"+grpID.String()[:8], "Group"); err != nil {
+	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, $2, $3)`, grpID, "grp-"+grpID.String()[:8], "Group "+grpID.String()); err != nil {
 		t.Fatalf("insert group: %v", err)
 	}
 
@@ -393,16 +393,15 @@ func TestDisabledNode_NeverAutoReEnabledByHealthOrUpdate(t *testing.T) {
 	compiler := testExitsCompiler(t, pool, func() time.Time { return now })
 	nb := NewFakeNetBirdAdapter()
 	exitsSvc := NewService(pool, compiler, nb, WithClock(func() time.Time { return now }))
-	worker := NewWorker(pool, exitsSvc, compiler, "test-worker")
 
 	nodeID, incID, _, relID, _ := seedExitTestNode(t, ctx, pool, api.PublicationIntentDisabled, "withdrawn")
 
 	// Submit a completely healthy observation with applied_config_generation=1 and member_forwarding_enabled=false.
 	submitAckObservation(t, ctx, nodesSvc, pool, nodeID, incID, relID, now, 1, false)
 
-	// Run worker reconciliation.
-	if _, err := worker.Reconcile(ctx); err != nil {
-		t.Fatalf("Reconcile: %v", err)
+	// Run NetBird read-back. It must not republish a disabled exit.
+	if _, err := exitsSvc.ReconcileNetBird(ctx); err != nil {
+		t.Fatalf("ReconcileNetBird: %v", err)
 	}
 
 	detail, _, err := nodesSvc.GetNode(ctx, nodeID)
