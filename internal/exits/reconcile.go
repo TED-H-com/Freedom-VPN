@@ -251,10 +251,22 @@ func routeDrift(item reconcileExit, obs ObservedExitState) []api.StateDrift {
 	return []api.StateDrift{}
 }
 
-// lockAndFilterPage locks every node of the page in id order and returns the
-// items whose publication intent, deployment, binding external id and desired
-// hash still match the page read. A changed or missing node is omitted. The
-// statement does not lock exits or external_bindings.
+// lockAndFilterPage locks every node of the page in id order, then reads
+// publication intent, deployment, binding external id and desired hash.
+// Items whose values still match the page read are returned in node id
+// order. A changed or missing node is omitted. Neither statement locks
+// exits or external_bindings.
+//
+// The lock is one statement with no join:
+//
+//	SELECT n.id FROM nodes n WHERE n.id = ANY($1::uuid[]) ORDER BY n.id FOR UPDATE
+//
+// A locking statement does not refresh joined rows after a wait. Under
+// READ COMMITTED only the locked row is current; joined rows keep the
+// snapshot taken before the wait. The read is a separate statement, run
+// only after every locked id has been read, so its snapshot is taken
+// after every node lock is held. No writer of those values can commit
+// before this transaction does.
 func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) ([]reconcileWrite, error) {
 	if len(writes) == 0 {
 		return nil, nil
@@ -262,6 +274,27 @@ func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) 
 	ids := make([]uuid.UUID, len(writes))
 	for i, item := range writes {
 		ids[i] = item.nodeID
+	}
+	lockRows, err := tx.Query(ctx, `
+		SELECT n.id
+		FROM nodes n
+		WHERE n.id = ANY($1::uuid[])
+		ORDER BY n.id
+		FOR UPDATE`, ids)
+	if err != nil {
+		return nil, err
+	}
+	for lockRows.Next() {
+		var id uuid.UUID
+		if err := lockRows.Scan(&id); err != nil {
+			lockRows.Close()
+			return nil, err
+		}
+	}
+	lockErr := lockRows.Err()
+	lockRows.Close()
+	if lockErr != nil {
+		return nil, lockErr
 	}
 	rows, err := tx.Query(ctx, `
 		SELECT
@@ -279,8 +312,7 @@ func lockAndFilterPage(ctx context.Context, tx pgx.Tx, writes []reconcileWrite) 
 		 AND eb.provider = $2
 		 AND eb.deployment_id = coalesce(inc.deployment_id, $1)
 		WHERE n.id = ANY($3::uuid[])
-		ORDER BY n.id
-		FOR UPDATE OF n`, DefaultDeploymentID, ProviderNetBird, ids)
+		ORDER BY n.id`, DefaultDeploymentID, ProviderNetBird, ids)
 	if err != nil {
 		return nil, err
 	}

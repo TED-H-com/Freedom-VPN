@@ -365,3 +365,147 @@ func TestReconcileNetBird_SkipsStaleIntent(t *testing.T) {
 		t.Fatalf("stored drift=%+v", drift)
 	}
 }
+
+// reconcileBlockedByHook runs ReconcileNetBird and, from its page-read hook,
+// runs arm in a second transaction that stays open. The hook returns before
+// the reconcile's write transaction starts. This returns once pg_blocking_pids
+// shows the reconcile blocked by that transaction. The caller commits holder.
+func (f *reconcileFixture) reconcileBlockedByHook(ctx context.Context, arm func(pgx.Tx) error) (items *[]ReconcileItem, done <-chan error, holder pgx.Tx) {
+	f.t.Helper()
+	out := &[]ReconcileItem{}
+	type hold struct {
+		tx  pgx.Tx
+		pid int32
+		err error
+	}
+	held := make(chan hold, 1)
+	f.nb.SetPageReadHook(func(string, []ExitPageRef) {
+		f.nb.SetPageReadHook(nil)
+		tx, err := f.pool.Begin(ctx)
+		if err != nil {
+			held <- hold{err: err}
+			return
+		}
+		if err = arm(tx); err != nil {
+			held <- hold{tx: tx, err: err}
+			return
+		}
+		held <- hold{tx: tx, pid: int32(tx.Conn().PgConn().PID())}
+	})
+	errCh := make(chan error, 1)
+	go func() {
+		got, err := f.svc.ReconcileNetBird(ctx)
+		*out = got
+		errCh <- err
+	}()
+	var h hold
+	select {
+	case h = <-held:
+	case err := <-errCh:
+		f.t.Fatalf("reconcile finished before the page hook held its lock: %v", err)
+	case <-ctx.Done():
+		f.t.Fatal(ctx.Err())
+	}
+	if h.err != nil {
+		if h.tx != nil {
+			_ = h.tx.Rollback(context.Background())
+		}
+		f.t.Fatal(h.err)
+	}
+	holder = h.tx
+	released := false
+	defer func() {
+		if !released && holder != nil {
+			_ = holder.Rollback(context.Background())
+		}
+	}()
+	waitForWaiter(f.t, ctx, f.pool, h.pid, errCh)
+	released = true
+	return out, errCh, holder
+}
+
+func routeElements(drift []api.StateDrift) []api.StateDrift {
+	var out []api.StateDrift
+	for _, el := range drift {
+		switch el.Field {
+		case driftFieldRoute, driftFieldConfig, driftFieldEvidence:
+			out = append(out, el)
+		}
+	}
+	return out
+}
+
+func TestReconcileNetBird_SkipsIntentChangedDuringNodeLock(t *testing.T) {
+	f := newReconcileFixture(t)
+	exitID := uuid.MustParse("00000000-0000-4000-8000-0000000000b8")
+	nodeID := f.seedOrdered(exitID, "nb-main", string(api.PublicationIntentUnpublished))
+	marker := []api.StateDrift{{
+		Field:    "capacity_report",
+		Desired:  presence.NewNullableWithValue("stay"),
+		Observed: presence.NewNullableWithValue("stay"),
+	}}
+	f.setDrift(nodeID, marker)
+	version, _ := f.nodeState(nodeID)
+	f.seedExitBinding(exitID, "nb-main", "nb-lock", bytes.Repeat([]byte{0x44}, 32))
+	bindingBefore := f.bindingText(exitID)
+	f.nb.InjectRouteState(exitID, ObservedExitState{Exists: true, Enabled: true, ExternalID: "nb-lock", PeerID: "peer"})
+	ctx, cancel := context.WithTimeout(f.ctx, 45*time.Second)
+	defer cancel()
+	items, done, holder := f.reconcileBlockedByHook(ctx, func(tx pgx.Tx) error {
+		var locked bool
+		if err := tx.QueryRow(ctx, `SELECT true FROM nodes n WHERE n.id = $1 FOR UPDATE OF n`, nodeID).Scan(&locked); err != nil {
+			return err
+		}
+		if _, err := tx.Exec(ctx, `UPDATE nodes SET resource_version = resource_version + 1 WHERE id = $1`, nodeID); err != nil {
+			return err
+		}
+		_, err := tx.Exec(ctx, `UPDATE exits SET publication_intent = $2, resource_version = resource_version + 1 WHERE id = $1`, exitID, string(api.PublicationIntentDisabled))
+		return err
+	})
+	defer holder.Rollback(context.Background())
+	if err := holder.Commit(ctx); err != nil {
+		t.Fatal(err)
+	}
+	if err := <-done; err != nil {
+		t.Fatal(err)
+	}
+	if len(*items) != 0 {
+		t.Fatalf("first results=%+v", *items)
+	}
+	after, drift := f.nodeState(nodeID)
+	versionPlus(t, version, after, 1)
+	if len(drift) != 1 || drift[0].Field != "capacity_report" || len(routeElements(drift)) != 0 {
+		t.Fatalf("drift=%+v", drift)
+	}
+	if got := f.bindingText(exitID); got != bindingBefore {
+		t.Fatalf("binding changed\nbefore %s\nafter  %s", bindingBefore, got)
+	}
+	var intent string
+	if err := f.pool.QueryRow(ctx, `SELECT publication_intent FROM exits WHERE id=$1`, exitID).Scan(&intent); err != nil || intent != string(api.PublicationIntentDisabled) {
+		t.Fatalf("intent %q: %v", intent, err)
+	}
+	secondCtx, secondCancel := context.WithTimeout(f.ctx, 30*time.Second)
+	defer secondCancel()
+	second, err := f.svc.ReconcileNetBird(secondCtx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found bool
+	for _, item := range second {
+		if item.ExitID != exitID {
+			continue
+		}
+		found = true
+		if len(item.Drift) != 1 || item.Drift[0].Field != driftFieldRoute || fieldText(t, item.Drift[0].Desired) != "disabled" || fieldText(t, item.Drift[0].Observed) != "published" {
+			t.Fatalf("second drift=%+v", item.Drift)
+		}
+	}
+	if !found {
+		t.Fatalf("second results=%+v", second)
+	}
+	after, drift = f.nodeState(nodeID)
+	versionPlus(t, version, after, 2)
+	if len(drift) != 2 || drift[0].Field != "capacity_report" || drift[1].Field != driftFieldRoute || fieldText(t, drift[1].Desired) != "disabled" || fieldText(t, drift[1].Observed) != "published" {
+		t.Fatalf("stored drift=%+v", drift)
+	}
+}
