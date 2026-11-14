@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/db/dbtest"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
@@ -243,9 +244,14 @@ func TestAT29_RecoveryLedgerReadFailureFailsClosed(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = f.lease.RenewTx(ctx, tx, f.node, f.inc, leaseRequest(f.node, f.inc))
+	if errors.Is(err, pgx.ErrNoRows) {
+		t.Errorf("missing ledger error retains pgx.ErrNoRows: %v", err)
+	}
+	// db.InTx returns db.MapError(err) for a non-retryable transaction error.
+	mappedErr := db.MapError(err)
 	var classified *apierr.Error
-	if !errors.Is(err, pgx.ErrNoRows) || !errors.As(err, &classified) || classified.Code != apierr.DependencyUnavailable {
-		t.Errorf("missing ledger error = %v, want classified no rows", err)
+	if !errors.As(mappedErr, &classified) || classified.Code != apierr.DependencyUnavailable {
+		t.Errorf("mapped missing ledger error = %v, want %s", mappedErr, apierr.DependencyUnavailable)
 	}
 	var count int
 	if err = tx.QueryRow(ctx, `SELECT count(*) FROM serving_leases`).Scan(&count); err != nil || count != 0 {
