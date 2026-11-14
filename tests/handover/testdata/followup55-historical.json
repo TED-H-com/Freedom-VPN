@@ -1,0 +1,79 @@
+[
+  {
+    "name": "roadmap_conntrack",
+    "path": "docs/ROADMAP.md",
+    "heading": "Task board",
+    "passage": "12 consecutive failed conntrack -D attempts or a missing binary fail isolation closed",
+    "erratum": "- `docs/ROADMAP.md`, [“Task board”](../ROADMAP.md#task-board), the done row `w2-agent-core follow-up 15`: the row still says twelve consecutive failed `conntrack -D` attempts, or a missing binary, fail isolation closed, and that the count persists across restarts. The current bound is twelve durably reserved serving-Apply delete batches (`maxConntrackDeleteAttempts`). The reservation is stored before Apply. A crash or an earlier failure consumes a reservation. A missing `conntrack` binary does not use this count; `LookPath` fails closed at once. See [desired state and leases](../node/README.md#desired-state-and-leases-147-163)."
+  },
+  {
+    "name": "roadmap_capture",
+    "path": "docs/ROADMAP.md",
+    "heading": "Task board",
+    "passage": "revoke completion fence matches only peers that share an exit group with the member plan",
+    "erratum": "- `docs/ROADMAP.md`, [“Task board”](../ROADMAP.md#task-board), the done row `w3-wire-nodes follow-up 22`: the row still says revoke completion matches only peers that share an exit group with the member plan and were observed inside 90 seconds, and that an ungrouped exit never holds a revoke. A member or device `nodes` step succeeds after its capture is finished and no captured target remains `pending`. One reporting node's clean observation does not settle another node's pending target. An `unconfirmed` target does not block success. See [publishing exits](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication)."
+  },
+  {
+    "name": "updates_followup4",
+    "path": "docs/e2e/at/updates/history/follow-up-9/follow-up-4.md",
+    "heading": "Follow-up 4: target evidence and observation authority",
+    "passage": "Follow-up 4: target evidence and observation authority",
+    "erratum": "- `docs/e2e/at/updates/history/follow-up-9/follow-up-4.md`, [“Follow-up 4: target evidence and observation authority”](../e2e/at/updates/history/follow-up-9/follow-up-4.md#follow-up-4-target-evidence-and-observation-authority): the `summary.md` link beside this copy opens [updates follow-up 9](../e2e/at/updates/history/follow-up-9/summary.md#updates-follow-up-9). The run this heading names is [updates follow-up 4](../e2e/at/updates/history/follow-up-4/summary.md#updates-follow-up-4)."
+  },
+  {
+    "name": "followup52_capture",
+    "path": "docs/handover/follow-up-52.md",
+    "heading": "Guide revisions at this cut",
+    "passage": "advanceNodeOperationsOnObservation",
+    "erratum": "- `docs/handover/follow-up-52.md`, [“Guide revisions at this cut”](follow-up-52.md#guide-revisions-at-this-cut): the operator-guide row says revoke-step completion follows `advanceNodeOperationsOnObservation`, and that one clean counting observation can complete the step while another fresh exit has not applied its generation. `advanceNodeOperationsOnObservation` selects operations whose `resource_type` is `node`. Member and device targets are updated by `observeOperationTargets`, which selects only the reporting node's rows. Success requires a finished capture and no remaining `pending` target. See [publishing exits](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication)."
+  },
+  {
+    "name": "followup54_pool",
+    "path": "docs/handover/follow-up-54.md",
+    "heading": "Merged deliveries",
+    "passage": "pool connections scan timestamps in UTC",
+    "erratum": "- `docs/handover/follow-up-54.md`, [“Merged deliveries”](follow-up-54.md#merged-deliveries), the #533 effect: the sentence says pool connections scan timestamps in UTC. Pool connections scan scalar `timestamptz` values, and ranges and multiranges of it, in UTC; arrays of `timestamptz` keep pgx's default element codec, so elements scanned into `pgtype.Timestamptz` can carry the host's zone, while elements scanned into `time.Time` are UTC; no product query scans such an array (`internal/db/db.go` `ConfigureUTC`, lines 76–85 and 94–98). See [`ConfigureUTC`](../../internal/db/db.go)."
+  },
+  {
+    "name": "node_deadline",
+    "path": "docs/node/README.md",
+    "heading": "Follow-up 23 timing evidence (2026-10-31)",
+    "passage": "TestISOF603_WholeSecondRendererLimit",
+    "erratum": "- `docs/node/README.md`, [“Follow-up 23 timing evidence (2026-10-31)”](../node/README.md#follow-up-23-timing-evidence-2026-10-31), under [“待實測”](../node/README.md#待實測): the note says `decide.go` and `deadline.go` floor remaining member allowances to whole seconds, and it names `TestISOF603_WholeSecondRendererLimit`. Member allowances truncate to `DeadlineGranularity` (1 millisecond) after the install reserve. `probeTimeout` still uses whole seconds, and only for synthetic probes. nft 1.0.9 JSON read-back remains whole seconds. `TestISOF603_WholeSecondRendererLimit` is not in the tree. `TestISOF603_RenewalFailureAndDeadline` is the expiry test, and `TestD104_SubsecondDeadline` covers a sub-second render (`node/agent/followup23_expiry_test.go`). See [what the agent sends and installs](../node/2026-10-31-d104-d106-agent.md#what-the-agent-sends-and-installs) and [the deadline contract interface](../poc/G2-deadline-contract-2026-10-31.md#interface-for-agent-core-follow-up-24)."
+  },
+  {
+    "name": "ops_isolation",
+    "path": "docs/ops/README.md",
+    "heading": "Follow-up 13 acceptance snapshot (2026-10-30 EDT)",
+    "passage": "Isolation follow-up 5 (`#246`)",
+    "erratum": "- `docs/ops/README.md`, [“Follow-up 13 acceptance snapshot (2026-10-30 EDT)”](../ops/README.md#follow-up-13-acceptance-snapshot-2026-10-30-edt): the “Isolation follow-up 5 (`#246`)” link opens the living [isolation summary](../e2e/at/isolation/summary.md#isolation-follow-up-19--2026-11-03), a later run. The run the label names is [isolation follow-up 5](../e2e/at/isolation/history/follow-up-5/summary.md#follow-up-5--publication-served-three-cases-stay-blocked). Neither file contains `#246`."
+  },
+  {
+    "name": "ops_usage",
+    "path": "docs/ops/README.md",
+    "heading": "Follow-up 13 acceptance snapshot (2026-10-30 EDT)",
+    "passage": "Usage follow-up 2 (`#214`)",
+    "erratum": "- `docs/ops/README.md`, [“Follow-up 13 acceptance snapshot (2026-10-30 EDT)”](../ops/README.md#follow-up-13-acceptance-snapshot-2026-10-30-edt): the “Usage follow-up 2 (`#214`)” link opens the living [usage summary](../e2e/at/usage/summary.md#usage-acceptance--follow-up-7), which is follow-up 7 and does not identify `#214`. The follow-up 2 record is [usage follow-up 2](../e2e/at/usage/history/followup2/summary.md#wave-4-usage-acceptance-summary-w4-at-usage--follow-up-2)."
+  },
+  {
+    "name": "ops_secops",
+    "path": "docs/ops/README.md",
+    "heading": "Follow-up 13 acceptance snapshot (2026-10-30 EDT)",
+    "passage": "Security-ops follow-up 9 (`#242`)",
+    "erratum": "- `docs/ops/README.md`, [“Follow-up 13 acceptance snapshot (2026-10-30 EDT)”](../ops/README.md#follow-up-13-acceptance-snapshot-2026-10-30-edt): the “Security-ops follow-up 9 (`#242`)” link opens the living [AT30 record](../e2e/at/secops/AT30.md#at30-restore--follow-up-13), which is follow-up 13. The follow-up 9 record is [AT30 follow-up 9](../e2e/at/secops/history/follow-up-9/AT30.md#at30--follow-up-9). That history file does not contain `#242`."
+  },
+  {
+    "name": "ops_requests",
+    "path": "docs/ops/README.md",
+    "heading": "Follow-up 15 acceptance snapshot (2026-10-31 EDT)",
+    "passage": "Updates follow-up 9 (#283), run `89fc6769-0a09-403d-ae88-84f736ee1dce`",
+    "erratum": "- `docs/ops/README.md`, [“Follow-up 15 acceptance snapshot (2026-10-31 EDT)”](../ops/README.md#follow-up-15-acceptance-snapshot-2026-10-31-edt): the Requests link on the updates follow-up 9 row opens the living [updates requests](../e2e/at/updates/requests.md#updates-requests--follow-up-15-2026-11-03), which is follow-up 15 and has no F9 rows. The follow-up 9 request table is [updates follow-up 9 requests](../e2e/at/updates/history/follow-up-9/requests.md#requests-to-orchestrator--follow-up-9)."
+  },
+  {
+    "name": "review_provisional",
+    "path": "docs/reviews/r32-dedup-records-review.md",
+    "heading": "Authoritative Citations",
+    "passage": "issues a provisional grant-less lease with members: [] while the node is not yet ready",
+    "erratum": "- `docs/reviews/r32-dedup-records-review.md`, [“Authoritative Citations”](../reviews/r32-dedup-records-review.md#authoritative-citations): the quoted provisional-lease sentence omits a frozen mapping. The operator guide issues that grant-less lease only for a published, registered node that is not yet ready or whose mapping is frozen. See [the fleet offline lease ceiling](operator-guide.md#36-configuring-the-fleet-offline-lease-ceiling-getput-apiv1adminfleet-config-d-065-d-067-176-179-206-145-163-at29-docsnodesreadmemd-docsnodeswiringmd-internalnodeshttpwirefleet_configgo)."
+  }
+]
