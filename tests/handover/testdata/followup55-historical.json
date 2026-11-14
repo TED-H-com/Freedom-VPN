@@ -25,7 +25,7 @@
     "path": "docs/handover/follow-up-52.md",
     "heading": "Guide revisions at this cut",
     "passage": "advanceNodeOperationsOnObservation",
-    "erratum": "- `docs/handover/follow-up-52.md`, [“Guide revisions at this cut”](follow-up-52.md#guide-revisions-at-this-cut): the operator-guide row says revoke-step completion follows `advanceNodeOperationsOnObservation`, and that one clean counting observation can complete the step while another fresh exit has not applied its generation. `advanceNodeOperationsOnObservation` selects operations whose `resource_type` is `node`. Member and device targets are updated by `observeOperationTargets`, which selects only the reporting node's rows. Success requires a finished capture and no remaining `pending` target. See [publishing exits](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication)."
+    "erratum": "- `docs/handover/follow-up-52.md`, [“Guide revisions at this cut”](follow-up-52.md#guide-revisions-at-this-cut): the operator-guide row says revoke-step completion follows `advanceNodeOperationsOnObservation`, and that one clean counting observation can complete the step while another fresh exit has not applied its generation. `advanceNodeOperationsOnObservation` selects operations whose `resource_type` is `node`. Member and device targets are handled by `observeOperationTargets`, which acknowledges only the reporting node's own targets. Success requires a finished capture and no remaining `pending` target. See [publishing exits](operator-guide.md#33-publishing-disabling-and-unpublishing-exits-put-apiv1adminnodesnode_idpublication)."
   },
   {
     "name": "followup54_pool",
@@ -74,6 +74,6 @@
     "path": "docs/reviews/r32-dedup-records-review.md",
     "heading": "Authoritative Citations",
     "passage": "issues a provisional grant-less lease with members: [] while the node is not yet ready",
-    "erratum": "- `docs/reviews/r32-dedup-records-review.md`, [“Authoritative Citations”](../reviews/r32-dedup-records-review.md#authoritative-citations): the quoted provisional-lease sentence omits a frozen mapping. The operator guide issues that grant-less lease only for a published, registered node that is not yet ready or whose mapping is frozen. See [the fleet offline lease ceiling](operator-guide.md#36-configuring-the-fleet-offline-lease-ceiling-getput-apiv1adminfleet-config-d-065-d-067-176-179-206-145-163-at29-docsnodesreadmemd-docsnodeswiringmd-internalnodeshttpwirefleet_configgo)."
+    "erratum": "- `docs/reviews/r32-dedup-records-review.md`, [“Authoritative Citations”](../reviews/r32-dedup-records-review.md#authoritative-citations): the quoted provisional-lease sentence omits a frozen mapping. The operator guide states that the grant-less lease is issued only to a published, registered node that is not yet ready or whose mapping is frozen. See [the fleet offline lease ceiling](operator-guide.md#36-configuring-the-fleet-offline-lease-ceiling-getput-apiv1adminfleet-config-d-065-d-067-176-179-206-145-163-at29-docsnodesreadmemd-docsnodeswiringmd-internalnodeshttpwirefleet_configgo)."
   }
 ]
