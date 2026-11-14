@@ -656,6 +656,14 @@ func (s *Service) ExecuteOperation(ctx context.Context, opID uuid.UUID) (api.Ope
 		return op, nil
 	}
 
+	superseded, err := s.supersedeContradictoryPublication(ctx, opID, op.Resource.Id)
+	if err != nil {
+		return api.Operation{}, err
+	}
+	if superseded {
+		return nodes.GetOperation(ctx, s.pool, opID)
+	}
+
 	nodeID := op.Resource.Id
 	switch string(op.Kind) {
 	case nodes.OpKindPublish:
@@ -670,6 +678,22 @@ func (s *Service) ExecuteOperation(ctx context.Context, opID uuid.UUID) (api.Ope
 		}
 		return nodes.GetOperation(ctx, s.pool, opID)
 	}
+}
+
+func (s *Service) supersedeContradictoryPublication(ctx context.Context, opID, nodeID uuid.UUID) (bool, error) {
+	var superseded bool
+	err := commandtx.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
+		tag, err := tx.Exec(ctx, `UPDATE operations SET status='superseded',completed_at=$3,resource_version=coalesce(resource_version,0)+1
+ WHERE id=$1 AND status IN ('pending','running') AND EXISTS (
+ SELECT 1 FROM exits WHERE node_id=$2 AND
+ ((operations.kind='node.publish' AND publication_intent<>'published') OR
+  (operations.kind IN ('node.unpublish','node.disable') AND publication_intent='published')))`, opID, nodeID, s.now().UTC())
+		if err == nil {
+			superseded = tag.RowsAffected() == 1
+		}
+		return err
+	})
+	return superseded, err
 }
 
 // executePublish executes the §5.2 step 2-3 publish workflow:

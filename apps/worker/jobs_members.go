@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
@@ -404,6 +405,15 @@ func memberRunner(services *membersruntime.Services) Runner {
 }
 
 func scheduleMemberWork(ctx context.Context, s *membersruntime.Services, name string, interval time.Duration) error {
+	if slices.Contains(recoveryWaitingTypes, name) {
+		var normal bool
+		if err := s.HTTP.Members.Pool.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM usage_ledger_state WHERE mode='normal')`).Scan(&normal); err != nil {
+			return err
+		}
+		if !normal {
+			return nil
+		}
+	}
 	raw, e := canonjson.Marshal([]string{name, time.Now().UTC().Truncate(interval).Format(time.RFC3339)})
 	if e != nil {
 		return e

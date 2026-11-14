@@ -85,6 +85,47 @@ func ClaimOutbox(ctx context.Context, pool *pgxpool.Pool, worker string, n int, 
 	return events, nil
 }
 
+// ClaimOutboxByLedgerMode limits claims during ledger recovery without leasing
+// rows that must wait. A missing ledger state is treated as restricted.
+func ClaimOutboxByLedgerMode(ctx context.Context, pool *pgxpool.Pool, worker string, n int, leaseFor time.Duration, allowedTypes []string, filteredType string, allowedKinds []string) ([]ClaimedEvent, error) {
+	if worker == "" || n < 1 || n > 1000 || leaseFor < time.Millisecond || leaseFor > 24*time.Hour {
+		return nil, errors.New("invalid outbox claim")
+	}
+	token, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+	rows, err := pool.Query(ctx, `WITH candidates AS (
+ SELECT id FROM outbox_events WHERE delivered_at IS NULL AND available_at<=clock_timestamp()
+ AND (lease_until IS NULL OR lease_until<=clock_timestamp())
+ AND (EXISTS (SELECT 1 FROM usage_ledger_state WHERE mode='normal')
+      OR event_type=ANY($5::text[])
+      OR (event_type=$6 AND EXISTS (SELECT 1 FROM operations WHERE id=CASE
+          WHEN jsonb_typeof(payload->'operation_id')='string'
+           AND pg_input_is_valid(payload->>'operation_id','uuid')
+          THEN (payload->>'operation_id')::uuid END AND kind=ANY($7::text[]))))
+ ORDER BY available_at,id FOR UPDATE SKIP LOCKED LIMIT $1
+ ), claimed AS (UPDATE outbox_events e SET lease_owner=$2,lease_token=$3,lease_until=clock_timestamp()+$4::bigint*interval '1 millisecond',attempt=attempt+1
+ FROM candidates c WHERE e.id=c.id
+ RETURNING e.id,e.aggregate_id,e.aggregate_type,e.aggregate_version::text,e.event_type,e.schema_version,e.payload,e.available_at,e.lease_until,e.attempt) SELECT * FROM claimed ORDER BY available_at,id`, n, worker, token, leaseFor.Milliseconds(), allowedTypes, filteredType, allowedKinds)
+	if err != nil {
+		return nil, MapError(err)
+	}
+	defer rows.Close()
+	var events []ClaimedEvent
+	for rows.Next() {
+		evt := ClaimedEvent{Worker: worker, LeaseToken: token}
+		if err := rows.Scan(&evt.ID, &evt.AggregateID, &evt.AggregateType, &evt.AggregateVersion, &evt.EventType, &evt.SchemaVersion, &evt.Payload, &evt.AvailableAt, &evt.LeaseUntil, &evt.Attempt); err != nil {
+			return nil, err
+		}
+		events = append(events, evt)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, MapError(err)
+	}
+	return events, nil
+}
+
 // CompleteOutbox requires current, unexpired ownership and read-back evidence
 // already obtained by the caller. A late worker cannot complete a newer claim.
 func CompleteOutbox(ctx context.Context, pool *pgxpool.Pool, evt ClaimedEvent) error {
