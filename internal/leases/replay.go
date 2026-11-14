@@ -3,7 +3,6 @@ package leases
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/db"
 	"github.com/TED-H-com/Freedom-VPN/internal/usage"
@@ -18,7 +17,9 @@ import (
 func lockUsageLedgerMode(ctx context.Context, tx pgx.Tx) (usage.LedgerMode, error) {
 	var mode usage.LedgerMode
 	if err := tx.QueryRow(ctx, `SELECT mode FROM usage_ledger_state FOR SHARE`).Scan(&mode); err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
+		// MapError recognizes wrapped pgx.ErrNoRows; an existing db.ErrNotFound
+		// is a different scan error and must retain its cause.
+		if err != db.ErrNotFound && db.MapError(err) == db.ErrNotFound {
 			return "", apierr.New(apierr.DependencyUnavailable, "usage ledger state unavailable")
 		}
 		return "", apierr.Wrap(err, apierr.DependencyUnavailable, "usage ledger state unavailable")
