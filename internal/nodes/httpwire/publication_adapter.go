@@ -144,7 +144,8 @@ func (a *PublicationAdapter) ReadExitPage(ctx context.Context, deployment string
 
 // matchObservedExit applies one exit to an already-read NetBird snapshot.
 // A database error is returned as-is. No rows, or a different peer, is
-// route_peer_mismatch. A missing group binding is group_evidence_unavailable.
+// route_peer_mismatch. A missing group binding, or a paid: key that is not a
+// UUID, is group_evidence_unavailable.
 func matchObservedExit(ctx context.Context, pool *pgxpool.Pool, deployment string, exitID uuid.UUID, externalID string, observed netbird.ObservedState) (out exits.ObservedExitState, err error) {
 	// Match the adapter's stable name even after withdrawal deletes its binding.
 	// This is the reserved naming format in netbird.stableName, verified in the
@@ -190,7 +191,7 @@ func matchObservedExit(ctx context.Context, pool *pgxpool.Pool, deployment strin
 		}
 		id, parseErr := uuid.Parse(strings.TrimPrefix(binding.InternalID, "paid:"))
 		if parseErr != nil {
-			return out, parseErr
+			return out, exits.PublicationEvidenceError("group_evidence_unavailable")
 		}
 		groups = append(groups, id.String())
 	}
