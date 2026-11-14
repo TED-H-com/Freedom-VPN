@@ -260,6 +260,8 @@ func TestRecoveryModeT2_WaitingRowsUntouched(t *testing.T) {
 func TestRecoveryModeT3_MalformedPublicationPayloads(t *testing.T) {
 	pool := dbtest.New(t)
 	recoverySetMode(t, pool, "reconciling")
+	// Keep the kind-filtered operation set nonempty so malformed IDs are evaluated.
+	recoveryOperation(t, pool, "node.revoke")
 	for _, payload := range []map[string]any{{}, {"operation_id": "not-a-uuid"}, {"operation_id": 123}, {"operation_id": uuid.NewString()}} {
 		recoveryEvent(t, pool, "node.publication_changed", payload, time.Now().Add(-time.Minute))
 	}
