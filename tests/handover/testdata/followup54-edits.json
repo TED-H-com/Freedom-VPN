@@ -99,7 +99,7 @@
     "path": "docs/handover/member-guide.md",
     "offset": 44028,
     "before": "     2. **受控解析器之封鎖回應快取 TTL（`blocked_ttl_seconds`）**：`dns_profile` 中的 `blocked_ttl_seconds` 為可調整設定（schema 範圍 `60..3600` 秒，`internal/dnspolicy` 預設 `300` 秒，`60` 秒僅為 `§12.5` 建議起點），僅控制封鎖回應的 DNS TTL 標頭，並非端到端生效 SLA；\n",
-    "after": "     2. **受控解析器之封鎖回應快取 TTL（`blocked_ttl_seconds`）**：`dns_profile` 中的 `blocked_ttl_seconds` 為可調整設定（schema 必填且範圍為 `0..86400` 秒、沒有 schema 預設值；編譯器在輸入為零時使用 `DefaultBlockedTTLSeconds`（60 秒）），僅控制封鎖回應的 DNS TTL 標頭，並非端到端生效 SLA；\n"
+    "after": "     2. **受控解析器之封鎖回應快取 TTL（`blocked_ttl_seconds`）**：`dns_profile` 中的 `blocked_ttl_seconds` 為可調整設定（schema 必填且範圍為 `0..86400` 秒、沒有 schema 預設值；編譯器先套用正值的 `CompileOptions.BlockedTTLSeconds` 覆寫，結果仍為零時使用 `DefaultBlockedTTLSeconds`（60 秒）），僅控制封鎖回應的 DNS TTL 標頭，並非端到端生效 SLA；\n"
   },
   {
     "path": "docs/handover/member-guide.md",
@@ -111,7 +111,7 @@
     "path": "docs/handover/member-guide.md",
     "offset": 82832,
     "before": "     2. **Configured Blocked-Response TTL (`blocked_ttl_seconds`)**: The `dns_profile` setting `blocked_ttl_seconds` (schema bounds `60..3600` seconds, default `300` seconds in `internal/dnspolicy`, `60` seconds as the recommended starting point in `§12.5`) governs only the DNS TTL header on blocked responses, not end-to-end propagation time;\n",
-    "after": "     2. **Configured Blocked-Response TTL (`blocked_ttl_seconds`)**: The `dns_profile` setting `blocked_ttl_seconds` (required schema input in `0..86400` seconds with no schema default; the compiler substitutes `DefaultBlockedTTLSeconds` (60 seconds) when the input is zero) governs only the DNS TTL header on blocked responses, not end-to-end propagation time;\n"
+    "after": "     2. **Configured Blocked-Response TTL (`blocked_ttl_seconds`)**: The `dns_profile` setting `blocked_ttl_seconds` (required schema input in `0..86400` seconds with no schema default; the compiler first applies a positive `CompileOptions.BlockedTTLSeconds` override, then substitutes `DefaultBlockedTTLSeconds` (60 seconds) if the result is zero) governs only the DNS TTL header on blocked responses, not end-to-end propagation time;\n"
   },
   {
     "path": "docs/handover/operator-guide.md",
