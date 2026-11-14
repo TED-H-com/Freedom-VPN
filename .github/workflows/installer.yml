@@ -14,6 +14,44 @@ on:
       - .github/workflows/installer.yml
       - go.mod
       - go.sum
+      - contracts/*
+      - contracts/schemas/**
+      - db/**
+      - internal/audit/**
+      - internal/auth/**
+      - internal/billing/**
+      - internal/config/**
+      - internal/db/*
+      - internal/dnspolicy/*
+      - internal/dnspublish/*
+      - internal/entitlement/**
+      - internal/httpapi/*
+      - internal/httpapi/gen/**
+      - internal/installerjob/**
+      - internal/members/issuer/**
+      - internal/nodes/commandtx/**
+      - internal/operations/**
+      - internal/pki/**
+      - internal/signing/*
+      - node/agent/*
+      - node/dns/**
+      - node/enforce/**
+      - node/internal/agentstore/**
+      - node/internal/controlclient/**
+      - node/internal/fakecontrol/*
+      - node/internal/healthattest/**
+      - node/internal/meter/**
+      - node/internal/nodelock/**
+      - node/internal/timeanchor/**
+      - node/internal/updatejournal/**
+      - node/internal/usagestore/**
+      - node/internal/usageupload/**
+      - node/nodelock/**
+      - node/updater/*
+      - node/updater/fsutil/**
+      - node/watchdog/*
+      - packaging/release/*
+      - pkg/**
   pull_request:
     paths:
       - packaging/installer/**
@@ -25,6 +63,44 @@ on:
       - .github/workflows/installer.yml
       - go.mod
       - go.sum
+      - contracts/*
+      - contracts/schemas/**
+      - db/**
+      - internal/audit/**
+      - internal/auth/**
+      - internal/billing/**
+      - internal/config/**
+      - internal/db/*
+      - internal/dnspolicy/*
+      - internal/dnspublish/*
+      - internal/entitlement/**
+      - internal/httpapi/*
+      - internal/httpapi/gen/**
+      - internal/installerjob/**
+      - internal/members/issuer/**
+      - internal/nodes/commandtx/**
+      - internal/operations/**
+      - internal/pki/**
+      - internal/signing/*
+      - node/agent/*
+      - node/dns/**
+      - node/enforce/**
+      - node/internal/agentstore/**
+      - node/internal/controlclient/**
+      - node/internal/fakecontrol/*
+      - node/internal/healthattest/**
+      - node/internal/meter/**
+      - node/internal/nodelock/**
+      - node/internal/timeanchor/**
+      - node/internal/updatejournal/**
+      - node/internal/usagestore/**
+      - node/internal/usageupload/**
+      - node/nodelock/**
+      - node/updater/*
+      - node/updater/fsutil/**
+      - node/watchdog/*
+      - packaging/release/*
+      - pkg/**
 permissions:
   contents: read
 jobs:
