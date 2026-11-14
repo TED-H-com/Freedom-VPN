@@ -27,7 +27,7 @@ fvpn-release keygen -key-id release-YYYY -out release-key.json \
   -trust-out release-trust.json \
   -not-before 2026-01-01T00:00:00Z -not-after 2027-01-01T00:00:00Z
 
-fvpn-release build-manifest -in release-input.json -out signed.json
+fvpn-release build-manifest -in build-input.json -out signed.json
 fvpn-release sign -signed signed.json -key release-key.json -out manifest.json
 fvpn-release verify -envelope manifest.json -trust release-trust.json \
   -at 2026-10-28T15:00:00Z \
@@ -37,7 +37,7 @@ fvpn-release package -dir ./tree -out amd64.tar.zst -mtime 0
 
 `keygen` prints a reminder that the private key stays on the build machine. `-trust-out` writes public keys only.
 
-`release-input.json` is a `release.BuildInput`: release id, product version, sequence, created time, source commit, component versions, compatibility (control API major, policy and usage schemas, minimum updater version, state schema from/to, whether the previous release can read the new state), rollback reserve and health profile, evidence URLs, and the two artifact paths and `https` URLs. Evidence URLs and artifact URLs must be `https`.
+`build-input.json` is a `release.BuildInput`. `build-manifest -in` reads the path given after `-in`. The input carries release id, product version, sequence, created time, source commit, `build_id`, component versions, compatibility (control API major, policy and usage schemas, minimum updater version, state schema from/to, whether the previous release can read the new state), rollback reserve and health profile, evidence URLs, and the two artifact paths and `https` URLs. `build_id` is required and matches `^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$`. `BuildManifest` copies it onto the manifest, and `ValidateSigned` rejects a missing or non-matching value through the release manifest schema. Evidence URLs and artifact URLs must be `https`.
 
 ## Where the key lives
 
