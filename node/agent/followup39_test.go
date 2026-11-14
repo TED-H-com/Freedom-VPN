@@ -68,17 +68,33 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				r.srv.SetUsageUnavailable(1000)
 				serveBoundGeneration(t, r)
 				r.manualUsage(t)
+				var fail atomic.Bool
+				var offset atomic.Int64
+				if kind == "hold" {
+					offset.Store(int64(1500 * time.Millisecond))
+				}
+				// This meter reads the rig clock. The production meter has
+				// already checkpointed time.Now, so catch the rig clock up
+				// before sampling: a stamp behind that checkpoint is held,
+				// and one a full sample interval behind is a clock gap.
+				// A hold also keeps the new checkpoint one second inside a
+				// sample interval ahead of the wall clock. After a restart
+				// the meter is the production one and reads time.Now again;
+				// the checkpoint then stays held through Boot, and it is not
+				// far enough ahead to be recorded as a clock gap.
+				lead := time.Duration(0)
+				if kind == "hold" {
+					lead = meter.DefaultSampleInterval - time.Second
+				}
+				if wait := time.Now().Add(lead - time.Duration(offset.Load())).Sub(r.clock.Wall()); wait > 0 {
+					r.clock.Advance(wait)
+				}
 				a := oneBinding(r.clock.Wall())
 				b := a
 				b.DeviceId, b.MemberId = uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7())
 				b.PeerId, b.BindingRevision, b.AllowedIpv4 = "peer-b", 2, []string{"100.64.1.2/32"}
 				upA, upB := meter.CounterName(a.DeviceId, meter.DirUpload), meter.CounterName(b.DeviceId, meter.DirUpload)
 				src := &r20DynamicSource{boot: r.eng.bootID.String(), bindings: r.eng.meterBindings, counters: map[string]enforce.CounterValue{upA: {Packets: 1, Bytes: 1000}, upB: {}}}
-				var fail atomic.Bool
-				var offset atomic.Int64
-				if kind == "hold" {
-					offset.Store(int64(1500 * time.Millisecond))
-				}
 				source := r21ReadFunc(func(ctx context.Context) (meter.Observation, error) {
 					if fail.Load() {
 						return meter.Observation{}, errors.New("TEST ONLY counter read failure")
@@ -87,7 +103,7 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				})
 				r.eng.meter.Close()
 				var err error
-				r.eng.meter, err = meter.New(meter.Config{NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: source, Now: func() time.Time { return time.Now().Add(time.Duration(offset.Load())) }})
+				r.eng.meter, err = meter.New(meter.Config{NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: source, Now: func() time.Time { return r.clock.Wall().Add(time.Duration(offset.Load())) }})
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -146,7 +162,23 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					time.Sleep(max(0, time.Until(head.LastSample)+10*time.Millisecond))
+					if restart {
+						// The restarted meter stamps with time.Now. The
+						// checkpoint was taken from the rig clock and still
+						// leads the wall clock by less than one sample
+						// interval, so the sample is held rather than stored
+						// as a clock gap. Wait until the wall clock passes
+						// it. A slower host reaches here later and waits less.
+						time.Sleep(max(0, time.Until(head.LastSample)+10*time.Millisecond))
+					} else if wait := head.LastSample.Sub(r.clock.Wall()) + 10*time.Millisecond; wait > 0 {
+						// This meter still reads the rig clock. Sleeping
+						// would not release the sample.
+						r.clock.Advance(wait)
+					}
+				} else if !restart {
+					// A changed counter read at the checkpoint time is held.
+					// This meter reads the rig clock, so move it forward.
+					r.clock.Advance(time.Millisecond)
 				}
 				fail.Store(false)
 				r.eng.leaseRefreshPending = true
@@ -162,13 +194,21 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				// Exercise Run itself, not just Sample: a paused sampler would silently
 				// skip this delta. Stop the fixture's old loop before starting this one.
 				r.manualUsage(t)
+				if !restart {
+					// Run reads this same clock. Settlement just checkpointed
+					// the open epoch at the current reading, and a sample at
+					// that reading is held.
+					r.clock.Advance(time.Millisecond)
+				}
 				src.setCounter(upA, enforce.CounterValue{Packets: 3, Bytes: 4000})
 				src.setCounter(upB, enforce.CounterValue{Packets: 2, Bytes: 5120})
 				ctx, cancel := context.WithCancel(t.Context())
 				done := make(chan struct{})
 				go func() { defer close(done); _ = r.eng.meter.Run(ctx) }()
 				r.eng.meter.ResumeSampling()
-				deadline := time.Now().Add(time.Second)
+				// A loaded host can take longer than a second to publish the
+				// sample. Leave as soon as the ledger shows the delta.
+				deadline := time.Now().Add(30 * time.Second)
 				for time.Now().Before(deadline) {
 					u = r21ReadLedger(t, r.eng.cfg, r.eng.nodeID, r.eng.incID)
 					if u.byRevision[3] == 1024 {
