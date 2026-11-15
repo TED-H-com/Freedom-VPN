@@ -12,6 +12,11 @@ on:
       - "mk/backup.mk"
       - ".github/workflows/backup.yml"
       - "tests/backup/**"
+      - "db/**"
+      - "go.mod"
+      - "go.sum"
+      - "internal/db/*"
+      - "internal/db/cmd/fvpn-migrate/**"
   pull_request:
     paths:
       - "deploy/backup/**"
@@ -23,6 +28,11 @@ on:
       - "mk/backup.mk"
       - ".github/workflows/backup.yml"
       - "tests/backup/**"
+      - "db/**"
+      - "go.mod"
+      - "go.sum"
+      - "internal/db/*"
+      - "internal/db/cmd/fvpn-migrate/**"
   workflow_dispatch:
     inputs:
       record_evidence:

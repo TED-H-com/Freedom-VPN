@@ -15,6 +15,9 @@ on:
       - '.github/workflows/contracts.yml'
       - 'go.mod'
       - 'go.sum'
+      - 'internal/dnspolicy/*'
+      - 'internal/dnspublish/*'
+      - 'internal/policies/schemas/**'
   pull_request:
     paths:
       - 'contracts/**'
@@ -28,6 +31,9 @@ on:
       - '.github/workflows/contracts.yml'
       - 'go.mod'
       - 'go.sum'
+      - 'internal/dnspolicy/*'
+      - 'internal/dnspublish/*'
+      - 'internal/policies/schemas/**'
 
 permissions:
   contents: read

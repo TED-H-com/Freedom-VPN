@@ -17,6 +17,12 @@ on:
       - 'docs/portal/**'
       - 'mk/portal.mk'
       - '.github/workflows/portal.yml'
+      - 'contracts/*'
+      - 'contracts/schemas/**'
+      - 'contracts/vectors/release-manifest-signing.json'
+      - 'db/**'
+      - 'go.mod'
+      - 'go.sum'
   pull_request:
     paths:
       - 'apps/portal/**'
@@ -29,6 +35,12 @@ on:
       - 'docs/portal/**'
       - 'mk/portal.mk'
       - '.github/workflows/portal.yml'
+      - 'contracts/*'
+      - 'contracts/schemas/**'
+      - 'contracts/vectors/release-manifest-signing.json'
+      - 'db/**'
+      - 'go.mod'
+      - 'go.sum'
 
 jobs:
   portal:
