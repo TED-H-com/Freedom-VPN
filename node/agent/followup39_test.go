@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -59,6 +60,26 @@ func r22CrashDuringStep(t *testing.T, r *rig) {
 	r20Crash(r.eng)
 }
 
+// r22WaitPastCheckpoint sleeps until real time is 10ms past the newest
+// usage checkpoint. A production meter reads time.Now, so callers run
+// this before one samples. The sleep is a lower bound: a slower host
+// arrives later and waits less. A host wall-clock step back during the
+// sleep is not handled: real time can then still be behind the
+// checkpoint, and a sample taken then can be held.
+func r22WaitPastCheckpoint(t *testing.T, e *Engine) {
+	t.Helper()
+	st, err := usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, usagestore.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	head, err := st.Head(t.Context())
+	_ = st.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(max(0, time.Until(head.LastSample)+10*time.Millisecond))
+}
+
 func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 	for _, kind := range []string{"hold", "read_error"} {
 		for _, restart := range []bool{false, true} {
@@ -68,17 +89,51 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				r.srv.SetUsageUnavailable(1000)
 				serveBoundGeneration(t, r)
 				r.manualUsage(t)
+				var fail atomic.Bool
+				var offset atomic.Int64
+				if kind == "hold" {
+					offset.Store(int64(1500 * time.Millisecond))
+				}
+				// This meter reads the rig clock. The production meter has
+				// already checkpointed time.Now, so catch the rig clock up
+				// before sampling: a stamp behind that checkpoint is held,
+				// and one more than a full sample interval behind is a clock gap.
+				// The first reading is the rig clock plus offset. The catch-up
+				// aligns that reading with the real time just read. The step can
+				// be forward or backward, and it is never further back than the
+				// anchor's backward skew minus 250ms. The handoff then reads with
+				// offset 0, 1.5s behind the checkpoint, and stays held whatever
+				// real time does.
+				r22WaitPastCheckpoint(t, r.eng)
+				limit := -(timeanchor.DefaultBackwardSkew - 250*time.Millisecond)
+				started := time.Now()
+				var delta time.Duration
+				for {
+					delta = time.Now().Add(-time.Duration(offset.Load())).Sub(r.clock.Wall())
+					if delta >= limit {
+						break
+					}
+					remain := 10*time.Second - time.Since(started)
+					if remain <= 0 {
+						t.Fatalf("catch-up still behind the anchor tolerance: delta=%s", delta)
+					}
+					gap := limit - delta
+					if gap > remain {
+						gap = remain
+					}
+					time.Sleep(gap)
+				}
+				if delta > 0 {
+					r.clock.Advance(delta)
+				} else if delta < 0 {
+					r.clock.JumpWall(delta)
+				}
 				a := oneBinding(r.clock.Wall())
 				b := a
 				b.DeviceId, b.MemberId = uuid.Must(uuid.NewV7()), uuid.Must(uuid.NewV7())
 				b.PeerId, b.BindingRevision, b.AllowedIpv4 = "peer-b", 2, []string{"100.64.1.2/32"}
 				upA, upB := meter.CounterName(a.DeviceId, meter.DirUpload), meter.CounterName(b.DeviceId, meter.DirUpload)
 				src := &r20DynamicSource{boot: r.eng.bootID.String(), bindings: r.eng.meterBindings, counters: map[string]enforce.CounterValue{upA: {Packets: 1, Bytes: 1000}, upB: {}}}
-				var fail atomic.Bool
-				var offset atomic.Int64
-				if kind == "hold" {
-					offset.Store(int64(1500 * time.Millisecond))
-				}
 				source := r21ReadFunc(func(ctx context.Context) (meter.Observation, error) {
 					if fail.Load() {
 						return meter.Observation{}, errors.New("TEST ONLY counter read failure")
@@ -87,7 +142,7 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				})
 				r.eng.meter.Close()
 				var err error
-				r.eng.meter, err = meter.New(meter.Config{NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: source, Now: func() time.Time { return time.Now().Add(time.Duration(offset.Load())) }})
+				r.eng.meter, err = meter.New(meter.Config{NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: r.eng.usage, Source: source, Now: func() time.Time { return r.clock.Wall().Add(time.Duration(offset.Load())) }})
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -111,7 +166,15 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 					t.Fatal("failed final sample was not left pending")
 				}
 				if restart {
+					// The restarted meter reads real time, so only a failing
+					// read keeps the final sample pending without depending
+					// on elapsed time.
+					fail.Store(true)
 					r20Crash(r.eng)
+					// A production meter reads time.Now. Wait until real
+					// time is past the newest checkpoint before it samples.
+					// A slower host reaches here later and waits less.
+					r22WaitPastCheckpoint(t, r.eng)
 					next, err := Start(Options{Config: r20ChangedSets(r), Clock: r.clock, Plane: r.plane, MeterSource: source, Prober: passProbe{}})
 					if err != nil {
 						t.Fatal(err)
@@ -146,7 +209,20 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 					if err != nil {
 						t.Fatal(err)
 					}
-					time.Sleep(max(0, time.Until(head.LastSample)+10*time.Millisecond))
+					// Only the rig-clock meter needs this advance. The restarted
+					// meter reads real time, the wait before Start already put
+					// real time past this checkpoint, and its reads fail until
+					// `fail` is cleared below, so moving the rig clock would not
+					// release the sample.
+					if !restart {
+						if wait := head.LastSample.Sub(r.clock.Wall()) + 10*time.Millisecond; wait > 0 {
+							r.clock.Advance(wait)
+						}
+					}
+				} else if !restart {
+					// A changed counter read at the checkpoint time is held.
+					// This meter reads the rig clock, so move it forward.
+					r.clock.Advance(time.Millisecond)
 				}
 				fail.Store(false)
 				r.eng.leaseRefreshPending = true
@@ -162,13 +238,21 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				// Exercise Run itself, not just Sample: a paused sampler would silently
 				// skip this delta. Stop the fixture's old loop before starting this one.
 				r.manualUsage(t)
+				if !restart {
+					// Run reads this same clock. Settlement just checkpointed
+					// the open epoch at the current reading, and a sample at
+					// that reading is held.
+					r.clock.Advance(time.Millisecond)
+				}
 				src.setCounter(upA, enforce.CounterValue{Packets: 3, Bytes: 4000})
 				src.setCounter(upB, enforce.CounterValue{Packets: 2, Bytes: 5120})
 				ctx, cancel := context.WithCancel(t.Context())
 				done := make(chan struct{})
 				go func() { defer close(done); _ = r.eng.meter.Run(ctx) }()
 				r.eng.meter.ResumeSampling()
-				deadline := time.Now().Add(time.Second)
+				// A loaded host can take longer than a second to publish the
+				// sample. Leave as soon as the ledger shows the delta.
+				deadline := time.Now().Add(30 * time.Second)
 				for time.Now().Before(deadline) {
 					u = r21ReadLedger(t, r.eng.cfg, r.eng.nodeID, r.eng.incID)
 					if u.byRevision[3] == 1024 {
@@ -185,6 +269,10 @@ func TestR22_H1B_FailedHandoffSettlementAndSampling(t *testing.T) {
 				cfg := r.eng.cfg
 				cfg.ExtraDeniedV4 = append(append([]string(nil), cfg.ExtraDeniedV4...), "198.51.100.0/24")
 				next := r20Successor(t, r, cfg, src, r.plane)
+				// The successor's meter reads time.Now. Wait until real
+				// time is past the newest checkpoint before it samples.
+				// A slower host reaches here later and waits less.
+				r22WaitPastCheckpoint(t, next)
 				if err := next.Boot(t.Context()); err != nil {
 					t.Fatal(err)
 				}
