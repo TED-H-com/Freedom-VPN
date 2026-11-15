@@ -3,17 +3,20 @@ package httpwire
 import (
 	"context"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"errors"
 	"slices"
 	"strings"
 
+	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/exits"
 	"github.com/TED-H-com/Freedom-VPN/internal/netbird"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // PublicationAdapter translates the exits workflow to the management adapter;
@@ -93,6 +96,10 @@ func (a *PublicationAdapter) WithdrawExit(ctx context.Context, deployment string
 	return "netbird:exit:" + exitID.String() + ":withdrawn", nil
 }
 
+func (a *PublicationAdapter) serves(deployment string) bool {
+	return a.client != nil && a.runtime != nil && deployment != "" && deployment == a.runtime.Config.NetBirdDeployment
+}
+
 func (a *PublicationAdapter) ReadExitState(ctx context.Context, deployment string, exitID uuid.UUID, externalID string) (out exits.ObservedExitState, err error) {
 	defer publicationError(&err)
 	if err = a.check(deployment); err != nil {
@@ -102,6 +109,44 @@ func (a *PublicationAdapter) ReadExitState(ctx context.Context, deployment strin
 	if err != nil {
 		return out, err
 	}
+	return matchObservedExit(ctx, a.runtime.Pool, deployment, exitID, externalID, observed)
+}
+
+// ReadExitPage takes one NetBird snapshot for every exit of a deployment page.
+// An unserved deployment returns ErrDeploymentNotServed before any request.
+func (a *PublicationAdapter) ReadExitPage(ctx context.Context, deployment string, page []exits.ExitPageRef) (out []exits.ExitPageResult, err error) {
+	if !a.serves(deployment) {
+		return nil, exits.ErrDeploymentNotServed
+	}
+	defer publicationError(&err)
+	if len(page) == 0 {
+		return nil, nil
+	}
+	observed, err := a.client.ReadObservedState(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out = make([]exits.ExitPageResult, len(page))
+	for i, item := range page {
+		state, matchErr := matchObservedExit(ctx, a.runtime.Pool, deployment, item.ExitID, item.ExternalID, observed)
+		if matchErr != nil {
+			var evidence exits.PublicationEvidenceError
+			if errors.As(matchErr, &evidence) {
+				out[i].Evidence = evidence
+				continue
+			}
+			return nil, matchErr
+		}
+		out[i].State = state
+	}
+	return out, nil
+}
+
+// matchObservedExit applies one exit to an already-read NetBird snapshot.
+// A database error is returned as-is. No rows, or a different peer, is
+// route_peer_mismatch. A missing group binding, or a paid: key that is not a
+// UUID, is group_evidence_unavailable.
+func matchObservedExit(ctx context.Context, pool *pgxpool.Pool, deployment string, exitID uuid.UUID, externalID string, observed netbird.ObservedState) (out exits.ObservedExitState, err error) {
 	// Match the adapter's stable name even after withdrawal deletes its binding.
 	// This is the reserved naming format in netbird.stableName, verified in the
 	// integration test against a real Client. The input is a UUID, not JSON.
@@ -124,24 +169,34 @@ func (a *PublicationAdapter) ReadExitState(ctx context.Context, deployment strin
 		return out, exits.PublicationEvidenceError("route_contract_mismatch")
 	}
 	var peer string
-	if err = a.runtime.Pool.QueryRow(ctx, `SELECT i.peer_id FROM exits e JOIN nodes n ON n.id=e.node_id JOIN node_incarnations i ON i.id=n.current_incarnation_id WHERE e.id=$1 AND i.deployment_id=$2`, exitID, deployment).Scan(&peer); err != nil || route.Peer != peer {
+	err = pool.QueryRow(ctx, `SELECT i.peer_id FROM exits e JOIN nodes n ON n.id=e.node_id JOIN node_incarnations i ON i.id=n.current_incarnation_id WHERE e.id=$1 AND i.deployment_id=$2`, exitID, deployment).Scan(&peer)
+	if errors.Is(err, pgx.ErrNoRows) || err == nil && route.Peer != peer {
 		return out, exits.PublicationEvidenceError("route_peer_mismatch")
 	}
-	bindings := nodes.NetBirdBindings{Pool: a.runtime.Pool}
+	if err != nil {
+		return out, err
+	}
+	bindings := nodes.NetBirdBindings{Pool: pool}
 	groups := make([]string, 0, len(route.Groups))
 	for _, group := range route.Groups {
-		binding, ok, e := bindings.FindExternal(ctx, deployment, "groups", group)
-		if e != nil || !ok || !strings.HasPrefix(binding.InternalID, "paid:") {
+		binding, ok, findErr := bindings.FindExternal(ctx, deployment, "groups", group)
+		if findErr != nil {
+			if matchingDatabaseError(findErr) {
+				return out, findErr
+			}
 			return out, exits.PublicationEvidenceError("group_evidence_unavailable")
 		}
-		id, e := uuid.Parse(strings.TrimPrefix(binding.InternalID, "paid:"))
-		if e != nil {
-			return out, e
+		if !ok || !strings.HasPrefix(binding.InternalID, "paid:") {
+			return out, exits.PublicationEvidenceError("group_evidence_unavailable")
+		}
+		id, parseErr := uuid.Parse(strings.TrimPrefix(binding.InternalID, "paid:"))
+		if parseErr != nil {
+			return out, exits.PublicationEvidenceError("group_evidence_unavailable")
 		}
 		groups = append(groups, id.String())
 	}
 	slices.Sort(groups)
-	rows, err := a.runtime.Pool.Query(ctx, `SELECT group_id::text FROM exit_groups WHERE exit_id=$1 ORDER BY group_id`, exitID)
+	rows, err := pool.Query(ctx, `SELECT group_id::text FROM exit_groups WHERE exit_id=$1 ORDER BY group_id`, exitID)
 	if err != nil {
 		return out, err
 	}
@@ -163,6 +218,16 @@ func (a *PublicationAdapter) ReadExitState(ctx context.Context, deployment strin
 		return out, err
 	}
 	return exits.ObservedExitState{Exists: true, ExternalID: route.ID, PeerID: route.Peer, Enabled: route.Enabled, GroupIDs: route.Groups, ObservedHash: hash[:], ObservedRef: "netbird:route:" + route.ID}, nil
+}
+
+// matchingDatabaseError is a driver or query failure. Missing rows, malformed
+// binding keys and domain conflicts stay per-exit evidence.
+func matchingDatabaseError(err error) bool {
+	if err == nil || errors.Is(err, pgx.ErrNoRows) || errors.Is(err, entitlement.ErrInvalid) {
+		return false
+	}
+	var corrupt base64.CorruptInputError
+	return !errors.As(err, &corrupt)
 }
 
 var _ exits.NetBirdAdapter = (*PublicationAdapter)(nil)

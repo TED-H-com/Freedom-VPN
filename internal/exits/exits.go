@@ -3,7 +3,6 @@
 package exits
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/json"
@@ -21,7 +20,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes"
 	"github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/google/uuid"
@@ -68,12 +66,34 @@ type ObservedExitState struct {
 	ObservedRef  string
 }
 
+// ExitPageRef is one exit in a single deployment page.
+type ExitPageRef struct {
+	ExitID     uuid.UUID
+	ExternalID string
+}
+
+// ExitPageResult is one exit's read-back from a page snapshot.
+// Evidence is a PublicationEvidenceError when State is not an observation.
+type ExitPageResult struct {
+	State    ObservedExitState
+	Evidence error
+}
+
+// ErrDeploymentNotServed means the adapter does not serve this deployment.
+// It is returned before any NetBird request. Reconcile skips those exits.
+var ErrDeploymentNotServed = errors.New("exits: netbird deployment is not served")
+
 // NetBirdAdapter abstracts the central NetBird management API for exit publication,
 // withdrawal, and read-back reconciliation (§7.2).
 type NetBirdAdapter interface {
 	PublishExit(ctx context.Context, spec PublishExitSpec) (PublishedRouteEvidence, error)
 	WithdrawExit(ctx context.Context, deploymentID string, exitID uuid.UUID, externalID string) (string, error)
 	ReadExitState(ctx context.Context, deploymentID string, exitID uuid.UUID, externalID string) (ObservedExitState, error)
+	// ReadExitPage reads NetBird once for the exits of one deployment page.
+	// Results are in input order. ErrDeploymentNotServed means the deployment
+	// is not served and no request was made. Any other error is a whole-call
+	// failure. A per-exit PublicationEvidenceError is that result's Evidence.
+	ReadExitPage(ctx context.Context, deploymentID string, exits []ExitPageRef) ([]ExitPageResult, error)
 }
 
 // FakeNetBirdAdapter is a thread-safe in-memory NetBirdAdapter for unit and integration tests.
@@ -87,6 +107,12 @@ type FakeNetBirdAdapter struct {
 	publishErr    error
 	readbackErr   error
 	withdrawErr   error
+	pageCalls     int
+	pageExits     [][]uuid.UUID
+	pageErr       error
+	pageReadHook  func(deploymentID string, page []ExitPageRef)
+	unserved      map[string]struct{}
+	exitEvidence  map[uuid.UUID]error
 }
 
 // NewFakeNetBirdAdapter constructs a FakeNetBirdAdapter.
@@ -96,6 +122,8 @@ func NewFakeNetBirdAdapter() *FakeNetBirdAdapter {
 		exitToRouteID: make(map[uuid.UUID]string),
 	}
 }
+
+var _ NetBirdAdapter = (*FakeNetBirdAdapter)(nil)
 
 // SetPublishError configures PublishExit to fail with err when non-nil.
 func (f *FakeNetBirdAdapter) SetPublishError(err error) {
@@ -116,6 +144,65 @@ func (f *FakeNetBirdAdapter) SetWithdrawError(err error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.withdrawErr = err
+}
+
+// SetPageError makes ReadExitPage fail for every served deployment.
+func (f *FakeNetBirdAdapter) SetPageError(err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.pageErr = err
+}
+
+// SetUnservedDeployment makes ReadExitPage return ErrDeploymentNotServed
+// for deploymentID without counting a page read.
+func (f *FakeNetBirdAdapter) SetUnservedDeployment(deploymentID string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.unserved == nil {
+		f.unserved = map[string]struct{}{}
+	}
+	f.unserved[deploymentID] = struct{}{}
+}
+
+// SetPageReadHook runs fn from a served ReadExitPage after the call is recorded
+// and before it returns. fn runs without the adapter lock. A nil fn clears it.
+func (f *FakeNetBirdAdapter) SetPageReadHook(fn func(deploymentID string, page []ExitPageRef)) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.pageReadHook = fn
+}
+
+// SetExitEvidence makes ReadExitPage return err as that exit's evidence.
+// A nil err clears a previous injection.
+func (f *FakeNetBirdAdapter) SetExitEvidence(exitID uuid.UUID, err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	if f.exitEvidence == nil {
+		f.exitEvidence = map[uuid.UUID]error{}
+	}
+	if err == nil {
+		delete(f.exitEvidence, exitID)
+		return
+	}
+	f.exitEvidence[exitID] = err
+}
+
+// PageCalls returns how many ReadExitPage calls read a served deployment.
+func (f *FakeNetBirdAdapter) PageCalls() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.pageCalls
+}
+
+// PageExits returns the exit IDs of each served ReadExitPage call, in order.
+func (f *FakeNetBirdAdapter) PageExits() [][]uuid.UUID {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	out := make([][]uuid.UUID, len(f.pageExits))
+	for i, ids := range f.pageExits {
+		out[i] = append([]uuid.UUID(nil), ids...)
+	}
+	return out
 }
 
 // InjectRouteState mutates the in-memory NetBird route state directly (for simulating external drift).
@@ -228,6 +315,46 @@ func (f *FakeNetBirdAdapter) ReadExitState(_ context.Context, _ string, exitID u
 	if f.readbackErr != nil {
 		return ObservedExitState{}, f.readbackErr
 	}
+	return f.routeLocked(exitID, externalID), nil
+}
+
+// ReadExitPage returns one in-memory result per exit. A deployment in the
+// unserved set returns ErrDeploymentNotServed and is not counted. Otherwise
+// the call is counted once, even when pageErr fails the whole call.
+func (f *FakeNetBirdAdapter) ReadExitPage(_ context.Context, deploymentID string, page []ExitPageRef) ([]ExitPageResult, error) {
+	f.mu.Lock()
+	if _, skip := f.unserved[deploymentID]; skip {
+		f.mu.Unlock()
+		return nil, ErrDeploymentNotServed
+	}
+	f.pageCalls++
+	ids := make([]uuid.UUID, len(page))
+	for i, item := range page {
+		ids[i] = item.ExitID
+	}
+	f.pageExits = append(f.pageExits, ids)
+	if f.pageErr != nil {
+		err := f.pageErr
+		f.mu.Unlock()
+		return nil, err
+	}
+	out := make([]ExitPageResult, len(page))
+	for i, item := range page {
+		if err := f.exitEvidence[item.ExitID]; err != nil {
+			out[i].Evidence = err
+			continue
+		}
+		out[i].State = f.routeLocked(item.ExitID, item.ExternalID)
+	}
+	hook := f.pageReadHook
+	f.mu.Unlock()
+	if hook != nil {
+		hook(deploymentID, page)
+	}
+	return out, nil
+}
+
+func (f *FakeNetBirdAdapter) routeLocked(exitID uuid.UUID, externalID string) ObservedExitState {
 	extID := externalID
 	if extID == "" {
 		extID = f.exitToRouteID[exitID]
@@ -236,7 +363,7 @@ func (f *FakeNetBirdAdapter) ReadExitState(_ context.Context, _ string, exitID u
 		return ObservedExitState{
 			Exists:      false,
 			ObservedRef: fmt.Sprintf("netbird:exit:%s:absent", exitID),
-		}, nil
+		}
 	}
 	st, ok := f.routes[extID]
 	if !ok {
@@ -244,9 +371,9 @@ func (f *FakeNetBirdAdapter) ReadExitState(_ context.Context, _ string, exitID u
 			Exists:      false,
 			ExternalID:  extID,
 			ObservedRef: fmt.Sprintf("netbird:route:%s:absent", extID),
-		}, nil
+		}
 	}
-	return st, nil
+	return st
 }
 
 // Service manages exit publication commands, worker execution, and NetBird reconciliation.
@@ -1046,151 +1173,6 @@ func (s *Service) executeWithdraw(ctx context.Context, opID uuid.UUID, nodeID uu
 		return api.Operation{}, err
 	}
 	return nodes.GetOperation(ctx, s.pool, opID)
-}
-
-// ReconcileItem describes the reconciliation result for a single exit.
-type ReconcileItem struct {
-	NodeID uuid.UUID
-	ExitID uuid.UUID
-	Drift  []api.StateDrift
-}
-
-// ReconcileNetBird compares observed NetBird routes/groups against external_bindings
-// and exit publication_intent, recording any drift on external_bindings and nodes.drift (§17.4 item 3).
-// It never alters exits.publication_intent (EXIT03).
-func (s *Service) ReconcileNetBird(ctx context.Context) ([]ReconcileItem, error) {
-	if s.netbird == nil {
-		return nil, errors.New("exits: netbird adapter is required for reconciliation")
-	}
-	now := s.now().UTC()
-
-	rows, err := s.pool.Query(ctx, `
-		SELECT
-			e.id,
-			e.node_id,
-			e.publication_intent,
-			coalesce(inc.deployment_id, $1),
-			coalesce(inc.peer_id, ''),
-			coalesce(eb.external_id, ''),
-			eb.desired_hash
-		FROM exits e
-		JOIN nodes n ON n.id = e.node_id
-		LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
-		LEFT JOIN external_bindings eb
-		  ON eb.resource_type = 'exit'
-		 AND eb.resource_id = e.id
-		 AND eb.provider = $2
-		ORDER BY e.id ASC`, DefaultDeploymentID, ProviderNetBird)
-	if err != nil {
-		return nil, err
-	}
-	type exitRow struct {
-		exitID       uuid.UUID
-		nodeID       uuid.UUID
-		intent       string
-		deploymentID string
-		peerID       string
-		externalID   string
-		desiredHash  []byte
-	}
-	var items []exitRow
-	for rows.Next() {
-		var r exitRow
-		if err := rows.Scan(&r.exitID, &r.nodeID, &r.intent, &r.deploymentID, &r.peerID, &r.externalID, &r.desiredHash); err != nil {
-			rows.Close()
-			return nil, err
-		}
-		items = append(items, r)
-	}
-	if err := rows.Err(); err != nil {
-		rows.Close()
-		return nil, err
-	}
-	rows.Close()
-
-	var results []ReconcileItem
-	for _, item := range items {
-		obs, err := s.netbird.ReadExitState(ctx, item.deploymentID, item.exitID, item.externalID)
-		if err != nil {
-			return results, err
-		}
-
-		drift := []api.StateDrift{}
-		wantPublished := item.intent == string(api.PublicationIntentPublished)
-		if wantPublished {
-			if !obs.Exists || !obs.Enabled {
-				des := "published"
-				obv := "withdrawn"
-				drift = append(drift, api.StateDrift{
-					Field:    "netbird_route",
-					Desired:  presence.NewNullableWithValue(des),
-					Observed: presence.NewNullableWithValue(obv),
-				})
-			} else if len(item.desiredHash) > 0 && len(obs.ObservedHash) > 0 && !bytes.Equal(item.desiredHash, obs.ObservedHash) {
-				des := fmt.Sprintf("%x", item.desiredHash[:8])
-				obv := fmt.Sprintf("%x", obs.ObservedHash[:8])
-				drift = append(drift, api.StateDrift{
-					Field:    "netbird_route_config",
-					Desired:  presence.NewNullableWithValue(des),
-					Observed: presence.NewNullableWithValue(obv),
-				})
-			}
-		} else {
-			if obs.Exists && obs.Enabled {
-				des := item.intent
-				obv := "published"
-				drift = append(drift, api.StateDrift{
-					Field:    "netbird_route",
-					Desired:  presence.NewNullableWithValue(des),
-					Observed: presence.NewNullableWithValue(obv),
-				})
-			}
-		}
-
-		driftJSON, _ := json.Marshal(drift)
-		syncState := "synced"
-		var lastErr *string
-		if len(drift) > 0 {
-			syncState = "drifted"
-			msg := fmt.Sprintf("drift on %s", drift[0].Field)
-			lastErr = &msg
-		}
-
-		err = db.InTx(ctx, s.pool, db.TxOptions{}, func(tx pgx.Tx) error {
-			if _, err := tx.Exec(ctx, `
-				UPDATE nodes
-				SET drift = $2::jsonb,
-				    resource_version = resource_version + 1
-				WHERE id = $1`, item.nodeID, driftJSON); err != nil {
-				return err
-			}
-			if item.externalID != "" {
-				if _, err := tx.Exec(ctx, `
-					UPDATE external_bindings
-					SET sync_state = $3,
-					    observed_hash = coalesce($4, observed_hash),
-					    last_verified_at = $5,
-					    last_error = $6
-					WHERE resource_type = 'exit'
-					  AND resource_id = $1
-					  AND provider = $2`,
-					item.exitID, ProviderNetBird, syncState, obs.ObservedHash, now, lastErr); err != nil {
-					return err
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			return results, err
-		}
-
-		results = append(results, ReconcileItem{
-			NodeID: item.nodeID,
-			ExitID: item.exitID,
-			Drift:  drift,
-		})
-	}
-	return results, nil
 }
 
 // NodeService returns a nodes.Service sharing the same pool and clock.

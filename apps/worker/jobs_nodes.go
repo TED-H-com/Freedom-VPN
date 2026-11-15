@@ -72,6 +72,16 @@ func nodeJobs(r *httpwire.Runtime, nb *netbird.Client, fetch releases.Fetcher, a
 		publication = publicationAdapter[0]
 	}
 	pub := exits.NewService(r.Pool, compiler, publication)
+	jobs.Register("node.netbird_routes.reconcile", 1, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
+		ctx = commandtx.WithClaim(ctx, event)
+		if _, err := pub.ReconcileNetBird(ctx); err != nil {
+			return "", err
+		}
+		err := commandtx.InTx(ctx, r.Pool, db.TxOptions{}, func(tx pgx.Tx) error {
+			return enqueueScheduledNodeJob(ctx, tx, event.EventType, event.ID, time.Now().Add(resolverReconcilePeriod(r.Config.ReconcileSeconds)))
+		})
+		return "netbird-routes-reconciliation:" + event.ID.String(), err
+	})
 	jobs.Register(desiredstate.EventNodePublicationChanged, 3, func(ctx context.Context, event db.ClaimedEvent) (string, error) {
 		var payload struct {
 			OperationID uuid.UUID `json:"operation_id"`
@@ -550,7 +560,7 @@ func recordDiscoveryFailure(ctx context.Context, tx pgx.Tx, p nodeDiscovery, cau
 }
 
 func nodeRunner(runtime *httpwire.Runtime) Runner {
-	// One fleet-locked transaction enqueues all three scheduled events.
+	// One fleet-locked transaction enqueues all four scheduled events.
 	return Runner{Name: "nodes.schedule", Peak: 1, Run: func(ctx context.Context) error { return RunNodeSchedule(ctx, runtime) }}
 }
 
@@ -562,6 +572,9 @@ func nodeScheduleCycle(ctx context.Context, runtime *httpwire.Runtime) error {
 		if err := enqueueScheduledNodeJob(ctx, tx, "node.resolver_documents.reconcile", uuid.Nil, time.Now()); err != nil {
 			return err
 		}
-		return enqueueScheduledNodeJob(ctx, tx, "node.staleness.sweep", uuid.Nil, time.Now())
+		if err := enqueueScheduledNodeJob(ctx, tx, "node.staleness.sweep", uuid.Nil, time.Now()); err != nil {
+			return err
+		}
+		return enqueueScheduledNodeJob(ctx, tx, "node.netbird_routes.reconcile", uuid.Nil, time.Now())
 	})
 }
