@@ -1,6 +1,6 @@
 # Database and retention index
 
-**Current cut:** [follow-up 54](follow-up-54.md).
+**Current cut:** [follow-up 55](follow-up-55.md).
 
 **[Follow-up 18](follow-up-18.md) (2026-10-31 EDT):** Deploy migration 00192 before the new control binary; installer corrections require the new evidence key and bound.
 

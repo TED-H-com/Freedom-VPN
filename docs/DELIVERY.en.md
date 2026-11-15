@@ -40,6 +40,8 @@ mean every platform and failure scenario has passed acceptance.
 
 ## Handover guide revisions
 
+[Follow-up 55](handover/follow-up-55.md) revises the guide statements at `f57183f1`, including the engineering documents and the release command reference, and records the errata. Dated passages stay unchanged. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 54 recorded them.
+
 [Follow-up 54](handover/follow-up-54.md) revises deployment, operator, member, database, operations and contracts guides, and the node and network-lab engineering documents at `2f5159f3`: it records worker pool sizing and connection capacity planning, and corrects names, links, and current safety and lease behavior. Four dated passages stay unchanged, with errata in the cut. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 53 recorded them.
 
 [Follow-up 53](handover/follow-up-53.md) revises deployment, operator, calibration, restore, member, database and backup statements at `e055143e`: central receipt-age status and portal summaries; enrollment verifier encoding; lease fields, configured renewal lead, retry gates and same-generation repair; captured per-node operation outcomes and migration 00196; historical member acceptance qualifications; isolated restore configuration, cipher inputs, identifier grammar and drill/scanner limits. Five dated passages stay unchanged, with errata linked to living guidance. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 52 recorded them.
@@ -55,9 +57,9 @@ Living guides can receive scoped corrections. Each cut freezes its pre-revision 
 ## Verification scope and known limits
 
 The [merge record](ROADMAP.md) tracks current implementation;
-[follow-up 54](handover/follow-up-54.md) preserves #533, #534, #535 and #536
-at `2f5159f3`. The earlier [follow-up 53](handover/follow-up-53.md)
-retains #529, #528, #530, #531 and #532 at `e055143e`. Later results have their own acceptance records.
+[follow-up 55](handover/follow-up-55.md) preserves #537 and #538
+at `f57183f1`. The earlier [follow-up 54](handover/follow-up-54.md)
+retains #533, #534, #535 and #536 at `2f5159f3`. Later results have their own acceptance records.
 Unit and integration tests, Linux lab
 tests, actual app devices and production deployments each establish different
 evidence. This guide does not announce a production release or replace unfinished

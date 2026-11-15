@@ -38,7 +38,7 @@ The following transitional 501 handlers are removed:
 | `updateNode`, `revokeNode`, `retireNode` | Strong If-Match under transaction locks; metadata 200 or pending operation 202; retirement retains history. |
 | `setNodePublication` | All three intents use `exits.Service.SetPublicationTx` inside the HTTP command transaction; 202 returns the pending publication operation. |
 | `getDesiredState` | Signed state from DB policy and D-030 entitlement readers, explicit release allowlist, authorized `NodeUpdateIntent`, whole-envelope ETag and 304. Published state includes eligible member policies. |
-| `renewServingLease` | Signed 24-hour default maximum (60 s D-067 backstop when `provisioning_state != 'ready'`), bounded member grants, natural renewal-ID replay without restarting deadlines, and transactional `ObserveEndpointTx` cloned-identity check (D-072). |
+| `renewServingLease` | Signed 24-hour default maximum (60 s D-067 cap for a published, registered node that is not provisioning-ready or whose mapping is frozen, and only when 60 seconds is shorter than the fleet maximum), bounded member grants, natural renewal-ID replay without restarting deadlines, and transactional `ObserveEndpointTx` cloned-identity check (D-072). |
 | `submitObservation` | Immutable deduplicated receipt, transactional `ObserveEndpointTx` cloned-identity check (D-072), then `SubmitObservationTx` and `ObserveReportTx` in the same transaction, fleet lock before node lock. |
 | `listReleases`, `registerRelease` | Immutable signed manifests; runtime registration requests artifact verification and returns 202. |
 | `createUpdateBatch`, `getUpdateBatch`, `retryUpdateBatch` | Immutable all-nodes snapshot, original acceptance replay, cursor targets, new retry attempts. |
@@ -152,7 +152,7 @@ generation and node operation steps still require agent observations (§14.5).
 | `node.peer.observe` | Every deduplicated observation enqueues this job. A reported or previously bound ID goes through `EnsureNodePeer` read-back; an absent, unbound ID schedules/coalesces discovery. Baseline readiness and `node_policy` still depend on the latest report's safety and generation ACK. Frozen/revoked incarnations are acknowledged without external work. |
 | `node.peer.discover` | D-055 management-only correlation via `DiscoverNodePeer(operation_id, node/incarnation)`, under the deployment lock and claim/identity fence. Confirmed binding and temporary-group cleanup precede the central `peer_id`, audit evidence and `peer_readback` commit. No hostname, address or timing inference. |
 | `release.verify` | `VerifyRelease` with `HTTPSFetcher` streams both architecture artifacts with size/hash/origin checks. Fenced terminal verification persists success or failure evidence; failed verification never marks its step successful. |
-| `node.reconcile` | `fleetupdate.Reconcile`, expired-bootstrap erasure, then a delayed successor. |
+| `node.reconcile` | `ReconcileGenerationHolds`, then `fleetupdate.Reconcile`, then expired-bootstrap erasure, then a successor after the full `reconcile_seconds`. |
 | `node.resolver_documents.reconcile` | Reads the eligible document through the DNS publisher's reader, pages current signed states with differing references, and recompiles them under the claim/fleet/node locks. Issuance and the new signed state commit together. No external network calls. |
 | `node.staleness.sweep` | Uses accepted central receipt age to sweep node status, with stale threshold `min(90s, online_seconds)` and offline threshold `online_seconds`. Its independent claimed chain schedules a delayed successor under the claim and fleet lock; errors return for retry, and scheduling can delay a transition. |
 | `fleet.update_created`, `fleet.first_sync_created`, `fleet.update_retry`, `fleet.release_support_changed`, `node.updated` | Reconcile persisted fleet state and seed/coalesce the periodic chain. Desired state is compiled when the authenticated node polls. |
@@ -301,8 +301,8 @@ is not a production HSM or independent anti-rollback appliance.
 | `certificate_seconds`, `renewal_overlap_seconds` | Explicit certificate lifetime and nonnegative overlap less than lifetime. |
 | `bootstrap_seconds` | Explicit local one-time delivery lifetime, independent of NetBird's external lifetime. |
 | `installer_seconds`, `preinstalled_seconds` | Defaults 900 and 604800; configurable. |
-| `authorization_seconds`, `online_seconds`, `stuck_seconds` | Explicit fleet authorization/online/watchdog windows. |
-| `reconcile_seconds`, `fetch_seconds`, `desired_state_seconds` | Explicit reconciliation, HTTP fetch and desired-envelope durations. |
+| `authorization_seconds`, `online_seconds`, `stuck_seconds` | Explicit fleet authorization, online, and watchdog windows. `online_seconds` is the offline threshold of `node.staleness.sweep`; that sweep's stale threshold is `min(90s, online_seconds)`. |
+| `reconcile_seconds`, `fetch_seconds`, `desired_state_seconds` | Explicit reconciliation, HTTP fetch, and desired-envelope durations. `reconcile_seconds` is the full `node.reconcile` successor delay, and `min(reconcile_seconds, 60)` is the bounded cadence shared by the staleness sweep and resolver reconciliation. |
 | `release_origins` | Exact HTTPS origins for immutable manifests/artifacts. |
 | `egress_probe` | Optional fleet-wide D-058 object: 1–4 unique literal-IP TCP targets (`address`, `port`, `protocol`), optional `timeout_ms` 100–10000 (contract default 2000). Absent by default. Signed with desired state before cache comparison. |
 | `dns_resolver_ipv4`, `dns_resolver_ipv6` | Fleet-wide designated resolver address arrays, validated by family; at least one address across the two arrays is required. No production default. |
@@ -659,37 +659,20 @@ matching member/entitlement/device operations in `pending` with
 `error_code = "ISOLATION_POLICY_INVALID"`, `error_message = "member_forwarding_unconfirmed"`,
 `reason = "conntrack_delete_pending"`, and a correlated `node.revoke_isolation_pending`
 (`result = "failed"`) audit event. The `"nodes"` step is never completed while the node forwards
-with a pending conntrack delete. It completes and emits `node.revoke_isolation_resolved`
-(`result = "succeeded"`) only when no other registered, online node that shares an exit group with
-the member's plan and has a fresh observation within `DefaultStaleTimeout` (`90s` on both
-`last_observed_at` and `last_seen_at`, r14 H-1; an enrolled exit with no `exit_groups` row never
-holds the fence) still reports a pending `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}`
-error while forwarding,
-and either (a) a subsequent observation on the target generation clears the
-`ISOLATION_POLICY_INVALID` apply error (`resolution = "conntrack_delete_succeeded"`), or (b) the
-node fails closed with the agent's real fail-closed observation shape (D-070:
-`member_forwarding_enabled = false`, `safety_status = "failed"`, `forwarding_block_reasons`
-contains `"safety_check_failed"`, check `internet_only` **failed** with
-`error_code = "ISOLATION_POLICY_INVALID"` and detail `"Conntrack delete exceeded the retry bound."`
-or `"Conntrack is not installed."`, and the `{code: "ISOLATION_POLICY_INVALID", stage: "apply"}`
-error still present in `errors`; `resolution = "node_failed_closed"`).
+with a pending conntrack delete. The `"nodes"` step succeeds after the capture is finished and no captured target remains `pending`. One clean report cannot settle another fresh `pending` target. Success may include `unconfirmed` targets. A per-target `node.revoke_isolation_resolved` audit (`result = "succeeded"`) is written only when the reporting node's own target is acknowledged: after a previous isolation error on a clean report (`resolution = "conntrack_delete_succeeded"`), or on any report that is not clean (`resolution = "node_failed_closed"`); a clean report has central `safety_status = "passed"`, reported `provisioning_state = "ready"` and no isolation apply error. A report that is not clean acknowledges a target only when the report is closed (the fail-closed shape below, or a report that does not forward, has no isolation apply error and passes `internet_only`) and the subject is absent from that target's generation (`subject_present = false`). The fail-closed shape is `member_forwarding_enabled = false`, `safety_status = "failed"`, `forwarding_block_reasons` contains `"safety_check_failed"`, and the `ISOLATION_POLICY_INVALID` apply error still present in `errors`. With a verified baseline, `internet_only` is failed with `ISOLATION_POLICY_INVALID` and detail `"Conntrack delete exceeded the retry bound."` or `"Conntrack is not installed."`. Without a verified baseline the code is `ISOLATION_BASELINE_MISSING`, and `isFailClosedIsolationApplyError` rejects that report.
 
 For serving leases (`POST /api/v1/agent/lease-renewals`, `leases.Service.RenewTx`), member
 grants are included only when `lifecycle_state == 'registered'`,
-`publication_intent == 'published'`, `provisioning_state == 'ready'`, and `len(groupIDs) > 0`.
-When `includeMembers` is false on a registered, published exit because `provisioning_state` is
-not `'ready'`, `RenewTx` issues the grant-less lease (`members: []`) on
-`config_generation == desired_config_generation` with `expires_at = issued_at + min(max_offline_seconds, 60s)`
-(`leases.ProvisionalGrantlessLeaseSeconds = 60`, D-067 central backstop), while keeping
-`max_offline_seconds` copied from `fleet_config.max_offline_lease_seconds`. Ready nodes
-(`provisioning_state == 'ready'`) are never shortened and keep the configured
-`max_offline_lease_seconds` window (D-065). Once the node's first ready observation after
-restart is ingested by `nodes.Service.SubmitObservation` (`internal/nodes/observations.go:237-295`,
-triggered on the first `(*agent.Engine).Step` via `evaluate`/`Decide` -> `enforce`/`ackApplied` ->
-`observe`/`flush` in `node/agent/engine.go:572-796`, `node/agent/decide.go:253-260,454-506`, and
-`node/agent/observe.go:19-44,217-249`), `nodes.provisioning_state` flips to `'ready'` immediately
-on that first accepted observation, and the next `RenewTx` carries the member grants on the same
-`config_generation`. Once an incarnation has reached `provisioning_state = 'ready'`, at most
+`publication_intent == 'published'`, `provisioning_state == 'ready'`, `!mapping_frozen`, and `len(groupIDs) > 0`.
+A published, registered node that is not provisioning-ready, or whose mapping is frozen, gets
+`members: []` on `config_generation == desired_config_generation` and
+`expires_at = issued_at + min(max_offline_seconds, 60s)`
+(`leases.ProvisionalGrantlessLeaseSeconds = 60`, D-067 central backstop) when that cap is shorter
+than the fleet maximum, while `max_offline_seconds` stays copied from `fleet_config.max_offline_lease_seconds`.
+A ready unfrozen node keeps the configured `max_offline_lease_seconds` window, including when it has no groups (D-065).
+`includeMembers` can still yield an empty entitlement list. Once the node's first ready observation after
+restart is ingested by `nodes.Service.SubmitObservation` (the acknowledgement gate is `internal/nodes/observations.go:283` and the node update starts at `observations.go:294`; the ordinary `(*agent.Engine).Step` path is `node/agent/engine.go:682`, with `Decide` at `node/agent/decide.go:114`, `provisioningOf` at `decide.go:521`, `safetyOf` at `decide.go:480`, `observe` at `node/agent/observe.go:24`, and `flush` at `observe.go:304`), a later `RenewTx` carries member grants on the same
+`config_generation` only when publication, an unfrozen mapping, groups, and entitled members allow them. Once an incarnation has reached `provisioning_state = 'ready'`, at most
 one in-flight observation for an already-applied generation with `safety_status = 'passed'`
 preserves `provisioning_state = 'ready'` when central concurrently advances
 `desired_config_generation` (recorded via `stale_generation_grace` on `node.observation_applied`,
