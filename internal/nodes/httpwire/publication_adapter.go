@@ -227,10 +227,7 @@ func matchingDatabaseError(err error) bool {
 		return false
 	}
 	var corrupt base64.CorruptInputError
-	if errors.As(err, &corrupt) {
-		return false
-	}
-	return true
+	return !errors.As(err, &corrupt)
 }
 
 var _ exits.NetBirdAdapter = (*PublicationAdapter)(nil)
