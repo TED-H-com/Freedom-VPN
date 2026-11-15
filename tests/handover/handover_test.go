@@ -20757,6 +20757,9 @@ func TestHandover_Followup55Claims(t *testing.T) {
 	const fixture = "tests/handover/testdata/"
 	const cut = "f57183f1d3e1003d69a388b3be25458c331bc44c"
 	const cutDoc = "docs/handover/follow-up-55.md"
+	// Every merged delivery adds a row to the roadmap, so its frozen copy
+	// can pin only the dated rows.
+	const roadmap = "docs/ROADMAP.md"
 	hash := func(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
 	readJSON := func(path string, dst any) {
 		t.Helper()
@@ -20888,6 +20891,9 @@ func TestHandover_Followup55Claims(t *testing.T) {
 			}
 		}
 		for _, path := range unchanged {
+			if path == roadmap {
+				continue
+			}
 			if readOwnedDoc(t, root, path) != readOwnedDoc(t, root, followup55PriorPath(path)) {
 				t.Errorf("%s: dated passage changed outside the permitted edits", path)
 			}
@@ -20945,6 +20951,33 @@ func TestHandover_Followup55Claims(t *testing.T) {
 			"ops_secops":    "### Follow-up 13 acceptance snapshot (2026-10-30 EDT)",
 			"ops_requests":  "### Follow-up 15 acceptance snapshot (2026-10-31 EDT)",
 		}
+		datedRow := func(before, after, passage string) bool {
+			row, n := "", 0
+			for rest := before; rest != ""; {
+				line, next, ok := strings.Cut(rest, "\n")
+				if strings.Contains(line, passage) {
+					row, n = line, n+1
+				}
+				if !ok {
+					break
+				}
+				rest = next
+			}
+			if n != 1 {
+				return false
+			}
+			for rest := after; rest != ""; {
+				line, next, ok := strings.Cut(rest, "\n")
+				if line == row {
+					return true
+				}
+				if !ok {
+					break
+				}
+				rest = next
+			}
+			return false
+		}
 		for i, p := range historical {
 			if p.Name != names[i] || p.Heading == "" || !strings.Contains(p.Erratum, p.Path) || !strings.Contains(doc, p.Erratum) || p.Passage == "" {
 				t.Errorf("%s: missing dated-record erratum at %s", cutDoc, p.Name)
@@ -20953,8 +20986,11 @@ func TestHandover_Followup55Claims(t *testing.T) {
 			if !strings.Contains(before, p.Heading) || !strings.Contains(after, p.Heading) || !strings.Contains(before, p.Passage) || !strings.Contains(after, p.Passage) {
 				t.Errorf("%s: historical passage changed at %s", p.Path, p.Name)
 			}
-			if slices.Contains(unchanged, p.Path) && before != after {
+			if slices.Contains(unchanged, p.Path) && p.Path != roadmap && before != after {
 				t.Errorf("%s: dated passage bytes changed at %s", p.Path, p.Name)
+			}
+			if p.Path == roadmap && !datedRow(before, after, p.Passage) {
+				t.Errorf("%s: dated row changed at %s", p.Path, p.Name)
 			}
 			if heading, ok := datedHeading[p.Name]; ok {
 				b, bok := section(before, heading)
