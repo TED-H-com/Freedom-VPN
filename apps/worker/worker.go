@@ -105,7 +105,7 @@ func (d *Dispatcher) Run(ctx context.Context) error {
 	return nil
 }
 func (d *Dispatcher) Once(ctx context.Context) (bool, error) {
-	events, e := db.ClaimOutbox(ctx, d.pool, d.name, 1, d.config.Lease)
+	events, e := db.ClaimOutboxByLedgerMode(ctx, d.pool, d.name, 1, d.config.Lease, recoveryAllowedTypes, recoveryFilteredType, recoveryWithdrawalKinds)
 	if e != nil {
 		return false, e
 	}
